@@ -20,6 +20,17 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Camera Access on iOS Safari
+
+To use the camera functionality on iOS Safari, you need to access the app via a secure context (HTTPS). For development:
+
+1. **For local development on the same machine:** The app works on `http://localhost:3000`
+2. **For testing on iOS device over network:** Use [ngrok](https://ngrok.com/) to create a secure tunnel:
+   - Install ngrok: `npm install -g ngrok`
+   - Start your app: `npm run dev`
+   - In another terminal: `ngrok http 3000`
+   - Access the HTTPS URL provided by ngrok on your iOS device
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
