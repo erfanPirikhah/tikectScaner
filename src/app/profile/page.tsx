@@ -41,28 +41,28 @@ export default function Profile() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      <Header title="Profile" />
+      <Header title="پروفایل" />
 
       {/* Content */}
       <main className="flex-1 py-6 px-4 sm:px-6">
         <div className="max-w-2xl mx-auto">
           <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Account Information</h2>
+            <h2 className="text-lg font-medium text-gray-900 mb-4">اطلاعات حساب</h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Name</label>
-                <p className="mt-1 text-sm text-gray-900">{user?.name || 'N/A'}</p>
+                <label className="block text-sm font-medium text-gray-700">نام</label>
+                <p className="mt-1 text-sm text-gray-900">{user?.name || 'موجود نیست'}</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Email</label>
-                <p className="mt-1 text-sm text-gray-900">{user?.email || 'N/A'}</p>
+                <label className="block text-sm font-medium text-gray-700">ایمیل</label>
+                <p className="mt-1 text-sm text-gray-900">{user?.email || 'موجود نیست'}</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Website URL</label>
-                <p className="mt-1 text-sm text-gray-900 break-all">{useAuthStore.getState().websiteUrl || 'N/A'}</p>
+                <label className="block text-sm font-medium text-gray-700">آدرس وب‌سایت</label>
+                <p className="mt-1 text-sm text-gray-900 break-all">{useAuthStore.getState().websiteUrl || 'موجود نیست'}</p>
               </div>
             </div>
 
@@ -71,7 +71,7 @@ export default function Profile() {
                 onClick={handleLogout}
                 className="w-full py-3 px-4 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors"
               >
-                Logout
+                خروج
               </button>
             </div>
           </div>

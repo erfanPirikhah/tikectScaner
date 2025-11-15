@@ -4,17 +4,17 @@ import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
-  subsets: ["latin"],
+  subsets: ["arabic", "latin"], // Added arabic for RTL support
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
-  subsets: ["latin"],
+  subsets: ["arabic", "latin"], // Added arabic for RTL support
 });
 
 export const metadata: Metadata = {
-  title: "Ticket Scanner PWA",
-  description: "QR code ticket scanning application",
+  title: "اسکنر بلیت PWA",
+  description: "برنامه اسکن بلیت کد QR",
   manifest: "/manifest.json",
   themeColor: "#4f46e5",
   viewport: "width=device-width, initial-scale=1, viewport-fit=cover",
@@ -26,14 +26,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="fa" dir="rtl">
       <head>
         <meta name="theme-color" content="#4f46e5" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Ticket Scanner" />
+        <meta name="apple-mobile-web-app-title" content="اسکنر بلیت" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
         <link rel="manifest" href="/manifest.json" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v31.0.0/dist/font-face.css" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

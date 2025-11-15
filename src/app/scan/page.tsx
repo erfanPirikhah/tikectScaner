@@ -306,20 +306,20 @@ export default function QRScanner() {
         <main className="flex-1 flex flex-col items-center justify-center p-6">
           <div className="bg-white rounded-lg shadow-md p-6 max-w-md w-full text-center">
             <div className="text-red-500 text-4xl mb-4">⚠️</div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Camera Access Required</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">دسترسی به دوربین الزامی است</h2>
             <p className="text-gray-600 mb-4">{cameraError}</p>
-            <p className="text-sm text-gray-500 mb-4">Please allow camera permissions to continue.</p>
+            <p className="text-sm text-gray-500 mb-4">لطفاً مجوز دسترسی به دوربین را برای ادامه اعطا کنید.</p>
             <button
               onClick={requestCameraPermission}
               className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors mb-3"
             >
-              Request Camera Access
+              درخواست دسترسی به دوربین
             </button>
             <button
               onClick={() => window.location.reload()}
               className="w-full bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
             >
-              Refresh Page
+              تازه‌سازی صفحه
             </button>
           </div>
         </main>
@@ -336,14 +336,14 @@ export default function QRScanner() {
             onClick={handleGoBack}
             className="text-indigo-300 hover:text-white font-medium"
           >
-            ← Back
+            → بازگشت
           </button>
-          <h1 className="text-xl font-semibold">Scan Ticket</h1>
+          <h1 className="text-xl font-semibold">اسکن بلیت</h1>
           <button
             onClick={handleLogout}
             className="text-sm text-indigo-300 hover:text-white"
           >
-            Logout
+            خروج
           </button>
         </div>
       </header>
@@ -353,7 +353,7 @@ export default function QRScanner() {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading scanner...</p>
+            <p className="text-gray-600">در حال بارگذاری اسکنر...</p>
           </div>
         </div>
       ) : (
@@ -367,14 +367,14 @@ export default function QRScanner() {
               <div className="flex-1 flex flex-col items-center justify-center p-6">
                 <div className="bg-white rounded-lg shadow-md p-6 max-w-md w-full text-center">
                   <div className="text-yellow-500 text-4xl mb-4">⚠️</div>
-                  <h2 className="text-xl font-semibold text-gray-900 mb-2">Camera Not Supported</h2>
-                  <p className="text-gray-600 mb-4">Your browser does not support camera functionality.</p>
-                  <p className="text-sm text-gray-500">Use a modern browser like Chrome, Firefox, or Safari on a device with camera access.</p>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2">دوربین پشتیبانی نمی‌شود</h2>
+                  <p className="text-gray-600 mb-4">مرورگر شما از عملکرد دوربین پشتیبانی نمی‌کند.</p>
+                  <p className="text-sm text-gray-500">از یک مرورگر مدرن مانند Chrome، Firefox یا Safari روی دستگاهی با دسترسی به دوربین استفاده کنید.</p>
                   <button
                     onClick={handleGoBack}
                     className="w-full mt-4 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
                   >
-                    Back to Events
+                    بازگشت به رویدادها
                   </button>
                 </div>
               </div>
@@ -418,7 +418,7 @@ export default function QRScanner() {
 
                     {/* Instructions */}
                     <div className="absolute -bottom-12 left-0 right-0 text-center text-white text-sm">
-                      Align QR code within frame to scan
+                      کد QR را در چارچوب قرار دهید تا اسکن شود
                     </div>
                   </div>
                 </div>
@@ -442,14 +442,14 @@ export default function QRScanner() {
                       onClick={() => setCameraActive(!cameraActive)}
                       className="px-4 py-2 bg-gray-800 bg-opacity-50 rounded-lg"
                     >
-                      {cameraActive ? 'Pause' : 'Resume'}
+                      {cameraActive ? 'مکث' : 'ادامه'}
                     </button>
                   )}
                   <button
                     onClick={handleGoBack}
                     className="px-4 py-2 bg-indigo-600 rounded-lg"
                   >
-                    Back to Events
+                    بازگشت به رویدادها
                   </button>
                 </div>
               </div>

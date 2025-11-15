@@ -35,11 +35,11 @@ export default function Header({ title, showBackButton = false, backButtonAction
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <div className="flex items-center">
           {showBackButton ? (
-            <button 
+            <button
               onClick={backButtonAction}
-              className="text-indigo-600 hover:text-indigo-900 font-medium mr-4"
+              className="text-indigo-600 hover:text-indigo-900 font-medium ml-4"
             >
-              ← Back
+              → بازگشت
             </button>
           ) : (
             <div></div> // Spacer to maintain alignment
@@ -48,7 +48,7 @@ export default function Header({ title, showBackButton = false, backButtonAction
         </div>
         {!hideLogout && isLoggedIn && (
           <Link href="/profile" className="text-sm text-indigo-600 hover:text-indigo-900">
-            Profile
+            پروفایل
           </Link>
         )}
       </div>

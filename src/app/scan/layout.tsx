@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Scan Ticket | Ticket Scanner PWA",
-  description: "Scan QR code tickets",
+  title: "اسکن بلیت | اسکنر بلیت PWA",
+  description: "اسکن بلیت‌های کد QR",
 };
 
 export default function ScanLayout({

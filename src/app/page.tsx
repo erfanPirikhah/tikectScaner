@@ -23,7 +23,7 @@ export default function HomePage() {
       // Force login with test user
       const testUser = {
         id: 1,
-        name: 'Test User',
+        name: 'کاربر تست',
         email: 'test@example.com'
       };
       const testToken = 'test_mode_token';
@@ -59,7 +59,7 @@ export default function HomePage() {
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-indigo-100">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">در حال بارگذاری...</p>
         </div>
       </div>
     );
@@ -69,8 +69,8 @@ export default function HomePage() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-indigo-100">
       <div className="text-center p-8 bg-white rounded-2xl shadow-xl max-w-md">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">Ticket Scanner PWA</h1>
-        <p className="text-gray-600 mb-6">Access the app directly in test mode</p>
+        <h1 className="text-2xl font-bold text-gray-800 mb-4">اسکنر بلیت PWA</h1>
+        <p className="text-gray-600 mb-6">دسترسی مستقیم به برنامه در حالت تست</p>
 
         <button
           onClick={() => {
@@ -79,7 +79,7 @@ export default function HomePage() {
           }}
           className="py-3 px-6 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors"
         >
-          Enter Test Mode
+          ورود به حالت تست
         </button>
       </div>
     </div>

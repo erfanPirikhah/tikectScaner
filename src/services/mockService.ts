@@ -24,6 +24,7 @@ interface EventsResponse {
     post_content: string;
     event_date: string;
     status: string;
+    featured_image?: string;
   }>;
   msg?: string;
 }
@@ -68,13 +69,18 @@ interface LogoutResponse {
 
 class MockWordPressService {
   private mockUsers = [
-    { id: 1, name: 'Test User', email: 'test@example.com', username: 'testuser', password: 'password123' }
+    { id: 1, name: 'کاربر تست', email: 'test@example.com', username: 'testuser', password: 'password123' }
   ];
 
   private mockEvents = [
-    { ID: 1, post_title: 'Concert Event', post_content: 'Amazing concert with top artists', event_date: '2025-12-15', status: 'published' },
-    { ID: 2, post_title: 'Tech Conference', post_content: 'Annual tech conference with workshops', event_date: '2025-11-20', status: 'published' },
-    { ID: 3, post_title: 'Art Exhibition', post_content: 'Contemporary art exhibition', event_date: '2025-11-30', status: 'published' }
+    { ID: 1, post_title: 'رویداد کنسرت', post_content: 'کنسرت شگفت‌انگیز با هنرمندان برتر', event_date: '1404/10/25', status: 'منتشر شده', featured_image: '/api/placeholder/600/400?text=رویداد+کنسرت' },
+    { ID: 2, post_title: 'همایش فناوری', post_content: 'همایش سالانه فناوری با کارگاه‌های آموزشی', event_date: '1404/09/28', status: 'منتشر شده', featured_image: '/api/placeholder/600/400?text=همایش+فناوری' },
+    { ID: 3, post_title: 'نمایشگاه هنر', post_content: 'نمایشگاه هنرهای معاصر', event_date: '1404/09/09', status: 'منتشر شده', featured_image: '/api/placeholder/600/400?text=نمایشگاه+هنر' },
+    { ID: 4, post_title: 'جشنواره غذا', post_content: 'چشیدن بهترین غذاهای محلی از فروشندگان مختلف', event_date: '1404/07/18', status: 'منتشر شده', featured_image: '/api/placeholder/600/400?text=جشنواره+غذا' },
+    { ID: 5, post_title: 'جشنواره موسیقی', post_content: 'جشنواره چندروزه موسیقی با ژانرهای مختلف', event_date: '1404/06/14', status: 'منتشر شده', featured_image: '/api/placeholder/600/400?text=جشنواره+موسیقی' },
+    { ID: 6, post_title: 'مسابقه ورزشی', post_content: 'رقابت هیجان‌انگیز ورزشی با رویدادهای مختلف', event_date: '1404/06/01', status: 'منتشر شده', featured_image: '/api/placeholder/600/400?text=مسابقه+ورزشی' },
+    { ID: 7, post_title: 'اوج کسب‌وکار', post_content: 'گردهمایی سالانه رهبران و متخصصان کسب‌وکار', event_date: '1404/05/27', status: 'منتشر شده', featured_image: '/api/placeholder/600/400?text=اوج+کسب‌وکار' },
+    { ID: 8, post_title: 'نمایشگاه علوم', post_content: 'نمایش پروژه‌ها و تحقیقات نوآورانه', event_date: '1404/04/09', status: 'منتشر شده', featured_image: '/api/placeholder/600/400?text=نمایشگاه+علوم' }
   ];
 
   private validateTokenInternal(token: string): { valid: boolean; user?: any } {
@@ -109,7 +115,7 @@ class MockWordPressService {
       return {
         status: 'SUCCESS',
         token: token,
-        msg: 'Login successful',
+        msg: 'ورود موفقیت‌آمیز',
         user: {
           id: user.id,
           name: user.name,
@@ -120,7 +126,7 @@ class MockWordPressService {
       return {
         status: 'FAIL',
         token: '',
-        msg: 'Invalid username or password',
+        msg: 'نام کاربری یا رمز عبور نامعتبر است',
         user: undefined
       };
     }
@@ -136,14 +142,14 @@ class MockWordPressService {
       return {
         status: 'FAIL',
         events: [],
-        msg: 'Invalid or expired token'
+        msg: 'توکن نامعتبر یا منقضی شده است'
       };
     }
 
     return {
       status: 'SUCCESS',
       events: this.mockEvents,
-      msg: 'Events retrieved successfully'
+      msg: 'رویدادها با موفقیت بازیابی شدند'
     };
   }
 
@@ -166,14 +172,14 @@ class MockWordPressService {
     
     // For demo purposes, we'll make certain QR codes fail
     const failCodes = ['invalid_ticket', 'used_ticket', 'expired_ticket'];
-    
+
     if (failCodes.includes(request.qr_code)) {
       return {
         status: 'FAIL',
-        msg: 'Ticket validation failed: ' + 
-          (request.qr_code === 'invalid_ticket' ? 'Invalid ticket' :
-           request.qr_code === 'used_ticket' ? 'Ticket already used' :
-           'Ticket expired'),
+        msg: 'اعتبارسنجی بلیت ناموفق بود: ' +
+          (request.qr_code === 'invalid_ticket' ? 'بلیت نامعتبر است' :
+           request.qr_code === 'used_ticket' ? 'بلیت قبلاً استفاده شده است' :
+           'بلیت منقضی شده است'),
         ticket_id: 123
       };
     }
@@ -181,7 +187,7 @@ class MockWordPressService {
     // Success case - simulate a valid ticket
     return {
       status: 'SUCCESS',
-      msg: 'Ticket validated successfully',
+      msg: 'بلیت با موفقیت معتبرسنجی شد',
       name_customer: 'John Doe',
       seat: 'A-15',
       checkin_time: new Date().toISOString(),
@@ -197,12 +203,12 @@ class MockWordPressService {
       return {
         status: 'SUCCESS',
         user: validation.user,
-        msg: 'Token is valid'
+        msg: 'توکن معتبر است'
       };
     } else {
       return {
         status: 'FAIL',
-        msg: 'Invalid or expired token'
+        msg: 'توکن نامعتبر یا منقضی شده است'
       };
     }
   }
@@ -213,7 +219,7 @@ class MockWordPressService {
     
     return {
       status: 'SUCCESS',
-      msg: 'Logged out successfully'
+      msg: 'با موفقیت خارج شدید'
     };
   }
 }

@@ -11,18 +11,18 @@ const Onboarding = () => {
 
   const onboardingSlides = [
     {
-      title: "Welcome to Ticket Scanner",
-      description: "The easiest way to validate tickets using QR codes.",
+      title: "به اسکنر بلیت خوش آمدید",
+      description: "آسان‌ترین راه برای اعتبارسنجی بلیت‌ها با استفاده از کدهای QR.",
       icon: "🎫",
     },
     {
-      title: "Simple Process",
-      description: "Just scan the QR code on the ticket to validate it instantly.",
+      title: "فرآیند ساده",
+      description: "فقط کد QR روی بلیت را اسکن کنید تا فوراً معتبرسنجی شود.",
       icon: "🔍",
     },
     {
-      title: "Get Started",
-      description: "Log in with your credentials and start scanning tickets.",
+      title: "شروع کنید",
+      description: "با اطلاعات کاربری خود وارد شوید و اسکن بلیت‌ها را آغاز کنید.",
       icon: "✅",
     },
   ];
@@ -47,7 +47,7 @@ const Onboarding = () => {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
         {/* Progress indicator */}
         <div className="flex justify-center pt-6">
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 space-x-reverse">
             {onboardingSlides.map((_, index) => (
               <div
                 key={index}
@@ -71,20 +71,20 @@ const Onboarding = () => {
         </div>
 
         {/* Navigation */}
-        <div className="flex justify-between items-center p-6 border-t">
+        <div className="flex justify-between items-center p-6 border-t flex-row-reverse">
           {currentStep === 0 ? (
             <button
               onClick={handleSkip}
               className="text-gray-600 hover:text-gray-900 font-medium"
             >
-              Skip
+              رد کردن
             </button>
           ) : (
             <button
               onClick={() => setCurrentStep(currentStep - 1)}
               className="text-indigo-600 hover:text-indigo-800 font-medium"
             >
-              Back
+              بازگشت
             </button>
           )}
 
@@ -92,7 +92,7 @@ const Onboarding = () => {
             onClick={handleNext}
             className="bg-indigo-600 text-white px-6 py-2 rounded-full font-medium hover:bg-indigo-700 transition-colors"
           >
-            {currentStep === onboardingSlides.length - 1 ? 'Get Started' : 'Next'}
+            {currentStep === onboardingSlides.length - 1 ? 'شروع کنید' : 'بعدی'}
           </button>
         </div>
       </div>

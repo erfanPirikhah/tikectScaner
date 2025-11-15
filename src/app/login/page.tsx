@@ -14,7 +14,7 @@ export default function Login() {
   const [websiteUrl, setWebsiteUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
+
   const router = useRouter();
   const { login } = useAuth();
 
@@ -25,19 +25,19 @@ export default function Login() {
 
     // Basic validation
     if (!username.trim()) {
-      setError('Username is required');
+      setError('نام کاربری الزامی است');
       setLoading(false);
       return;
     }
 
     if (!password.trim()) {
-      setError('Password is required');
+      setError('رمز عبور الزامی است');
       setLoading(false);
       return;
     }
 
     if (!websiteUrl.trim()) {
-      setError('Website URL is required');
+      setError('آدرس وب‌سایت الزامی است');
       setLoading(false);
       return;
     }
@@ -47,14 +47,14 @@ export default function Login() {
 
     try {
       const result = await login(username, password, normalizedUrl);
-      
+
       if (result.success) {
         router.push('/events');
       } else {
         setError(result.message);
       }
     } catch (err) {
-      setError('An unexpected error occurred. Please try again.');
+      setError('خطای غیرمنتظره رخ داد. لطفاً دوباره تلاش کنید.');
       console.error('Login error:', err);
     } finally {
       setLoading(false);
@@ -65,8 +65,8 @@ export default function Login() {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-indigo-100 p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Ticket Scanner</h1>
-          <p className="text-gray-600 mt-2">Sign in to your account</p>
+          <h1 className="text-3xl font-bold text-gray-800">اسکنر بلیت</h1>
+          <p className="text-gray-600 mt-2">ورود به حساب کاربری</p>
         </div>
 
         {error && (
@@ -78,7 +78,7 @@ export default function Login() {
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="websiteUrl" className="block text-sm font-medium text-gray-700 mb-1">
-              Website URL
+              آدرس وب‌سایت
             </label>
             <input
               id="websiteUrl"
@@ -90,13 +90,13 @@ export default function Login() {
               required
             />
             <p className="text-xs text-gray-500 mt-1">
-              Enter your WordPress site URL or use "http://test.local" for test mode
+              آدرس سایت وردپرس خود را وارد کنید یا برای حالت تست از "http://test.local" استفاده کنید
             </p>
           </div>
 
           <div className="mb-4">
             <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-              Username
+              نام کاربری
             </label>
             <input
               id="username"
@@ -110,7 +110,7 @@ export default function Login() {
 
           <div className="mb-6">
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password
+              رمز عبور
             </label>
             <input
               id="password"
@@ -133,11 +133,11 @@ export default function Login() {
           >
             {loading ? (
               <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                Signing in...
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white ml-2"></div>
+                در حال ورود...
               </div>
             ) : (
-              'Sign In'
+              'ورود'
             )}
           </button>
 
@@ -160,7 +160,7 @@ export default function Login() {
                     // Update the auth store directly
                     const testUser = mockResponse.user || {
                       id: 1,
-                      name: 'Test User',
+                      name: 'کاربر تست',
                       email: 'test@example.com'
                     };
 
@@ -175,19 +175,19 @@ export default function Login() {
                   }
                 } catch (error) {
                   console.error('Test mode login failed:', error);
-                  setError('Test mode login failed. Please try again.');
+                  setError('ورود به حالت تست با خطا مواجه شد. لطفاً دوباره تلاش کنید.');
                 }
               }}
               className="w-full py-2 px-4 rounded-lg text-indigo-600 font-medium border border-indigo-600 hover:bg-indigo-50 transition-colors"
             >
-              Use Test Mode
+              استفاده از حالت تست
             </button>
           </div>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
-            Built with{' '}
+            ساخته شده با{' '}
             <span className="text-indigo-600 font-medium">Next.js PWA</span>
           </p>
         </div>

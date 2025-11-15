@@ -1,50 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+این یک پروژه [Next.js](https://nextjs.org) است که با [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app) راه‌اندازی شده است.
 
-## Getting Started
+## شروع کار
 
-First, run the development server:
+ابتدا سرور توسعه را اجرا کنید:
 
 ```bash
 npm run dev
-# or
+# یا
 yarn dev
-# or
+# یا
 pnpm dev
-# or
+# یا
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+با مرورگر خود [http://localhost:3000](http://localhost:3000) را باز کنید تا نتیجه را مشاهده کنید.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+شما می‌توانید با ویرایش `app/page.tsx` شروع به ویرایش صفحه کنید. صفحه به‌طور خودکار هنگام ویرایش فایل بروزرسانی می‌شود.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+این پروژه از [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) برای بهینه‌سازی خودکار و بارگذاری [Geist](https://vercel.com/font)، یک خانواده فونت جدید برای Vercel استفاده می‌کند.
 
-## Camera Access on iOS Safari
+## دسترسی به دوربین در Safari iOS
 
-To use the camera functionality on iOS Safari, you need to access the app via a secure context (HTTPS). For development:
+برای استفاده از عملکرد دوربین در Safari iOS، باید از یک متن امن (HTTPS) به برنامه دسترسی داشته باشید. برای توسعه:
 
-1. **For local development on the same machine:** The app works on `http://localhost:3000`
-2. **For testing on iOS device over network:** Use [ngrok](https://ngrok.com/) to create a secure tunnel:
-   - Install ngrok: `npm install -g ngrok`
-   - Start your app: `npm run dev`
-   - In another terminal: `ngrok http 3000`
-   - Access the HTTPS URL provided by ngrok on your iOS device
+1. **برای توسعه محلی روی همان دستگاه:** برنامه روی `http://localhost:3000` کار می‌کند
+2. **برای تست روی دستگاه iOS از طریق شبکه:** از [ngrok](https://ngrok.com/) برای ایجاد یک تونل امن استفاده کنید:
+   - ngrok را نصب کنید: `npm install -g ngrok`
+   - برنامه خود را راه‌اندازی کنید: `npm run dev`
+   - در ترمینال دیگر: `ngrok http 3000`
+   - از طریق iOS خود URL HTTPS ارائه شده توسط ngrok را باز کنید
 
-## Learn More
+## اطلاعات بیشتر
 
-To learn more about Next.js, take a look at the following resources:
+برای یادگیری بیشتر در مورد Next.js، به منابع زیر نگاه کنید:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [مستندات Next.js](https://nextjs.org/docs) - در مورد ویژگی‌ها و API Next.js بیاموزید.
+- [آموزش Next.js](https://nextjs.org/learn) - یک آموزش تعاملی Next.js.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+می‌توانید [مخزن GitHub Next.js](https://github.com/vercel/next.js) را بررسی کنید - نظرات و مشارکت‌های شما استقبال می‌شود!
 
-## Deploy on Vercel
+## استقرار در Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+آسان‌ترین راه برای استقرار برنامه Next.js شما استفاده از [پلتفرم Vercel](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) از سوی سازندگان Next.js است.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+برای جزئیات بیشتر [مستندات استقرار Next.js](https://nextjs.org/docs/app/building-your-application/deploying) را بررسی کنید.
 
 
 
