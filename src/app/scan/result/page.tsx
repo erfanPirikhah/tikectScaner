@@ -13,9 +13,19 @@ export default function ScanResult() {
   const name = searchParams.get('name') || '';
   const seat = searchParams.get('seat') || '';
   const time = searchParams.get('time') || '';
+  const eventId = searchParams.get('eventId') || '';
+  const ticketId = searchParams.get('ticket_id') || '';
+  const eCal = searchParams.get('e_cal') || '';
+  const ticketStatus = searchParams.get('ticket_status') || '';
+  const msgShow = searchParams.get('msg_show') || '';
+  const nameEvent = searchParams.get('name_event') || '';
+  const extraService = searchParams.get('extra_service') || '';
+  const ticketType = searchParams.get('ticket_type') || '';
+  const betweenDate = searchParams.get('between_date') || '';
+  const timesChecked = searchParams.get('times_checked') || '';
+  const checksRemaining = searchParams.get('checks_remaining') || '';
 
   const { isLoggedIn } = useAuthStore();
-  const [countdown, setCountdown] = useState(5); // 5 second countdown
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -27,20 +37,6 @@ export default function ScanResult() {
       router.push('/events');
       return;
     }
-
-    // Start countdown to return to scanner
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          router.push('/scan?eventId=' + new URLSearchParams(window.location.search).get('eventId'));
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
   }, [status, isLoggedIn, router]);
 
   const handleGoBack = () => {
@@ -71,14 +67,28 @@ export default function ScanResult() {
 
           {/* Status text */}
           <h2 className={`text-2xl font-bold mb-2 ${status === 'SUCCESS' ? 'text-success' : 'text-error'}`}>
-            {status === 'SUCCESS' ? 'بلیت معتبر' : 'بلیت نامعتبر'}
+            {status === 'SUCCESS' ?
+              (msgShow ? msgShow : (ticketStatus === 'checked' ? 'بلیت با موفقیت چک شد' : 'بلیت معتبر')) :
+              'بلیت نامعتبر'}
           </h2>
 
           <p className="text-foreground mb-6">{message}</p>
 
           {/* Ticket details */}
-          {(name || seat || time) && (
+          {(name || seat || time || ticketId || nameEvent || ticketType || extraService || eCal || ticketStatus || timesChecked || checksRemaining || betweenDate) && (
             <div className="card p-4 mb-6 text-right">
+              {nameEvent && (
+                <div className="mb-2">
+                  <span className="font-medium text-secondary">نام رویداد:</span>
+                  <span className="mr-2 text-foreground">{nameEvent}</span>
+                </div>
+              )}
+              {ticketType && (
+                <div className="mb-2">
+                  <span className="font-medium text-secondary">نوع بلیت:</span>
+                  <span className="mr-2 text-foreground">{ticketType}</span>
+                </div>
+              )}
               {name && (
                 <div className="mb-2">
                   <span className="font-medium text-secondary">نام:</span>
@@ -91,19 +101,62 @@ export default function ScanResult() {
                   <span className="mr-2 text-foreground">{seat}</span>
                 </div>
               )}
+              {ticketId && (
+                <div className="mb-2">
+                  <span className="font-medium text-secondary">شماره بلیت:</span>
+                  <span className="mr-2 text-foreground">#{ticketId}</span>
+                </div>
+              )}
               {time && (
                 <div className="mb-2">
                   <span className="font-medium text-secondary">زمان چک‌این:</span>
-                  <span className="mr-2 text-foreground">{new Date(time).toLocaleString()}</span>
+                  <span className="mr-2 text-foreground">{time}</span>
+                </div>
+              )}
+              {eCal && (
+                <div className="mb-2">
+                  <span className="font-medium text-secondary">تاریخ رویداد:</span>
+                  <span className="mr-2 text-foreground">{eCal}</span>
+                </div>
+              )}
+              {ticketStatus && (
+                <div className="mb-2">
+                  <span className="font-medium text-secondary">وضعیت بلیت:</span>
+                  <span className="mr-2 text-foreground">{ticketStatus}</span>
+                </div>
+              )}
+              {timesChecked && (
+                <div className="mb-2">
+                  <span className="font-medium text-secondary">دفعات چک شده:</span>
+                  <span className="mr-2 text-foreground">{timesChecked}</span>
+                </div>
+              )}
+              {checksRemaining && (
+                <div className="mb-2">
+                  <span className="font-medium text-secondary">تعداد باقی‌مانده چک:</span>
+                  <span className="mr-2 text-foreground">{checksRemaining}</span>
+                </div>
+              )}
+              {betweenDate && (
+                <div className="mb-2">
+                  <span className="font-medium text-secondary">تعداد روزهای باقی مانده:</span>
+                  <span className="mr-2 text-foreground">{betweenDate}</span>
+                </div>
+              )}
+              {extraService && (
+                <div className="mb-2">
+                  <span className="font-medium text-secondary">سرویس اضافی:</span>
+                  <span className="mr-2 text-foreground">{extraService}</span>
+                </div>
+              )}
+              {msgShow && (
+                <div className="mb-2">
+                  <span className="font-medium text-secondary">پیام:</span>
+                  <span className="mr-2 text-foreground">{msgShow}</span>
                 </div>
               )}
             </div>
           )}
-
-          {/* Countdown and actions */}
-          <div className="mb-6">
-            <p className="text-secondary">اسکن بلیت بعدی در {countdown} ثانیه...</p>
-          </div>
 
           <div className="flex flex-col space-y-3">
             <button

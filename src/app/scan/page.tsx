@@ -7,6 +7,7 @@ import { mockWordPressService } from '@/services/mockService';
 import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import Header from '@/components/common/Header';
+import DebugOverlay from '@/components/common/DebugOverlay';
 import { showToast } from '@/lib/toast';
 
 // Dynamically import Webcam to avoid SSR issues
@@ -45,10 +46,22 @@ export default function QRScanner() {
     reset();
     startScanning();
 
+    // Enhanced logging for debugging
+    console.log('[DEBUG] Initializing scanner component:', {
+      isClient: isClient,
+      isLoggedIn: isLoggedIn,
+      token: token ? '***' : null,
+      websiteUrl: websiteUrl,
+      eventId: eventId
+    });
+
     // Request camera permissions when the component loads with fallbacks
     const requestCameraPermissionOnLoad = async () => {
+      console.log('[DEBUG] Attempting to request camera permissions');
+
       // First, check if the required APIs are available
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        console.log('[DEBUG] Camera API not supported by browser');
         setCameraError('API دوربین در این مرورگر پشتیبانی نمی‌شود.');
         return;
       }
@@ -56,11 +69,18 @@ export default function QRScanner() {
       try {
         // Check if enumerateDevices is supported
         if (navigator.mediaDevices.enumerateDevices) {
+          console.log('[DEBUG] Enumerating available video devices');
           // Try to get a list of available video devices
           const devices = await navigator.mediaDevices.enumerateDevices();
           const videoDevices = devices.filter(device => device.kind === 'videoinput');
 
+          console.log('[DEBUG] Available video devices:', {
+            totalDevices: devices.length,
+            videoDevices: videoDevices.length
+          });
+
           if (videoDevices.length === 0) {
+            console.log('[DEBUG] No video devices found');
             setCameraError('هیچ دستگاه دوربینی روی این دستگاه یافت نشد.');
             return;
           }
@@ -69,6 +89,7 @@ export default function QRScanner() {
 
         // Try environment camera first (rear camera)
         try {
+          console.log('[DEBUG] Attempting to access environment camera (rear camera)');
           const stream = await navigator.mediaDevices.getUserMedia({
             video: {
               facingMode: 'environment', // Use rear camera
@@ -76,44 +97,57 @@ export default function QRScanner() {
               height: { ideal: 720 },
             }
           });
+          console.log('[DEBUG] Successfully accessed environment camera');
           // Stop the stream immediately after getting permission
           stream.getTracks().forEach(track => track.stop());
           setCameraError(null); // Clear any previous error
           setCameraActive(true); // Enable the camera
           return;
         } catch (envError) {
-          console.warn('Failed to access environment camera, trying default camera:', envError);
+          console.warn('[DEBUG] Failed to access environment camera, trying default camera:', envError);
 
           // If environment camera fails, try default camera
           try {
+            console.log('[DEBUG] Attempting to access default camera');
             const stream = await navigator.mediaDevices.getUserMedia({
               video: {
                 width: { ideal: 1280 },
                 height: { ideal: 720 },
               }
             });
+            console.log('[DEBUG] Successfully accessed default camera');
             // Stop the stream immediately after getting permission
             stream.getTracks().forEach(track => track.stop());
             setCameraError(null); // Clear any previous error
             setCameraActive(true); // Enable the camera
             return;
           } catch (defaultError) {
-            console.error('درخواست مجوز دوربین ناموفق بود:', defaultError);
+            console.error('[DEBUG] Failed to access default camera:', defaultError);
             setCameraError('Camera access denied. Please allow camera permissions to scan QR codes.');
           }
         }
       } catch (error) {
-        console.error('درخواست مجوز دوربین ناموفق بود:', error);
+        console.error('[DEBUG] Error requesting camera permissions:', error);
         setCameraError('Camera access denied. Please allow camera permissions to scan QR codes.');
       }
     };
 
     // Only try to request permissions if we're in a valid state and on the client
     if (isClient && isLoggedIn && token && websiteUrl && eventId) {
+      console.log('[DEBUG] Conditions met, requesting camera permissions');
       requestCameraPermissionOnLoad();
+    } else {
+      console.log('[DEBUG] Conditions not met for requesting camera permissions:', {
+        isClient: isClient,
+        isLoggedIn: isLoggedIn,
+        hasToken: !!token,
+        hasWebsiteUrl: !!websiteUrl,
+        hasEventId: !!eventId
+      });
     }
 
     return () => {
+      console.log('[DEBUG] Scanner component unmounting, stopping scanning and reseting state');
       stopScanning();
       reset();
     };
@@ -124,6 +158,7 @@ export default function QRScanner() {
     let scanningInterval: NodeJS.Timeout;
 
     if (cameraActive && !scannedCode) {
+      console.log('[DEBUG] Starting QR scanning loop');
       scanningInterval = setInterval(() => {
         if (webcamRef.current && webcamRef.current.video) {
           const video = webcamRef.current.video;
@@ -141,54 +176,152 @@ export default function QRScanner() {
               const code = jsQR(imageData.data, imageData.width, imageData.height);
 
               if (code && !scannedCode) {
+                console.log('[DEBUG] QR code detected:', code.data);
                 setScannedCode(code.data);
                 validateTicket(code.data);
+              } else if (!code) {
+                console.log('[DEBUG] No QR code detected in current frame');
               }
+            } else {
+              console.error('[DEBUG] Could not get canvas context');
             }
+          } else {
+            console.log('[DEBUG] Video not ready, readyState:', video.readyState);
           }
+        } else {
+          console.log('[DEBUG] Webcam reference not ready or scanned code already exists');
         }
       }, 500); // Scan every 500ms
+    } else {
+      console.log('[DEBUG] QR scanning loop not started, conditions:', {
+        cameraActive: cameraActive,
+        scannedCode: scannedCode
+      });
     }
 
     return () => {
+      console.log('[DEBUG] Clearing scanning interval');
       if (scanningInterval) clearInterval(scanningInterval);
     };
   }, [cameraActive, scannedCode, eventId, token]);
 
   const validateTicket = async (qrCode: string) => {
-    if (!eventId || !token || !websiteUrl) {
-      setError('Missing event ID, website URL or authentication token');
-      showToast.error('شناسه رویداد، URL وب‌سایت یا توکن احراز هویت موجود نیست');
+    // Enhanced logging for debugging
+    console.log('[DEBUG] Starting ticket validation:', {
+      qrCode: qrCode,
+      eventId: eventId,
+      userId: useAuthStore.getState().user?.id,
+      token: token ? '***' : null, // Don't log actual token
+      websiteUrl: websiteUrl
+    });
+
+    if (!token || !websiteUrl || !useAuthStore.getState().user?.id) {
+      console.log('[DEBUG] Missing required parameters for validation:', {
+        token: token ? '***' : null,
+        websiteUrl: websiteUrl,
+        userId: useAuthStore.getState().user?.id
+      });
+      setError('Missing website URL, user ID or authentication token');
+      showToast.error('URL وب‌سایت، شناسه کاربر یا توکن احراز هویت موجود نیست');
       return;
     }
 
     try {
+      console.log('[DEBUG] Preparing API request for ticket validation:', {
+        url: websiteUrl,
+        endpoint: 'wp-json/itiket-api/v1/check-qr-code',
+        payload: {
+          qr_code: qrCode,
+          user_id: useAuthStore.getState().user?.id,
+          token: '***' // Don't log actual token
+        }
+      });
+
       // Use real service for normal operation
+      // According to API spec, we need to send user_id as well
       const response = await wordpressService.validateTicket(websiteUrl, {
-        event_id: parseInt(eventId),
+        event_id: parseInt(eventId || '0'), // Still using for compatibility but may not send in body
         qr_code: qrCode,
         token: token,
+      }, useAuthStore.getState().user?.id);
+
+      console.log('[DEBUG] API response received:', {
+        status: response.status,
+        message: response.msg,
+        response: response
       });
 
       setScanResult(response);
 
       // Show appropriate toast based on result
       if (response.status === 'SUCCESS') {
+        console.log('[DEBUG] Ticket validation successful:', response);
         showToast.success(response.msg || 'بلیت با موفقیت تأیید شد');
       } else {
+        console.log('[DEBUG] Ticket validation failed:', response);
         showToast.error(response.msg || 'خطا در تأیید بلیت');
       }
 
-      // Navigate to results after a short delay
+      // Always navigate to results after a short delay, regardless of validity status
       setTimeout(() => {
-        router.push(`/scan/result?status=${response.status}&msg=${encodeURIComponent(response.msg || '')}&name=${encodeURIComponent(response.name_customer || '')}&seat=${encodeURIComponent(response.seat || '')}&time=${encodeURIComponent(response.checkin_time || '')}`);
+        console.log('[DEBUG] Navigating to scan result page:', {
+          status: response.status,
+          msg: response.msg,
+          name_customer: response.name_customer,
+          seat: response.seat,
+          time: response.checkin_time,
+          ticket_id: response.ticket_id,
+          event_calendar: response.e_cal
+        });
+
+        // Build query parameters with all available fields
+        const params = new URLSearchParams({
+          status: response.status,
+          msg: response.msg || '',
+          name: response.name_customer || '',
+          seat: response.seat || '',
+          time: response.checkin_time || '',
+          ticket_id: response.ticket_id?.toString() || '',
+          e_cal: response.e_cal || '',
+        });
+
+        // Add eventId if available
+        if (eventId) {
+          params.append('eventId', eventId);
+        }
+
+        router.push(`/scan/result?${params.toString()}`);
       }, 1500);
-    } catch (error) {
-      console.error('خطای اعتبارسنجی بلیت:', error);
+    } catch (error: any) {
+      console.error('[DEBUG] Error during ticket validation:', error);
+      console.error('[DEBUG] Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+        error: error
+      });
       showToast.error('اعتبارسنجی بلیت ناموفق بود. لطفاً دوباره تلاش کنید.');
       setError('اعتبارسنجی بلیت ناموفق بود. لطفاً دوباره تلاش کنید.');
-      // Reset so we can scan again
-      setScannedCode(null);
+
+      // Set the scan result as a failure and navigate to results
+      const errorResult = {
+        status: 'FAIL' as const,
+        msg: 'اعتبارسنجی بلیت ناموفق بود. لطفاً دوباره تلاش کنید.',
+      };
+      setScanResult(errorResult);
+
+      // Navigate to results page even for errors
+      setTimeout(() => {
+        const params = new URLSearchParams({
+          status: errorResult.status,
+          msg: errorResult.msg,
+        });
+        // Add eventId if available
+        if (eventId) {
+          params.append('eventId', eventId);
+        }
+        router.push(`/scan/result?${params.toString()}`);
+      }, 1500);
     }
   };
 
@@ -444,6 +577,9 @@ export default function QRScanner() {
                   </button>
                 </div>
               </div>
+
+              {/* Debug Overlay */}
+              <DebugOverlay />
             </>
           );
         })()
