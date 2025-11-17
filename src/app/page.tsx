@@ -13,34 +13,8 @@ export default function HomePage() {
   const authStore = useAuthStore(); // Direct access to auth store
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check for test mode on initial load
+  // Normal flow without test mode
   useEffect(() => {
-    // Check if we should enter test mode directly
-    const params = new URLSearchParams(window.location.search);
-    const testMode = params.get('testMode');
-
-    if (testMode === 'true') {
-      // Force login with test user
-      const testUser = {
-        id: 1,
-        name: 'کاربر تست',
-        email: 'test@example.com'
-      };
-      const testToken = 'test_mode_token';
-      const testWebsiteUrl = 'http://test.local';
-
-      // Directly set the auth state
-      authStore.login(testUser, testToken, testWebsiteUrl);
-
-      // Skip onboarding
-      setShowOnboarding(false);
-
-      // Redirect to events page
-      router.push('/events');
-      return;
-    }
-
-    // Normal flow
     if (!showOnboarding && isLoggedIn) {
       router.push('/events');
     } else if (!showOnboarding && !isLoggedIn) {
@@ -48,7 +22,7 @@ export default function HomePage() {
     }
 
     setIsLoading(false);
-  }, [showOnboarding, isLoggedIn, router, authStore, setShowOnboarding]);
+  }, [showOnboarding, isLoggedIn, router]);
 
   if (showOnboarding) {
     return <Onboarding />;
@@ -56,31 +30,21 @@ export default function HomePage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-indigo-100">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-secondary">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">در حال بارگذاری...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-secondary">در حال بارگذاری...</p>
         </div>
       </div>
     );
   }
 
-  // Show a test mode button if not logged in
+  // Show loading or redirect if not logged in
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-indigo-100">
-      <div className="text-center p-8 bg-white rounded-2xl shadow-xl max-w-md">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">اسکنر بلیت PWA</h1>
-        <p className="text-gray-600 mb-6">دسترسی مستقیم به برنامه در حالت تست</p>
-
-        <button
-          onClick={() => {
-            // Set test mode params and reload
-            window.location.search = '?testMode=true';
-          }}
-          className="py-3 px-6 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors"
-        >
-          ورود به حالت تست
-        </button>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-secondary">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+        <p className="text-secondary">در حال بارگذاری...</p>
       </div>
     </div>
   );

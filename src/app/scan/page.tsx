@@ -7,6 +7,7 @@ import { mockWordPressService } from '@/services/mockService';
 import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import Header from '@/components/common/Header';
+import { showToast } from '@/lib/toast';
 
 // Dynamically import Webcam to avoid SSR issues
 const Webcam = dynamic(() => import('react-webcam'), { ssr: false });
@@ -22,10 +23,10 @@ export default function QRScanner() {
   const [cameraActive, setCameraActive] = useState(true);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
-  
+
   const { startScanning, stopScanning, setScanResult, setError, reset } = useScannerStore();
   const { token, websiteUrl, isLoggedIn, logout } = useAuthStore();
-  
+
   const webcamRef = useRef<any>(null);
 
   // Validate we have required params
@@ -121,24 +122,24 @@ export default function QRScanner() {
   // Set up the scanning effect
   useEffect(() => {
     let scanningInterval: NodeJS.Timeout;
-    
+
     if (cameraActive && !scannedCode) {
       scanningInterval = setInterval(() => {
         if (webcamRef.current && webcamRef.current.video) {
           const video = webcamRef.current.video;
-          
+
           // Only scan if the video is ready
           if (video.readyState === 4) {
             const canvas = document.createElement('canvas');
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             const ctx = canvas.getContext('2d');
-            
+
             if (ctx) {
               ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
               const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
               const code = jsQR(imageData.data, imageData.width, imageData.height);
-              
+
               if (code && !scannedCode) {
                 setScannedCode(code.data);
                 validateTicket(code.data);
@@ -148,7 +149,7 @@ export default function QRScanner() {
         }
       }, 500); // Scan every 500ms
     }
-    
+
     return () => {
       if (scanningInterval) clearInterval(scanningInterval);
     };
@@ -157,33 +158,26 @@ export default function QRScanner() {
   const validateTicket = async (qrCode: string) => {
     if (!eventId || !token || !websiteUrl) {
       setError('Missing event ID, website URL or authentication token');
+      showToast.error('شناسه رویداد، URL وب‌سایت یا توکن احراز هویت موجود نیست');
       return;
     }
 
     try {
-      // Check if we're in test mode
-      const isTestMode = websiteUrl === 'http://test.local' ||
-                        websiteUrl.toLowerCase().includes('mock') ||
-                        token === 'test_mode_token';
-
-      let response;
-      if (isTestMode) {
-        // Use mock service for test mode
-        response = await mockWordPressService.validateTicket(websiteUrl, {
-          event_id: parseInt(eventId),
-          qr_code: qrCode,
-          token: token,
-        });
-      } else {
-        // Use real service for normal operation
-        response = await wordpressService.validateTicket(websiteUrl, {
-          event_id: parseInt(eventId),
-          qr_code: qrCode,
-          token: token,
-        });
-      }
+      // Use real service for normal operation
+      const response = await wordpressService.validateTicket(websiteUrl, {
+        event_id: parseInt(eventId),
+        qr_code: qrCode,
+        token: token,
+      });
 
       setScanResult(response);
+
+      // Show appropriate toast based on result
+      if (response.status === 'SUCCESS') {
+        showToast.success(response.msg || 'بلیت با موفقیت تأیید شد');
+      } else {
+        showToast.error(response.msg || 'خطا در تأیید بلیت');
+      }
 
       // Navigate to results after a short delay
       setTimeout(() => {
@@ -191,6 +185,7 @@ export default function QRScanner() {
       }, 1500);
     } catch (error) {
       console.error('خطای اعتبارسنجی بلیت:', error);
+      showToast.error('اعتبارسنجی بلیت ناموفق بود. لطفاً دوباره تلاش کنید.');
       setError('اعتبارسنجی بلیت ناموفق بود. لطفاً دوباره تلاش کنید.');
       // Reset so we can scan again
       setScannedCode(null);
@@ -200,6 +195,7 @@ export default function QRScanner() {
   const handleCameraError = (error: any) => {
     console.error('خطای دوربین:', error);
     setCameraError('دسترسی به دوربین رد شد. لطفاً مجوزهای دوربین را برای اسکن کدهای QR فعال کنید.');
+    showToast.error('دسترسی به دوربین ناموفق بود');
   };
 
   const toggleTorch = () => {
@@ -216,10 +212,14 @@ export default function QRScanner() {
     if (websiteUrl && token) {
       try {
         await wordpressService.logout(websiteUrl, { token });
+        showToast.success('با موفقیت خارج شدید');
       } catch (error) {
         console.error('خطای API خروج:', error);
+        showToast.error('خطا در خروج از سیستم');
         // Continue with local logout even if API call fails
       }
+    } else {
+      showToast.success('با موفقیت خارج شدید');
     }
     logout();
     router.push('/login');
@@ -266,6 +266,7 @@ export default function QRScanner() {
         stream.getTracks().forEach(track => track.stop());
         setCameraError(null); // Clear the error to allow camera access
         setCameraActive(true); // Enable the camera
+        showToast.success('دسترسی به دوربین با موفقیت اعطا شد');
         return;
       } catch (envError) {
         console.warn('Failed to access environment camera, trying default camera:', envError);
@@ -282,6 +283,7 @@ export default function QRScanner() {
           stream.getTracks().forEach(track => track.stop());
           setCameraError(null); // Clear the error to allow camera access
           setCameraActive(true); // Enable the camera
+          showToast.success('دسترسی به دوربین با موفقیت اعطا شد');
           return;
         } catch (defaultError) {
           console.error('درخواست مجوز دوربین ناموفق بود:', defaultError);
@@ -296,28 +298,28 @@ export default function QRScanner() {
 
   if (cameraError) {
     return (
-      <div className="flex flex-col min-h-screen bg-gray-50">
+      <div className="flex flex-col min-h-screen">
         <Header
-          title="Scanner"
+          title="اسکنر"
           showBackButton={true}
           backButtonAction={handleGoBack}
         />
 
         <main className="flex-1 flex flex-col items-center justify-center p-6">
-          <div className="bg-white rounded-lg shadow-md p-6 max-w-md w-full text-center">
-            <div className="text-red-500 text-4xl mb-4">⚠️</div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">دسترسی به دوربین الزامی است</h2>
-            <p className="text-gray-600 mb-4">{cameraError}</p>
-            <p className="text-sm text-gray-500 mb-4">لطفاً مجوز دسترسی به دوربین را برای ادامه اعطا کنید.</p>
+          <div className="card p-6 max-w-md w-full text-center">
+            <div className="text-error text-4xl mb-4">⚠️</div>
+            <h2 className="text-xl font-semibold text-foreground mb-2">دسترسی به دوربین الزامی است</h2>
+            <p className="text-secondary mb-4">{cameraError}</p>
+            <p className="text-sm text-secondary mb-4">لطفاً مجوز دسترسی به دوربین را برای ادامه اعطا کنید.</p>
             <button
               onClick={requestCameraPermission}
-              className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors mb-3"
+              className="btn btn-primary w-full mb-3"
             >
               درخواست دسترسی به دوربین
             </button>
             <button
               onClick={() => window.location.reload()}
-              className="w-full bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
+              className="btn btn-outline w-full"
             >
               تازه‌سازی صفحه
             </button>
@@ -328,32 +330,21 @@ export default function QRScanner() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-900">
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-900 to-black">
       {/* Custom header for scanner with different styling */}
-      <header className="bg-black bg-opacity-50 text-white z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <button
-            onClick={handleGoBack}
-            className="text-indigo-300 hover:text-white font-medium"
-          >
-            → بازگشت
-          </button>
-          <h1 className="text-xl font-semibold">اسکن بلیت</h1>
-          <button
-            onClick={handleLogout}
-            className="text-sm text-indigo-300 hover:text-white"
-          >
-            خروج
-          </button>
-        </div>
-      </header>
+      <Header
+        title="اسکن بلیت"
+        showBackButton={true}
+        backButtonAction={handleGoBack}
+        hideLogout={false}
+      />
 
       {/* Show loading state initially, then check for client-side capabilities */}
       {!isClient ? (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">در حال بارگذاری اسکنر...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-secondary">در حال بارگذاری اسکنر...</p>
           </div>
         </div>
       ) : (
@@ -365,14 +356,14 @@ export default function QRScanner() {
           if (!cameraApiSupported) {
             return (
               <div className="flex-1 flex flex-col items-center justify-center p-6">
-                <div className="bg-white rounded-lg shadow-md p-6 max-w-md w-full text-center">
-                  <div className="text-yellow-500 text-4xl mb-4">⚠️</div>
-                  <h2 className="text-xl font-semibold text-gray-900 mb-2">دوربین پشتیبانی نمی‌شود</h2>
-                  <p className="text-gray-600 mb-4">مرورگر شما از عملکرد دوربین پشتیبانی نمی‌کند.</p>
-                  <p className="text-sm text-gray-500">از یک مرورگر مدرن مانند Chrome، Firefox یا Safari روی دستگاهی با دسترسی به دوربین استفاده کنید.</p>
+                <div className="card p-6 max-w-md w-full text-center">
+                  <div className="text-warning text-4xl mb-4">⚠️</div>
+                  <h2 className="text-xl font-semibold text-foreground mb-2">دوربین پشتیبانی نمی‌شود</h2>
+                  <p className="text-secondary mb-4">مرورگر شما از عملکرد دوربین پشتیبانی نمی‌کند.</p>
+                  <p className="text-sm text-secondary">از یک مرورگر مدرن مانند Chrome، Firefox یا Safari روی دستگاهی با دسترسی به دوربین استفاده کنید.</p>
                   <button
                     onClick={handleGoBack}
-                    className="w-full mt-4 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
+                    className="btn btn-primary w-full mt-4"
                   >
                     بازگشت به رویدادها
                   </button>
@@ -427,7 +418,7 @@ export default function QRScanner() {
                 <button
                   onClick={toggleTorch}
                   className={`absolute bottom-24 right-4 p-3 rounded-full ${
-                    torchOn ? 'bg-yellow-400' : 'bg-gray-800 bg-opacity-50'
+                    torchOn ? 'bg-accent' : 'bg-gray-800 bg-opacity-50'
                   } text-white`}
                 >
                   {torchOn ? '💡' : '🔦'}
@@ -440,14 +431,14 @@ export default function QRScanner() {
                   {cameraApiSupported && (
                     <button
                       onClick={() => setCameraActive(!cameraActive)}
-                      className="px-4 py-2 bg-gray-800 bg-opacity-50 rounded-lg"
+                      className="btn btn-outline"
                     >
                       {cameraActive ? 'مکث' : 'ادامه'}
                     </button>
                   )}
                   <button
                     onClick={handleGoBack}
-                    className="px-4 py-2 bg-indigo-600 rounded-lg"
+                    className="btn btn-primary"
                   >
                     بازگشت به رویدادها
                   </button>

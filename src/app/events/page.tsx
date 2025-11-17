@@ -6,6 +6,7 @@ import { wordpressService } from '@/services/wordpress';
 import { mockWordPressService } from '@/services/mockService';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/common/Header';
+import { showToast } from '@/lib/toast';
 
 // Define types for events
 interface Event {
@@ -15,7 +16,6 @@ interface Event {
 
 export default function Events() {
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const { events: allEvents, setEvents, setError: setStoreError, setLoading: setStoreLoading } = useEventStore();
   const { token, websiteUrl, isLoggedIn } = useAuthStore();
@@ -40,48 +40,41 @@ export default function Events() {
     const fetchEvents = async () => {
       try {
         setStoreLoading(true);
-        setError(null);
 
-        // Check if we're in test mode
-        const isTestMode = websiteUrl === 'http://test.local' ||
-                          websiteUrl.toLowerCase().includes('mock') ||
-                          token === 'test_mode_token';
+        // Use real service for normal operation
+        // Get user_id from auth store
+        const userId = useAuthStore.getState().user?.id || 0;
 
-        let response;
-        if (isTestMode) {
-          // Use mock service for test mode
-          response = await mockWordPressService.getEvents(websiteUrl, token, 1); // Use mock user_id
-        } else {
-          // Use real service for normal operation
-          // Get user_id from auth store
-          const userId = useAuthStore.getState().user?.id || 0;
+        // Debug logging
+        console.log('Debug - Website URL:', websiteUrl);
+        console.log('Debug - Token:', token ? 'Exists' : 'Missing');
+        console.log('Debug - User ID:', userId);
 
-          // Debug logging
-          console.log('Debug - Website URL:', websiteUrl);
-          console.log('Debug - Token:', token ? 'Exists' : 'Missing');
-          console.log('Debug - User ID:', userId);
+        try {
+          const response = await wordpressService.getEvents(websiteUrl, token, userId);
+          console.log('Debug - API Response:', response);
 
-          try {
-            response = await wordpressService.getEvents(websiteUrl, token, userId);
-            console.log('Debug - API Response:', response);
-          } catch (error) {
-            console.error('Debug - API Error:', error);
-            setError('خطا در اتصال به سرور');
-            return;
+          if (response.status === 'SUCCESS') {
+            console.log('Debug - Setting events:', response.events);
+            setEvents(response.events || []);
+            if (response.events && response.events.length === 0) {
+              showToast.info('هیچ رویدادی یافت نشد');
+            }
+          } else {
+            const errorMsg = response.msg || 'دریافت رویدادها ناموفق بود';
+            showToast.error(errorMsg);
+            setStoreError(errorMsg);
           }
-        }
-
-        if (response.status === 'SUCCESS') {
-          console.log('Debug - Setting events:', response.events);
-          setEvents(response.events || []);
-        } else {
-          setError(response.msg || 'دریافت رویدادها ناموفق بود');
-          setStoreError(response.msg || 'دریافت رویدادها ناموفق بود');
+        } catch (error) {
+          console.error('Debug - API Error:', error);
+          showToast.error('خطا در اتصال به سرور');
+          return;
         }
       } catch (err) {
         console.error('خطا در دریافت رویدادها:', err);
-        setError('عدم اتصال به سرور. لطفاً اتصال خود را بررسی کنید و آدرس وب‌سایت را تأیید کنید.');
-        setStoreError('عدم اتصال به سرور');
+        const errorMsg = 'عدم اتصال به سرور. لطفاً اتصال خود را بررسی کنید و آدرس وب‌سایت را تأیید کنید.';
+        showToast.error(errorMsg);
+        setStoreError(errorMsg);
       } finally {
         setStoreLoading(false);
         setLoading(false);
@@ -105,14 +98,14 @@ export default function Events() {
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50">
-        <Header title="Events" />
+      <div className="flex flex-col min-h-screen bg-gradient-secondary">
+        <Header title="رویدادها" />
 
         {/* Content */}
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading events...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-secondary">در حال بارگذاری رویدادها...</p>
           </div>
         </div>
       </div>
@@ -120,35 +113,35 @@ export default function Events() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50">
-      <Header title="Events" />
+    <div className="flex flex-col min-h-screen">
+      <Header title="رویدادها" />
 
       {/* Content */}
-      <main className="flex-1 py-6 px-4 sm:px-6">
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
-            {error}
-          </div>
-        )}
-
+      <main className="flex-1 py-6 px-4">
         {currentEvents.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {currentEvents.map((event: Event) => (
                 <div
                   key={event.event_id}
-                  className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
+                  className="card overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg"
                   onClick={() => handleEventSelect(event)}
                 >
                   {/* Event Content */}
-                  <div className="p-6">
-                    <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-1">{event.event_name}</h2>
+                  <div className="p-5 sm:p-6">
+                    <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 line-clamp-2">{event.event_name}</h2>
 
-                    <div className="flex justify-between items-center mt-4">
-                      <span className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs font-medium">
-                        ID: {event.event_id}
+                    <div className="flex flex-wrap justify-between items-center gap-2 mt-4">
+                      <span className="badge badge-info text-xs">
+                        شناسه: {event.event_id}
                       </span>
-                      <button className="text-indigo-600 hover:text-indigo-800 font-medium text-sm flex items-center">
+                      <button
+                        className="btn btn-outline text-xs sm:text-sm flex items-center py-2 px-3"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEventSelect(event);
+                        }}
+                      >
                         مشاهده جزئیات
                         <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -162,65 +155,130 @@ export default function Events() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="mt-8 flex justify-center items-center">
-                <div className="flex space-x-2">
+              <div className="mt-8 flex flex-col items-center">
+                <div className="flex flex-wrap justify-center gap-2 max-w-full overflow-x-auto">
                   {/* Previous button */}
                   <button
                     onClick={() => handlePageChange(currentPage > 1 ? currentPage - 1 : 1)}
                     disabled={currentPage === 1}
-                    className={`px-4 py-2 rounded-lg ${
-                      currentPage === 1
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
-                    }`}
+                    className={`btn ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''} min-w-[80px]`}
+                    aria-label="صفحه قبلی"
                   >
                     قبلی
                   </button>
 
-                  {/* Page numbers */}
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <button
-                      key={page}
-                      onClick={() => handlePageChange(page)}
-                      className={`w-10 h-10 rounded-full ${
-                        currentPage === page
-                          ? 'bg-indigo-600 text-white'
-                          : 'bg-white text-gray-700 hover:bg-indigo-100'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  ))}
+                  {/* Page numbers with ellipsis for large number of pages */}
+                  {totalPages <= 7 ? (
+                    // Show all pages if there are 7 or fewer
+                    Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          currentPage === page
+                            ? 'bg-primary text-white'
+                            : 'btn-outline'
+                        }`}
+                        aria-label={`صفحه ${page}`}
+                      >
+                        {page}
+                      </button>
+                    ))
+                  ) : (
+                    // Show ellipsis for large number of pages
+                    <>
+                      <button
+                        onClick={() => handlePageChange(1)}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          currentPage === 1
+                            ? 'bg-primary text-white'
+                            : 'btn-outline'
+                        }`}
+                        aria-label="صفحه 1"
+                      >
+                        1
+                      </button>
+
+                      {currentPage > 3 && <span className="flex items-center px-2 text-foreground">...</span>}
+
+                      {currentPage > 2 && currentPage < totalPages - 1 && (
+                        <button
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          className="w-10 h-10 rounded-full flex items-center justify-center btn-outline flex-shrink-0"
+                          aria-label={`صفحه ${currentPage - 1}`}
+                        >
+                          {currentPage - 1}
+                        </button>
+                      )}
+
+                      {currentPage !== 1 && currentPage !== totalPages && (
+                        <button
+                          key={currentPage}
+                          onClick={() => handlePageChange(currentPage)}
+                          className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0"
+                          aria-label={`صفحه ${currentPage}`}
+                        >
+                          {currentPage}
+                        </button>
+                      )}
+
+                      {currentPage < totalPages - 1 && (
+                        <button
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          className="w-10 h-10 rounded-full flex items-center justify-center btn-outline flex-shrink-0"
+                          aria-label={`صفحه ${currentPage + 1}`}
+                        >
+                          {currentPage + 1}
+                        </button>
+                      )}
+
+                      {currentPage < totalPages - 2 && <span className="flex items-center px-2 text-foreground">...</span>}
+
+                      <button
+                        onClick={() => handlePageChange(totalPages)}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          currentPage === totalPages
+                            ? 'bg-primary text-white'
+                            : 'btn-outline'
+                        }`}
+                        aria-label={`صفحه ${totalPages}`}
+                      >
+                        {totalPages}
+                      </button>
+                    </>
+                  )}
 
                   {/* Next button */}
                   <button
                     onClick={() => handlePageChange(currentPage < totalPages ? currentPage + 1 : totalPages)}
                     disabled={currentPage === totalPages}
-                    className={`px-4 py-2 rounded-lg ${
-                      currentPage === totalPages
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
-                    }`}
+                    className={`btn ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''} min-w-[80px]`}
+                    aria-label="صفحه بعدی"
                   >
                     بعدی
                   </button>
+                </div>
+
+                {/* Page info */}
+                <div className="mt-4 text-sm text-secondary">
+                  صفحه {currentPage} از {totalPages}
                 </div>
               </div>
             )}
           </>
         ) : (
           <div className="flex flex-col items-center justify-center py-12">
-            <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
-              <div className="mx-auto bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="card p-8 max-w-md w-full text-center">
+              <div className="mx-auto bg-accent/10 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No Events Found</h3>
-              <p className="text-gray-600 mb-4">There are currently no events available. Please check back later or contact your administrator.</p>
+              <h3 className="text-lg font-medium text-foreground mb-2">هیچ رویدادی یافت نشد</h3>
+              <p className="text-secondary mb-4">در حال حاضر هیچ رویدادی در دسترس نیست. لطفاً بعداً دوباره بررسی کنید یا با مدیر سیستم تماس بگیرید.</p>
               <button
                 onClick={() => window.location.reload()}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                className="btn btn-primary"
               >
                 تازه‌سازی
               </button>

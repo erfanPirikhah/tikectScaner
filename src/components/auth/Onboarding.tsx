@@ -43,8 +43,8 @@ const Onboarding = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-indigo-100 p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-secondary p-4">
+      <div className="w-full max-w-md card overflow-hidden">
         {/* Progress indicator */}
         <div className="flex justify-center pt-6">
           <div className="flex space-x-2 space-x-reverse">
@@ -52,7 +52,7 @@ const Onboarding = () => {
               <div
                 key={index}
                 className={`h-2 w-8 rounded-full ${
-                  index === currentStep ? 'bg-indigo-600' : 'bg-gray-300'
+                  index === currentStep ? 'bg-primary' : 'bg-border'
                 }`}
               />
             ))}
@@ -62,10 +62,10 @@ const Onboarding = () => {
         {/* Content */}
         <div className="p-8 text-center">
           <div className="text-6xl mb-6">{onboardingSlides[currentStep].icon}</div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-3">
+          <h1 className="text-2xl font-bold text-foreground mb-3">
             {onboardingSlides[currentStep].title}
           </h1>
-          <p className="text-gray-600 mb-8">
+          <p className="text-secondary mb-8">
             {onboardingSlides[currentStep].description}
           </p>
         </div>
@@ -75,14 +75,14 @@ const Onboarding = () => {
           {currentStep === 0 ? (
             <button
               onClick={handleSkip}
-              className="text-gray-600 hover:text-gray-900 font-medium"
+              className="text-secondary hover:text-foreground font-medium"
             >
               رد کردن
             </button>
           ) : (
             <button
               onClick={() => setCurrentStep(currentStep - 1)}
-              className="text-indigo-600 hover:text-indigo-800 font-medium"
+              className="text-primary hover:text-primary-hover font-medium"
             >
               بازگشت
             </button>
@@ -90,7 +90,7 @@ const Onboarding = () => {
 
           <button
             onClick={handleNext}
-            className="bg-indigo-600 text-white px-6 py-2 rounded-full font-medium hover:bg-indigo-700 transition-colors"
+            className="btn btn-primary px-6"
           >
             {currentStep === onboardingSlides.length - 1 ? 'شروع کنید' : 'بعدی'}
           </button>
