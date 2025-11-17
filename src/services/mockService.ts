@@ -8,23 +8,18 @@ interface LoginCredentials {
 interface LoginResponse {
   status: string;
   token: string;
-  msg: string;
-  user?: {
-    id: number;
-    name: string;
-    email: string;
-  };
+  msg?: string;
+  code?: number;
+  email: string;
+  user_id: number;
+  username: string;
 }
 
 interface EventsResponse {
   status: string;
   events: Array<{
-    ID: number;
-    post_title: string;
-    post_content: string;
-    event_date: string;
-    status: string;
-    featured_image?: string;
+    event_id: number;
+    event_name: string;
   }>;
   msg?: string;
 }
@@ -73,14 +68,14 @@ class MockWordPressService {
   ];
 
   private mockEvents = [
-    { ID: 1, post_title: 'رویداد کنسرت', post_content: 'کنسرت شگفت‌انگیز با هنرمندان برتر', event_date: '1404/10/25', status: 'منتشر شده', featured_image: '/api/placeholder/600/400?text=رویداد+کنسرت' },
-    { ID: 2, post_title: 'همایش فناوری', post_content: 'همایش سالانه فناوری با کارگاه‌های آموزشی', event_date: '1404/09/28', status: 'منتشر شده', featured_image: '/api/placeholder/600/400?text=همایش+فناوری' },
-    { ID: 3, post_title: 'نمایشگاه هنر', post_content: 'نمایشگاه هنرهای معاصر', event_date: '1404/09/09', status: 'منتشر شده', featured_image: '/api/placeholder/600/400?text=نمایشگاه+هنر' },
-    { ID: 4, post_title: 'جشنواره غذا', post_content: 'چشیدن بهترین غذاهای محلی از فروشندگان مختلف', event_date: '1404/07/18', status: 'منتشر شده', featured_image: '/api/placeholder/600/400?text=جشنواره+غذا' },
-    { ID: 5, post_title: 'جشنواره موسیقی', post_content: 'جشنواره چندروزه موسیقی با ژانرهای مختلف', event_date: '1404/06/14', status: 'منتشر شده', featured_image: '/api/placeholder/600/400?text=جشنواره+موسیقی' },
-    { ID: 6, post_title: 'مسابقه ورزشی', post_content: 'رقابت هیجان‌انگیز ورزشی با رویدادهای مختلف', event_date: '1404/06/01', status: 'منتشر شده', featured_image: '/api/placeholder/600/400?text=مسابقه+ورزشی' },
-    { ID: 7, post_title: 'اوج کسب‌وکار', post_content: 'گردهمایی سالانه رهبران و متخصصان کسب‌وکار', event_date: '1404/05/27', status: 'منتشر شده', featured_image: '/api/placeholder/600/400?text=اوج+کسب‌وکار' },
-    { ID: 8, post_title: 'نمایشگاه علوم', post_content: 'نمایش پروژه‌ها و تحقیقات نوآورانه', event_date: '1404/04/09', status: 'منتشر شده', featured_image: '/api/placeholder/600/400?text=نمایشگاه+علوم' }
+    { event_id: 1, event_name: 'رویداد کنسرت' },
+    { event_id: 2, event_name: 'همایش فناوری' },
+    { event_id: 3, event_name: 'نمایشگاه هنر' },
+    { event_id: 4, event_name: 'جشنواره غذا' },
+    { event_id: 5, event_name: 'جشنواره موسیقی' },
+    { event_id: 6, event_name: 'مسابقه ورزشی' },
+    { event_id: 7, event_name: 'اوج کسب‌وکار' },
+    { event_id: 8, event_name: 'نمایشگاه علوم' }
   ];
 
   private validateTokenInternal(token: string): { valid: boolean; user?: any } {
@@ -104,40 +99,42 @@ class MockWordPressService {
     await new Promise(resolve => setTimeout(resolve, 500));
 
     // Find user by credentials
-    const user = this.mockUsers.find(u => 
+    const user = this.mockUsers.find(u =>
       u.username === credentials.username && u.password === credentials.password
     );
 
     if (user) {
       // Generate a mock token (in a real system, this would come from the server)
       const token = `mock_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
+
       return {
         status: 'SUCCESS',
         token: token,
-        msg: 'ورود موفقیت‌آمیز',
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email
-        }
+        code: 200,
+        email: user.email,
+        user_id: user.id,
+        username: user.username,
+        msg: 'ورود موفقیت‌آمیز'
       };
     } else {
       return {
         status: 'FAIL',
         token: '',
-        msg: 'نام کاربری یا رمز عبور نامعتبر است',
-        user: undefined
+        code: 401,
+        email: '',
+        user_id: 0,
+        username: '',
+        msg: 'نام کاربری یا رمز عبور نامعتبر است'
       };
     }
   }
 
-  async getEvents(websiteUrl: string, token: string): Promise<EventsResponse> {
+  async getEvents(websiteUrl: string, token: string, userId: number): Promise<EventsResponse> {
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 300));
-    
+
     const validation = this.validateTokenInternal(token);
-    
+
     if (!validation.valid) {
       return {
         status: 'FAIL',
@@ -215,8 +212,8 @@ class MockWordPressService {
 
   async logout(websiteUrl: string, request: LogoutRequest): Promise<LogoutResponse> {
     // Clear the stored token to simulate logout
-    storageService.clearToken();
-    
+    storageService.setToken(null);
+
     return {
       status: 'SUCCESS',
       msg: 'با موفقیت خارج شدید'

@@ -31,7 +31,7 @@ export default function Profile() {
           await wordpressService.logout(websiteUrl, { token: useAuthStore.getState().token! });
         }
       } catch (error) {
-        console.error('Logout API error:', error);
+        console.error('خطای API خروج:', error);
         // Continue with local logout even if API call fails
       }
     }

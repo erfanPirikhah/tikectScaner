@@ -21,23 +21,26 @@ export const useAuth = () => {
     const storedData = storageService.getAll();
 
     if (storedData.token && storedData.websiteUrl) {
+      const token = storedData.token;
+      const websiteUrl = storedData.websiteUrl;
+
       // Determine if we should use mock service
-      const isMockMode = storedData.websiteUrl.toLowerCase().includes('mock') ||
-                        storedData.websiteUrl === 'http://test.local' ||
-                        storedData.websiteUrl === 'http://localhost:3000/mock';
+      const isMockMode = websiteUrl.toLowerCase().includes('mock') ||
+                        websiteUrl === 'http://test.local' ||
+                        websiteUrl === 'http://localhost:3000/mock';
 
       // Verify token is still valid
       const verifyToken = async () => {
         try {
-          setToken(storedData.token);
-          setWebsiteUrl(storedData.websiteUrl);
+          setToken(token);
+          setWebsiteUrl(websiteUrl);
 
           const response = isMockMode
-            ? await mockWordPressService.validateToken(storedData.websiteUrl, {
-                token: storedData.token,
+            ? await mockWordPressService.validateToken(websiteUrl, {
+                token,
               })
-            : await wordpressService.validateToken(storedData.websiteUrl, {
-                token: storedData.token,
+            : await wordpressService.validateToken(websiteUrl, {
+                token,
               });
 
           if (response.status === 'SUCCESS' && response.user) {
@@ -47,8 +50,8 @@ export const useAuth = () => {
                 name: response.user.name,
                 email: '' // Email not provided by validation endpoint
               },
-              storedData.token,
-              storedData.websiteUrl
+              token,
+              websiteUrl
             );
           } else {
             // Token invalid, clear stored data
@@ -56,7 +59,7 @@ export const useAuth = () => {
             logout();
           }
         } catch (error) {
-          console.error('Token validation failed:', error);
+          console.error('اعتبارسنجی توکن ناموفق بود:', error);
           storageService.clearAll();
           logout();
         }
@@ -97,17 +100,21 @@ export const useAuth = () => {
           storageService.setToken(loginResponse.token);
 
           login(
-            loginResponse.user || { id: 0, name: username, email: '' },
+            {
+              id: loginResponse.user_id || 0,
+              name: loginResponse.username || username,
+              email: loginResponse.email || ''
+            },
             loginResponse.token,
             websiteUrl
           );
 
-          return { success: true, message: loginResponse.msg };
+          return { success: true, message: loginResponse.msg || 'ورود موفقیت‌آمیز' };
         } else {
-          return { success: false, message: loginResponse.msg || 'Login failed' };
+          return { success: false, message: loginResponse.msg || 'ورود ناموفق بود' };
         }
       } catch (error) {
-        console.error('Login error:', error);
+        console.error('خطای ورود:', error);
         // Specific error handling for mock mode
         if (websiteUrl.toLowerCase().includes('mock') ||
             websiteUrl === 'http://test.local' ||
@@ -125,17 +132,21 @@ export const useAuth = () => {
               storageService.setToken(mockResponse.token);
 
               login(
-                mockResponse.user || { id: 0, name: username, email: '' },
+                {
+                  id: mockResponse.user_id || 0,
+                  name: mockResponse.username || username,
+                  email: mockResponse.email || ''
+                },
                 mockResponse.token,
                 websiteUrl
               );
 
-              return { success: true, message: mockResponse.msg };
+              return { success: true, message: mockResponse.msg || 'ورود موفقیت‌آمیز' };
             } else {
-              return { success: false, message: mockResponse.msg || 'Login failed' };
+              return { success: false, message: mockResponse.msg || 'ورود ناموفق بود' };
             }
           } catch (mockError) {
-            console.error('Mock login error:', mockError);
+            console.error('خطای ورود تست:', mockError);
             // Return hardcoded success for test mode as fallback
             if (username === 'testuser' && password === 'password123') {
               const token = `mock_token_${Date.now()}`;
@@ -148,12 +159,12 @@ export const useAuth = () => {
                 websiteUrl
               );
 
-              return { success: true, message: 'Login successful in test mode' };
+              return { success: true, message: 'ورود موفقیت‌آمیز در حالت تست' };
             }
-            return { success: false, message: 'Test mode login failed' };
+            return { success: false, message: 'ورود به حالت تست ناموفق بود' };
           }
         }
-        return { success: false, message: 'Network error. Please try again.' };
+        return { success: false, message: 'خطای شبکه. لطفاً دوباره تلاش کنید.' };
       }
     },
     logout: () => {

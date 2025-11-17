@@ -55,7 +55,7 @@ export default function Login() {
       }
     } catch (err) {
       setError('خطای غیرمنتظره رخ داد. لطفاً دوباره تلاش کنید.');
-      console.error('Login error:', err);
+      console.error('خطای ورود:', err);
     } finally {
       setLoading(false);
     }
@@ -158,10 +158,10 @@ export default function Login() {
                     storageService.setToken(mockResponse.token);
 
                     // Update the auth store directly
-                    const testUser = mockResponse.user || {
-                      id: 1,
-                      name: 'کاربر تست',
-                      email: 'test@example.com'
+                    const testUser = {
+                      id: mockResponse.user_id || 1,
+                      name: mockResponse.username || 'کاربر تست',
+                      email: mockResponse.email || 'test@example.com'
                     };
 
                     useAuthStore.getState().login(
@@ -174,7 +174,7 @@ export default function Login() {
                     router.push('/events');
                   }
                 } catch (error) {
-                  console.error('Test mode login failed:', error);
+                  console.error('ورود به حالت تست ناموفق بود:', error);
                   setError('ورود به حالت تست با خطا مواجه شد. لطفاً دوباره تلاش کنید.');
                 }
               }}

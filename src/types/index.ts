@@ -1,11 +1,11 @@
-// User types
+// انواع کاربر
 export interface User {
   id: number;
   name: string;
   email: string;
 }
 
-// Authentication state
+// وضعیت احراز هویت
 export interface AuthState {
   user: User | null;
   token: string | null;
@@ -15,13 +15,10 @@ export interface AuthState {
   error: string | null;
 }
 
-// Event types
+// انواع رویداد
 export interface Event {
-  ID: number;
-  post_title: string;
-  post_content: string;
-  event_date: string;
-  status: string;
+  event_id: number;
+  event_name: string;
 }
 
 export interface EventState {
@@ -31,7 +28,7 @@ export interface EventState {
   error: string | null;
 }
 
-// Scanner state
+// وضعیت اسکنر
 export interface ScanResult {
   status: 'SUCCESS' | 'FAIL';
   msg: string;
@@ -48,7 +45,7 @@ export interface ScannerState {
   error: string | null;
 }
 
-// UI state
+// وضعیت رابط کاربری
 export interface UIState {
   showOnboarding: boolean;
   loading: boolean;

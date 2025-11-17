@@ -9,12 +9,8 @@ import Header from '@/components/common/Header';
 
 // Define types for events
 interface Event {
-  ID: number;
-  post_title: string;
-  post_content: string;
-  event_date: string;
-  status: string;
-  featured_image?: string;
+  event_id: number;
+  event_name: string;
 }
 
 export default function Events() {
@@ -54,27 +50,38 @@ export default function Events() {
         let response;
         if (isTestMode) {
           // Use mock service for test mode
-          response = await mockWordPressService.getEvents(websiteUrl, token);
+          response = await mockWordPressService.getEvents(websiteUrl, token, 1); // Use mock user_id
         } else {
           // Use real service for normal operation
-          response = await wordpressService.getEvents(websiteUrl, token);
+          // Get user_id from auth store
+          const userId = useAuthStore.getState().user?.id || 0;
+
+          // Debug logging
+          console.log('Debug - Website URL:', websiteUrl);
+          console.log('Debug - Token:', token ? 'Exists' : 'Missing');
+          console.log('Debug - User ID:', userId);
+
+          try {
+            response = await wordpressService.getEvents(websiteUrl, token, userId);
+            console.log('Debug - API Response:', response);
+          } catch (error) {
+            console.error('Debug - API Error:', error);
+            setError('خطا در اتصال به سرور');
+            return;
+          }
         }
 
         if (response.status === 'SUCCESS') {
-          // Add placeholder images to mock events for testing
-          const eventsWithImages = response.events?.map((event: Event) => ({
-            ...event,
-            featured_image: event.featured_image || `/api/placeholder/400/200?text=${encodeURIComponent(event.post_title)}`,
-          })) || [];
-          setEvents(eventsWithImages);
+          console.log('Debug - Setting events:', response.events);
+          setEvents(response.events || []);
         } else {
-          setError(response.msg || 'Failed to fetch events');
-          setStoreError(response.msg || 'Failed to fetch events');
+          setError(response.msg || 'دریافت رویدادها ناموفق بود');
+          setStoreError(response.msg || 'دریافت رویدادها ناموفق بود');
         }
       } catch (err) {
-        console.error('Error fetching events:', err);
-        setError('Failed to connect to server. Please check your connection and website URL.');
-        setStoreError('Failed to connect to server');
+        console.error('خطا در دریافت رویدادها:', err);
+        setError('عدم اتصال به سرور. لطفاً اتصال خود را بررسی کنید و آدرس وب‌سایت را تأیید کنید.');
+        setStoreError('عدم اتصال به سرور');
       } finally {
         setStoreLoading(false);
         setLoading(false);
@@ -87,7 +94,7 @@ export default function Events() {
   const handleEventSelect = (event: Event) => {
     // In a real app, you might want to set the selected event in the store
     // For now, we'll just pass the event ID to the scanner
-    router.push(`/scan?eventId=${event.ID}`);
+    router.push(`/scan?eventId=${event.event_id}`);
   };
 
   const handlePageChange = (page: number) => {
@@ -129,42 +136,21 @@ export default function Events() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {currentEvents.map((event: Event) => (
                 <div
-                  key={event.ID}
+                  key={event.event_id}
                   className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
                   onClick={() => handleEventSelect(event)}
                 >
-                  {/* Event Image */}
-                  <div className="relative h-48 overflow-hidden">
-                    <img
-                      src={event.featured_image || `/api/placeholder/400/200?text=${encodeURIComponent(event.post_title)}`}
-                      alt={event.post_title}
-                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                      onError={(e) => {
-                        // Fallback image if the original fails to load
-                        (e.target as HTMLImageElement).src = `/api/placeholder/400/200?text=${encodeURIComponent(event.post_title)}`;
-                      }}
-                    />
-                    <div className="absolute top-4 right-4 bg-white bg-opacity-90 text-indigo-600 text-xs font-semibold px-2 py-1 rounded-full">
-                      {event.event_date ? new Date(event.event_date).toLocaleDateString() : 'Date not specified'}
-                    </div>
-                  </div>
-
                   {/* Event Content */}
-                  <div className="p-5">
-                    <h2 className="text-xl font-bold text-gray-900 mb-2 line-clamp-1">{event.post_title}</h2>
-                    <p className="text-gray-600 mb-4 line-clamp-2">{event.post_content}</p>
+                  <div className="p-6">
+                    <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-1">{event.event_name}</h2>
 
-                    <div className="flex justify-between items-center">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        event.status === 'published'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {event.status}
+                    <div className="flex justify-between items-center mt-4">
+                      <span className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs font-medium">
+                        ID: {event.event_id}
                       </span>
                       <button className="text-indigo-600 hover:text-indigo-800 font-medium text-sm flex items-center">
-                        View Details
-                        <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        مشاهده جزئیات
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                       </button>
@@ -188,7 +174,7 @@ export default function Events() {
                         : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
                     }`}
                   >
-                    Previous
+                    قبلی
                   </button>
 
                   {/* Page numbers */}
@@ -216,7 +202,7 @@ export default function Events() {
                         : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
                     }`}
                   >
-                    Next
+                    بعدی
                   </button>
                 </div>
               </div>
@@ -236,7 +222,7 @@ export default function Events() {
                 onClick={() => window.location.reload()}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
               >
-                Refresh
+                تازه‌سازی
               </button>
             </div>
           </div>

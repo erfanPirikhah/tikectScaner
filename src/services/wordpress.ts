@@ -8,22 +8,18 @@ interface LoginCredentials {
 interface LoginResponse {
   status: string;
   token: string;
-  msg: string;
-  user?: {
-    id: number;
-    name: string;
-    email: string;
-  };
+  msg?: string;
+  code?: number;
+  email: string;
+  user_id: number;
+  username: string;
 }
 
 interface EventsResponse {
   status: string;
   events: Array<{
-    ID: number;
-    post_title: string;
-    post_content: string;
-    event_date: string;
-    status: string;
+    event_id: number;
+    event_name: string;
   }>;
   msg?: string;
 }
@@ -92,21 +88,21 @@ class WordPressService {
 
     try {
       const response = await fetch(url, requestConfig);
-      
+
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        throw new Error(`خطای HTTP! وضعیت: ${response.status}`);
       }
-      
+
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error(`API call to ${url} failed:`, error);
+      console.error(`فراخوانی API به ${url} ناموفق بود:`, error);
       throw error;
     }
   }
 
   async login(credentials: LoginCredentials, websiteUrl: string): Promise<LoginResponse> {
-    const url = `${websiteUrl}wp-json/app/login/`;
+    const url = `${websiteUrl}wp-json/itiket-api/v1/login`;
 
     const defaultOptions: RequestInit = {
       method: 'POST',
@@ -123,45 +119,106 @@ class WordPressService {
       const response = await fetch(url, defaultOptions);
 
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        throw new Error(`خطای HTTP! وضعیت: ${response.status}`);
       }
 
       const data = await response.json();
-      return data;
+
+      // Transform the actual response to match the expected format
+      // API returns lowercase status, normalize it to uppercase for consistency
+      const normalizedStatus = data.status ?
+        data.status.toUpperCase() === 'SUCCESS' ? 'SUCCESS' :
+        data.status.toUpperCase() === 'FAIL' ? 'FAIL' :
+        data.status.toUpperCase()
+        : 'FAIL';
+
+      return {
+        status: normalizedStatus,
+        token: data.token || '',
+        code: data.code,
+        email: data.email,
+        user_id: data.user_id,
+        username: data.username,
+        msg: data.msg
+      };
     } catch (error) {
-      console.error(`API call to ${url} failed:`, error);
+      console.error(`فراخوانی API به ${url} ناموفق بود:`, error);
       throw error;
     }
   }
 
-  async getEvents(websiteUrl: string, token: string): Promise<EventsResponse> {
+  async getEvents(websiteUrl: string, token: string, userId: number): Promise<EventsResponse> {
     if (!token) {
-      throw new Error('No authentication token available');
+      throw new Error('هیچ توکن احراز هویتی در دسترس نیست');
     }
 
-    return this.makeRequest(websiteUrl, 'wp-json/app/events/', {
-      method: 'GET',
+    const url = `${websiteUrl}wp-json/itiket-api/v1/get-events`;
+
+    const options: RequestInit = {
+      method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-    });
+      body: JSON.stringify({
+        user_id: userId  // Send user_id in the body as required by the API
+      }),
+    };
+
+    try {
+      const response = await fetch(url, options);
+
+      if (!response.ok) {
+        throw new Error(`خطای HTTP! وضعیت: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Check if the response is an array (successful case) or an object with error
+      if (Array.isArray(data)) {
+        // The API returns the events array directly
+        return {
+          status: 'SUCCESS',
+          events: data
+        };
+      } else if (data.status) {
+        // The API returns a structured response
+        return data;
+      } else {
+        // Handle case where error info is returned directly
+        return {
+          status: 'FAIL',
+          events: [],
+          msg: data.message || data.msg || 'خطا در دریافت رویدادها'
+        };
+      }
+    } catch (error) {
+      console.error(`فراخوانی API به ${url} ناموفق بود:`, error);
+      throw error;
+    }
   }
 
   async validateTicket(websiteUrl: string, request: ValidateTicketRequest): Promise<ValidateTicketResponse> {
-    return this.makeRequest(websiteUrl, 'wp-json/app/check-ticket/', {
+    return this.makeRequest(websiteUrl, 'wp-json/itiket-api/v1/check-qr-code', {
       method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${request.token}`,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
-        event_id: request.event_id,
-        qr_code: request.qr_code,
-        token: request.token,
+        qr_code: request.qr_code, // According to wp.json, this endpoint expects 'qr_code'
+        token: request.token      // Include token in the request body as well
       }),
     });
   }
 
   async validateToken(websiteUrl: string, request: ValidateTokenRequest): Promise<ValidateTokenResponse> {
-    return this.makeRequest(websiteUrl, 'wp-json/app/validate-token/', {
+    return this.makeRequest(websiteUrl, 'wp-json/meup/v1/check_login', {
       method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${request.token}`,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
         token: request.token,
       }),
@@ -169,8 +226,12 @@ class WordPressService {
   }
 
   async logout(websiteUrl: string, request: LogoutRequest): Promise<LogoutResponse> {
-    return this.makeRequest(websiteUrl, 'wp-json/app/logout/', {
+    return this.makeRequest(websiteUrl, 'wp-json/itiket-api/v1/logout', {
       method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${request.token}`,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
         token: request.token,
       }),

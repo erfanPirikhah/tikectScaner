@@ -48,7 +48,7 @@ export default function QRScanner() {
     const requestCameraPermissionOnLoad = async () => {
       // First, check if the required APIs are available
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        setCameraError('Camera API not supported in this browser.');
+        setCameraError('API دوربین در این مرورگر پشتیبانی نمی‌شود.');
         return;
       }
 
@@ -60,7 +60,7 @@ export default function QRScanner() {
           const videoDevices = devices.filter(device => device.kind === 'videoinput');
 
           if (videoDevices.length === 0) {
-            setCameraError('No camera devices found on this device.');
+            setCameraError('هیچ دستگاه دوربینی روی این دستگاه یافت نشد.');
             return;
           }
         }
@@ -97,12 +97,12 @@ export default function QRScanner() {
             setCameraActive(true); // Enable the camera
             return;
           } catch (defaultError) {
-            console.error('Camera permission request failed:', defaultError);
+            console.error('درخواست مجوز دوربین ناموفق بود:', defaultError);
             setCameraError('Camera access denied. Please allow camera permissions to scan QR codes.');
           }
         }
       } catch (error) {
-        console.error('Camera permission request failed:', error);
+        console.error('درخواست مجوز دوربین ناموفق بود:', error);
         setCameraError('Camera access denied. Please allow camera permissions to scan QR codes.');
       }
     };
@@ -190,16 +190,16 @@ export default function QRScanner() {
         router.push(`/scan/result?status=${response.status}&msg=${encodeURIComponent(response.msg || '')}&name=${encodeURIComponent(response.name_customer || '')}&seat=${encodeURIComponent(response.seat || '')}&time=${encodeURIComponent(response.checkin_time || '')}`);
       }, 1500);
     } catch (error) {
-      console.error('Ticket validation error:', error);
-      setError('Failed to validate ticket. Please try again.');
+      console.error('خطای اعتبارسنجی بلیت:', error);
+      setError('اعتبارسنجی بلیت ناموفق بود. لطفاً دوباره تلاش کنید.');
       // Reset so we can scan again
       setScannedCode(null);
     }
   };
 
   const handleCameraError = (error: any) => {
-    console.error('Camera error:', error);
-    setCameraError('Camera access denied. Please allow camera permissions to scan QR codes.');
+    console.error('خطای دوربین:', error);
+    setCameraError('دسترسی به دوربین رد شد. لطفاً مجوزهای دوربین را برای اسکن کدهای QR فعال کنید.');
   };
 
   const toggleTorch = () => {
@@ -217,7 +217,7 @@ export default function QRScanner() {
       try {
         await wordpressService.logout(websiteUrl, { token });
       } catch (error) {
-        console.error('Logout API error:', error);
+        console.error('خطای API خروج:', error);
         // Continue with local logout even if API call fails
       }
     }
@@ -229,13 +229,13 @@ export default function QRScanner() {
   const requestCameraPermission = async () => {
     // First check if we're on the client
     if (!isClient) {
-      setCameraError('Please try again in a supported browser.');
+      setCameraError('لطفاً در یک مرورگر پشتیبانی شده دوباره تلاش کنید.');
       return;
     }
 
     // Then check if the required APIs are available
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      setCameraError('Camera API not supported in this browser.');
+      setCameraError('API دوربین در این مرورگر پشتیبانی نمی‌شود.');
       return;
     }
 
@@ -247,7 +247,7 @@ export default function QRScanner() {
         const videoDevices = devices.filter(device => device.kind === 'videoinput');
 
         if (videoDevices.length === 0) {
-          setCameraError('No camera devices found on this device.');
+          setCameraError('هیچ دستگاه دوربینی روی این دستگاه یافت نشد.');
           return;
         }
       }
@@ -284,13 +284,13 @@ export default function QRScanner() {
           setCameraActive(true); // Enable the camera
           return;
         } catch (defaultError) {
-          console.error('Camera permission request failed:', defaultError);
+          console.error('درخواست مجوز دوربین ناموفق بود:', defaultError);
           setCameraError('Camera access denied. Please allow camera permissions to scan QR codes.');
         }
       }
     } catch (error) {
-      console.error('Camera permission request failed:', error);
-      setCameraError('Camera access denied. Please allow camera permissions to scan QR codes.');
+      console.error('درخواست مجوز دوربین ناموفق بود:', error);
+      setCameraError('دسترسی به دوربین رد شد. لطفاً مجوزهای دوربین را برای اسکن کدهای QR فعال کنید.');
     }
   };
 
