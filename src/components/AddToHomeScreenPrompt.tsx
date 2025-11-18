@@ -2,105 +2,113 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card';
 import { X } from 'lucide-react';
 
 declare global {
   interface Window {
-    deferredPrompt: Event;
+    deferredPrompt: Event | null;
   }
 }
 
 export default function AddToHomeScreenPrompt() {
   const [isVisible, setIsVisible] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
   const [hasDismissed, setHasDismissed] = useState(false);
 
   // Check if the app is already installed
   const isAppInstalled = () => {
-    // Check for standalone mode (iOS)
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      return true;
+    // Check for standalone mode (PWA installed)
+    return window.matchMedia('(display-mode: standalone)').matches ||
+           (window.navigator as any).standalone === true;
+  };
+
+  // Check if the app is installable (using beforeinstallprompt event or manual detection)
+  const isAppInstallable = (): boolean => {
+    // Check if we're in a browser context
+    if (typeof window === 'undefined') {
+      return false;
     }
-    // For Android, check if the navigator.standalone property exists and is true
-    if ('standalone' in navigator && (navigator as any).standalone === true) {
-      return true;
+
+    // Check if the app is already installed
+    if (isAppInstalled()) {
+      return false;
     }
-    // Check if the app is running in PWA mode
-    return window.matchMedia('(display-mode: standalone)').matches;
+
+    // Check if we're in a browser that supports install prompts
+    // For browsers that don't support beforeinstallprompt, we offer the manual installation hint
+    return true;
   };
 
   // Check if the user has dismissed the prompt before and if app is installed
   useEffect(() => {
     const dismissed = localStorage.getItem('add-to-home-dismissed');
-    if (dismissed) {
+    if (dismissed === 'true') {
       setHasDismissed(true);
     } else if (isAppInstalled()) {
       setHasDismissed(true);
+      localStorage.setItem('add-to-home-dismissed', 'true');
+    } else {
+      // Show the prompt after a delay if the user hasn't dismissed it
+      const timer = setTimeout(() => {
+        setIsVisible(true);
+      }, 3000); // 3 second delay
+
+      return () => clearTimeout(timer);
     }
   }, []);
 
-  // Set up the beforeinstallprompt event listener
+  // Set up the beforeinstallprompt event listener (for browsers that support it)
   useEffect(() => {
-    // Check if the beforeinstallprompt event is supported
     const isSupported = 'beforeinstallprompt' in window;
 
-    if (!isSupported) {
-      // For browsers that don't support the install prompt, we could show instructions
-      // Or just return without enabling the functionality
-      return;
+    // If beforeinstallprompt is supported, set up the handler
+    if (isSupported) {
+      const handleBeforeInstallPrompt = (e: Event) => {
+        // Prevent the mini-infobar from appearing on mobile
+        e.preventDefault();
+        // Stash the event so it can be triggered later
+        setDeferredPrompt(e);
+      };
+
+      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+      // Also handle the appinstalled event
+      const handleAppInstalled = () => {
+        // App was installed, hide any prompts
+        setIsVisible(false);
+        localStorage.setItem('add-to-home-dismissed', 'true');
+        setHasDismissed(true);
+      };
+
+      window.addEventListener('appinstalled', handleAppInstalled);
+
+      // Cleanup
+      return () => {
+        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        window.removeEventListener('appinstalled', handleAppInstalled);
+      };
     }
-
-    const handleBeforeInstallPrompt = (e: Event) => {
-      // Prevent the mini-infobar from appearing on mobile
-      e.preventDefault();
-      // Stash the event so it can be triggered later
-      setDeferredPrompt(e);
-      // Show the prompt if user hasn't dismissed it before
-      if (!hasDismissed) {
-        // Show the prompt after a delay to not interfere with initial load
-        const timer = setTimeout(() => {
-          setIsVisible(true);
-        }, 3000); // 3 second delay
-        return () => clearTimeout(timer);
-      }
-    };
-
-    // Listen for the beforeinstallprompt event
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    // Cleanup the event listener on component unmount
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
-  }, [hasDismissed]);
-
-  // Also handle the appinstalled event to detect when the app is installed
-  useEffect(() => {
-    const handleAppInstalled = () => {
-      // App was installed, hide the prompt
-      setIsVisible(false);
-      localStorage.setItem('add-to-home-dismissed', 'true');
-      setHasDismissed(true);
-    };
-
-    window.addEventListener('appinstalled', handleAppInstalled);
-
-    // Cleanup
-    return () => {
-      window.removeEventListener('appinstalled', handleAppInstalled);
-    };
   }, []);
 
   // Handle install button click
   const handleInstallClick = useCallback(async () => {
+    // If we have the deferred prompt (browser supports it), use it
     if (deferredPrompt) {
+      const promptEvent = deferredPrompt as any;
+
       // Show the install prompt
-      deferredPrompt.prompt();
+      promptEvent.prompt();
+
       // Wait for the user to respond to the prompt
-      const { outcome } = await deferredPrompt.userChoice;
-      
-      // Optionally track the result
+      const { outcome } = await promptEvent.userChoice;
+
       if (outcome === 'accepted') {
         console.log('User accepted the install prompt');
       } else {
@@ -109,6 +117,9 @@ export default function AddToHomeScreenPrompt() {
 
       // Reset the deferred prompt
       setDeferredPrompt(null);
+    } else {
+      // Manual installation instructions for browsers that don't support install prompts
+      alert('برای نصب برنامه:\n\n1. در گوشه بالا سمت راست صفحه (یا در نوار آدرس) روی دکمه منو کلیک کنید\n2. گزینه "افزودن به صفحه اصلی" یا "Install" را انتخاب کنید\n\n(روی دستگاه موبایل باید این گزینه نمایان شود)');
     }
 
     // Hide the prompt and mark as dismissed
@@ -130,14 +141,14 @@ export default function AddToHomeScreenPrompt() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
-      <Card className="w-full max-w-md z-10 pointer-events-auto animate-in fade-in slide-in-from-bottom-4 duration-300">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={handleDismissClick} />
+      <Card className="w-full max-w-md z-10 animate-in fade-in slide-in-from-bottom-4 duration-300">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">نصب برنامه</CardTitle>
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={handleDismissClick}
             className="h-8 w-8 p-0 rounded-full"
             aria-label="بستن"
@@ -145,15 +156,15 @@ export default function AddToHomeScreenPrompt() {
             <X className="h-4 w-4" />
           </Button>
         </CardHeader>
-        <CardContent className="text-center">
+        <CardContent className="text-center pb-2">
           <div className="mx-auto bg-primary/10 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
             <span className="text-2xl font-bold text-primary">i</span>
           </div>
-          <p className="text-foreground">
-            برای تجربه بهتر، این برنامه را به صفحه اصلی اضافه کنید.
+          <p className="text-foreground mb-2">
+            برای تجربه بهتر، لطفاً گزینه Add to Home Screen را بزنید.
           </p>
         </CardContent>
-        <CardFooter className="flex flex-col gap-2">
+        <CardFooter className="flex flex-col gap-2 pt-0">
           <Button
             onClick={handleInstallClick}
             className="w-full"

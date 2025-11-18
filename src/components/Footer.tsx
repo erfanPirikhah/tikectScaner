@@ -14,9 +14,9 @@ export default function Footer() {
             <p className="text-sm text-muted-foreground">
               © {new Date().getFullYear()} itiket - تمامی حقوق محفوظ است
             </p>
-            <p className="text-xs text-muted-foreground mt-1">
+            {/* <p className="text-xs text-muted-foreground mt-1">
               ساخته شده با Next.js PWA
-            </p>
+            </p> */}
           </div>
         </div>
       </div>

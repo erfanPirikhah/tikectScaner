@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -130,10 +129,10 @@ export default function Login() {
             </Button>
           </CardFooter>
         </form>
-        <div className="pb-6 text-center text-sm text-muted-foreground">
+        {/* <div className="pb-6 text-center text-sm text-muted-foreground">
           ساخته شده با{' '}
           <span className="text-primary font-medium">Next.js PWA</span>
-        </div>
+        </div> */}
       </Card>
     </div>
   );
