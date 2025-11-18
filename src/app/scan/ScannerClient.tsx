@@ -7,12 +7,11 @@ import { mockWordPressService } from '@/services/mockService';
 import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import Header from '@/components/common/Header';
-import DebugOverlay from '@/components/common/DebugOverlay';
 import { showToast } from '@/lib/toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Camera, CameraOff, Flashlight, RotateCcw } from 'lucide-react';
+import { Camera, CameraOff, RotateCcw } from 'lucide-react';
 
 // Dynamically import Webcam to avoid SSR issues
 const Webcam = dynamic<any>(
@@ -27,7 +26,6 @@ export default function ScannerClient() {
   const eventId = searchParams.get('eventId');
 
   const [scannedCode, setScannedCode] = useState<string | null>(null);
-  const [torchOn, setTorchOn] = useState(false);
   const [cameraActive, setCameraActive] = useState(true);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
@@ -338,11 +336,6 @@ export default function ScannerClient() {
     showToast.error('دسترسی به دوربین ناموفق بود');
   };
 
-  const toggleTorch = () => {
-    // Torch functionality is limited in browsers, especially on iOS
-    // This is mainly for indication to the user
-    setTorchOn(!torchOn);
-  };
 
   const handleGoBack = () => {
     router.push('/events');
@@ -570,16 +563,6 @@ export default function ScannerClient() {
                   </div>
                 </div>
 
-                {/* Torch Button (for indication) */}
-                <Button
-                  onClick={toggleTorch}
-                  variant={torchOn ? "default" : "outline"}
-                  size="icon"
-                  className="absolute bottom-24 right-4"
-                >
-                  <Flashlight className="h-4 w-4" />
-                  <span className="sr-only">روشن/خاموش کردن چراغ</span>
-                </Button>
               </div>
 
               {/* Controls */}
@@ -609,8 +592,6 @@ export default function ScannerClient() {
                 </div>
               </div>
 
-              {/* Debug Overlay */}
-              <DebugOverlay />
             </>
           );
         })()

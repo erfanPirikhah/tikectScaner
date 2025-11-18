@@ -67,8 +67,11 @@ export default function Login() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <Logo size="lg" showText={true} />
+        <CardHeader className="flex flex-col items-center text-center">
+          <div className="mb-4">
+            <Logo size="xl" showText={false} />
+          </div>
+          <CardTitle className="text-2xl font-bold mb-1">iticket</CardTitle>
           <CardDescription>ورود به حساب کاربری</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>

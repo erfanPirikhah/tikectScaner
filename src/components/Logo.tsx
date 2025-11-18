@@ -18,21 +18,21 @@ const Logo = ({ className, size = 'md', showText = true, href = '/' }: LogoProps
   };
 
   const logoContent = (
-    <div className={cn('flex items-center gap-2', className)}>
-      <div className={cn(sizeClasses[size], 'relative')}>
+    <div className={cn('flex flex-col items-center justify-center gap-2', className)}>
+      <div className={cn(sizeClasses[size], 'relative transition-transform duration-300 hover:scale-105')}>
         <Image
           src="/ALogo.png"
           alt="Logo"
           fill
           style={{ objectFit: 'contain' }}
-          className="rounded-sm"
+          className="rounded-sm shadow-lg"
           sizes="(max-width: 768px) 10vw, (max-width: 1200px) 8vw, 6vw"
           priority
         />
       </div>
       {showText && (
         <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          itiket
+          iticket
         </span>
       )}
     </div>
