@@ -1,11 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {
   title: "Ticket Scanner PWA",
   description: "QR code ticket scanning application",
   manifest: "/manifest.json",
-  themeColor: "#4f46e5",
-  viewport: "width=device-width, initial-scale=1, viewport-fit=cover",
   appleWebApp: {
     capable: true,
     title: "Ticket Scanner PWA",
@@ -19,4 +17,11 @@ export const metadata: Metadata = {
     description: "QR code ticket scanning application",
     type: "website",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#f8fafc',
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 };

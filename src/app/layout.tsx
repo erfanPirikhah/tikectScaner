@@ -20,8 +20,13 @@ export const metadata: Metadata = {
   title: "اسکنر بلیت PWA",
   description: "برنامه اسکن بلیت کد QR",
   manifest: "/manifest.json",
-  themeColor: "#f8fafc",
-  viewport: "width=device-width, initial-scale=1, viewport-fit=cover",
+};
+
+export const viewport = {
+  themeColor: '#f8fafc',
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({
@@ -38,7 +43,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="iticket" />
         <link rel="icon" type="image/png" sizes="32x32" href="/ALogo.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/ALogo.png" />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <link rel="apple-touch-icon" href="/ALogo.png" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v31.0.0/dist/font-face.css" />
       </head>
