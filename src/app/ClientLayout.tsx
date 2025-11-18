@@ -1,13 +1,13 @@
 'use client';
 
 import { ReactNode } from 'react';
-import ToastProvider from '@/components/ToastProvider';
+import { Toaster } from '@/components/ui/sonner';
 
 export default function ClientLayout({ children }: { children: ReactNode }) {
   return (
     <>
       {children}
-      <ToastProvider />
+      <Toaster position="top-right" dir="rtl" />
     </>
   );
 }

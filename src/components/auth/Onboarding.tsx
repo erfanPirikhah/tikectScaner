@@ -4,6 +4,9 @@ import { useState } from 'react';
 import { useUIStore } from '@/lib/store';
 import { storageService } from '@/services/storage';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -43,8 +46,8 @@ const Onboarding = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-secondary p-4">
-      <div className="w-full max-w-md card overflow-hidden">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 p-4">
+      <Card className="w-full max-w-md overflow-hidden">
         {/* Progress indicator */}
         <div className="flex justify-center pt-6">
           <div className="flex space-x-2 space-x-reverse">
@@ -60,42 +63,43 @@ const Onboarding = () => {
         </div>
 
         {/* Content */}
-        <div className="p-8 text-center">
+        <CardContent className="p-8 text-center">
           <div className="text-6xl mb-6">{onboardingSlides[currentStep].icon}</div>
-          <h1 className="text-2xl font-bold text-foreground mb-3">
+          <h1 className="text-2xl font-bold mb-3">
             {onboardingSlides[currentStep].title}
           </h1>
-          <p className="text-secondary mb-8">
+          <p className="text-muted-foreground mb-8">
             {onboardingSlides[currentStep].description}
           </p>
-        </div>
+        </CardContent>
 
         {/* Navigation */}
-        <div className="flex justify-between items-center p-6 border-t flex-row-reverse">
+        <div className="p-6 border-t flex justify-between">
           {currentStep === 0 ? (
-            <button
+            <Button
+              variant="link"
               onClick={handleSkip}
-              className="text-secondary hover:text-foreground font-medium"
+              className="text-muted-foreground hover:text-foreground p-0 h-auto"
             >
               رد کردن
-            </button>
+            </Button>
           ) : (
-            <button
+            <Button
+              variant="link"
               onClick={() => setCurrentStep(currentStep - 1)}
-              className="text-primary hover:text-primary-hover font-medium"
+              className="text-primary hover:text-primary p-0 h-auto"
             >
               بازگشت
-            </button>
+            </Button>
           )}
 
-          <button
+          <Button
             onClick={handleNext}
-            className="btn btn-primary px-6"
           >
             {currentStep === onboardingSlides.length - 1 ? 'شروع کنید' : 'بعدی'}
-          </button>
+          </Button>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };

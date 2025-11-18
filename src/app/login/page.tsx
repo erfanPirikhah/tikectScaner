@@ -4,7 +4,12 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { showToast } from '@/lib/toast';
+import { Loader2 } from 'lucide-react';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -59,84 +64,73 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-secondary p-4">
-      <div className="w-full max-w-md card p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground">اسکنر بلیت</h1>
-          <p className="text-secondary mt-2">ورود به حساب کاربری</p>
-        </div>
-
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold">اسکنر بلیت</CardTitle>
+          <CardDescription>ورود به حساب کاربری</CardDescription>
+        </CardHeader>
         <form onSubmit={handleSubmit}>
-          <div className="mb-6">
-            <label htmlFor="websiteUrl" className="block text-sm font-medium text-foreground mb-2">
-              آدرس وب‌سایت
-            </label>
-            <input
-              id="websiteUrl"
-              type="url"
-              value={websiteUrl}
-              onChange={(e) => setWebsiteUrl(e.target.value)}
-              placeholder="https://your-website.com"
-              className="input"
-              required
-            />
-            <p className="text-xs text-secondary mt-2">
-              آدرس سایت وردپرس خود را وارد کنید
-            </p>
-          </div>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="websiteUrl">آدرس وب‌سایت</Label>
+              <Input
+                id="websiteUrl"
+                type="url"
+                value={websiteUrl}
+                onChange={(e) => setWebsiteUrl(e.target.value)}
+                placeholder="https://your-website.com"
+                required
+              />
+              <p className="text-xs text-muted-foreground mt-2">
+                آدرس سایت وردپرس خود را وارد کنید
+              </p>
+            </div>
 
-          <div className="mb-6">
-            <label htmlFor="username" className="block text-sm font-medium text-foreground mb-2">
-              نام کاربری
-            </label>
-            <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="input"
-              required
-            />
-          </div>
+            <div>
+              <Label htmlFor="username">نام کاربری</Label>
+              <Input
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
 
-          <div className="mb-6">
-            <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
-              رمز عبور
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input"
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn btn-primary w-full py-3 font-medium"
-          >
-            {loading ? (
-              <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white ml-2"></div>
-                در حال ورود...
-              </div>
-            ) : (
-              'ورود'
-            )}
-          </button>
-
+            <div>
+              <Label htmlFor="password">رمز عبور</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col">
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  در حال ورود...
+                </>
+              ) : (
+                'ورود'
+              )}
+            </Button>
+          </CardFooter>
         </form>
-
-        <div className="mt-8 text-center">
-          <p className="text-sm text-secondary">
-            ساخته شده با{' '}
-            <span className="text-primary font-medium">Next.js PWA</span>
-          </p>
+        <div className="pb-6 text-center text-sm text-muted-foreground">
+          ساخته شده با{' '}
+          <span className="text-primary font-medium">Next.js PWA</span>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

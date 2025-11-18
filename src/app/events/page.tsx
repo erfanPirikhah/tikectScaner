@@ -7,6 +7,11 @@ import { mockWordPressService } from '@/services/mockService';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/common/Header';
 import { showToast } from '@/lib/toast';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { CalendarIcon } from 'lucide-react';
 
 // Define types for events
 interface Event {
@@ -98,16 +103,27 @@ export default function Events() {
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen bg-gradient-secondary">
+      <div className="flex flex-col min-h-screen">
         <Header title="رویدادها" />
-
-        {/* Content */}
-        <div className="flex-1 flex items-center justify-center p-4">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-secondary">در حال بارگذاری رویدادها...</p>
+        <main className="flex-1 p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((item) => (
+              <Card key={item} className="overflow-hidden">
+                <CardHeader className="pb-3">
+                  <Skeleton className="h-6 w-3/4" />
+                </CardHeader>
+                <CardContent className="pb-3">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3 mt-2" />
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-8 w-24" />
+                </CardFooter>
+              </Card>
+            ))}
           </div>
-        </div>
+        </main>
       </div>
     );
   }
@@ -117,39 +133,42 @@ export default function Events() {
       <Header title="رویدادها" />
 
       {/* Content */}
-      <main className="flex-1 py-6 px-4">
+      <main className="flex-1 p-4 max-w-7xl mx-auto w-full">
         {currentEvents.length > 0 ? (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {currentEvents.map((event: Event) => (
-                <div
+                <Card
                   key={event.event_id}
-                  className="card overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg"
+                  className="overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg"
                   onClick={() => handleEventSelect(event)}
                 >
-                  {/* Event Content */}
-                  <div className="p-5 sm:p-6">
-                    <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 line-clamp-2">{event.event_name}</h2>
-
-                    <div className="flex flex-wrap justify-between items-center gap-2 mt-4">
-                      <span className="badge badge-info text-xs">
-                        شناسه: {event.event_id}
-                      </span>
-                      <button
-                        className="btn btn-outline text-xs sm:text-sm flex items-center py-2 px-3"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEventSelect(event);
-                        }}
-                      >
-                        مشاهده جزئیات
-                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </button>
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="text-xl line-clamp-2">{event.event_name}</CardTitle>
+                      <CalendarIcon className="h-5 w-5 text-muted-foreground" />
                     </div>
-                  </div>
-                </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="secondary">
+                        شناسه: {event.event_id}
+                      </Badge>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-between">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEventSelect(event);
+                      }}
+                    >
+                      مشاهده جزئیات
+                    </Button>
+                  </CardFooter>
+                </Card>
               ))}
             </div>
 
@@ -158,109 +177,111 @@ export default function Events() {
               <div className="mt-8 flex flex-col items-center">
                 <div className="flex flex-wrap justify-center gap-2 max-w-full overflow-x-auto">
                   {/* Previous button */}
-                  <button
+                  <Button
                     onClick={() => handlePageChange(currentPage > 1 ? currentPage - 1 : 1)}
                     disabled={currentPage === 1}
-                    className={`btn ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''} min-w-[80px]`}
+                    variant="outline"
+                    className={`min-w-[80px] ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
                     aria-label="صفحه قبلی"
                   >
                     قبلی
-                  </button>
+                  </Button>
 
                   {/* Page numbers with ellipsis for large number of pages */}
                   {totalPages <= 7 ? (
                     // Show all pages if there are 7 or fewer
                     Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <button
+                      <Button
                         key={page}
                         onClick={() => handlePageChange(page)}
-                        className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                          currentPage === page
-                            ? 'bg-primary text-white'
-                            : 'btn-outline'
-                        }`}
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        className="w-10 h-10 rounded-full"
                         aria-label={`صفحه ${page}`}
                       >
                         {page}
-                      </button>
+                      </Button>
                     ))
                   ) : (
                     // Show ellipsis for large number of pages
                     <>
-                      <button
+                      <Button
                         onClick={() => handlePageChange(1)}
-                        className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                          currentPage === 1
-                            ? 'bg-primary text-white'
-                            : 'btn-outline'
-                        }`}
+                        variant={currentPage === 1 ? "default" : "outline"}
+                        size="sm"
+                        className="w-10 h-10 rounded-full"
                         aria-label="صفحه 1"
                       >
                         1
-                      </button>
+                      </Button>
 
                       {currentPage > 3 && <span className="flex items-center px-2 text-foreground">...</span>}
 
                       {currentPage > 2 && currentPage < totalPages - 1 && (
-                        <button
+                        <Button
                           onClick={() => handlePageChange(currentPage - 1)}
-                          className="w-10 h-10 rounded-full flex items-center justify-center btn-outline flex-shrink-0"
+                          variant="outline"
+                          size="sm"
+                          className="w-10 h-10 rounded-full"
                           aria-label={`صفحه ${currentPage - 1}`}
                         >
                           {currentPage - 1}
-                        </button>
+                        </Button>
                       )}
 
                       {currentPage !== 1 && currentPage !== totalPages && (
-                        <button
+                        <Button
                           key={currentPage}
                           onClick={() => handlePageChange(currentPage)}
-                          className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0"
+                          variant="default"
+                          size="sm"
+                          className="w-10 h-10 rounded-full"
                           aria-label={`صفحه ${currentPage}`}
                         >
                           {currentPage}
-                        </button>
+                        </Button>
                       )}
 
                       {currentPage < totalPages - 1 && (
-                        <button
+                        <Button
                           onClick={() => handlePageChange(currentPage + 1)}
-                          className="w-10 h-10 rounded-full flex items-center justify-center btn-outline flex-shrink-0"
+                          variant="outline"
+                          size="sm"
+                          className="w-10 h-10 rounded-full"
                           aria-label={`صفحه ${currentPage + 1}`}
                         >
                           {currentPage + 1}
-                        </button>
+                        </Button>
                       )}
 
                       {currentPage < totalPages - 2 && <span className="flex items-center px-2 text-foreground">...</span>}
 
-                      <button
+                      <Button
                         onClick={() => handlePageChange(totalPages)}
-                        className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                          currentPage === totalPages
-                            ? 'bg-primary text-white'
-                            : 'btn-outline'
-                        }`}
+                        variant={currentPage === totalPages ? "default" : "outline"}
+                        size="sm"
+                        className="w-10 h-10 rounded-full"
                         aria-label={`صفحه ${totalPages}`}
                       >
                         {totalPages}
-                      </button>
+                      </Button>
                     </>
                   )}
 
                   {/* Next button */}
-                  <button
+                  <Button
                     onClick={() => handlePageChange(currentPage < totalPages ? currentPage + 1 : totalPages)}
                     disabled={currentPage === totalPages}
-                    className={`btn ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''} min-w-[80px]`}
+                    variant="outline"
+                    className={`min-w-[80px] ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
                     aria-label="صفحه بعدی"
                   >
                     بعدی
-                  </button>
+                  </Button>
                 </div>
 
                 {/* Page info */}
-                <div className="mt-4 text-sm text-secondary">
+                <div className="mt-4 text-sm text-muted-foreground">
                   صفحه {currentPage} از {totalPages}
                 </div>
               </div>
@@ -268,21 +289,26 @@ export default function Events() {
           </>
         ) : (
           <div className="flex flex-col items-center justify-center py-12">
-            <div className="card p-8 max-w-md w-full text-center">
-              <div className="mx-auto bg-accent/10 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-medium text-foreground mb-2">هیچ رویدادی یافت نشد</h3>
-              <p className="text-secondary mb-4">در حال حاضر هیچ رویدادی در دسترس نیست. لطفاً بعداً دوباره بررسی کنید یا با مدیر سیستم تماس بگیرید.</p>
-              <button
-                onClick={() => window.location.reload()}
-                className="btn btn-primary"
-              >
-                تازه‌سازی
-              </button>
-            </div>
+            <Card className="max-w-md w-full text-center">
+              <CardHeader>
+                <div className="mx-auto bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+                  <CalendarIcon className="w-8 h-8 text-primary" />
+                </div>
+                <CardTitle className="text-lg">هیچ رویدادی یافت نشد</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
+                  در حال حاضر هیچ رویدادی در دسترس نیست. لطفاً بعداً دوباره بررسی کنید یا با مدیر سیستم تماس بگیرید.
+                </CardDescription>
+              </CardContent>
+              <CardFooter className="flex justify-center">
+                <Button
+                  onClick={() => window.location.reload()}
+                >
+                  تازه‌سازی
+                </Button>
+              </CardFooter>
+            </Card>
           </div>
         )}
       </main>
