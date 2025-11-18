@@ -1,6 +1,10 @@
-// Static export service worker for PWA functionality
+// Static export service worker for PWA functionality with automatic cache refresh
 
-const CACHE_NAME = 'itiket-pwa-v1';
+// Use a cache version that changes only when you want to force an update
+// Increment this version number when you deploy a new version of your app
+const CACHE_VERSION = 'itiket-pwa-v1.1'; // Change this when deploying updates
+const CACHE_NAME = CACHE_VERSION;
+
 const urlsToCache = [
   '/',
   '/events',
@@ -8,8 +12,12 @@ const urlsToCache = [
   '/profile',
   '/scan',
   '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  '/ALogo.png',
+  '/file.svg',
+  '/globe.svg',
+  '/next.svg',
+  '/vercel.svg',
+  '/window.svg'
 ];
 
 // Install a service worker
@@ -17,9 +25,32 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('Opened cache');
+        console.log('Opened cache with name:', CACHE_NAME);
         return cache.addAll(urlsToCache);
       })
+  );
+  // Immediately take control of the page
+  self.skipWaiting();
+});
+
+// Take control of all clients immediately after activation
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    // Delete old caches
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(() => {
+      console.log('New service worker activated and old caches cleared');
+      // Claim all clients immediately
+      return self.clients.claim();
+    })
   );
 });
 
@@ -33,23 +64,21 @@ self.addEventListener('fetch', (event) => {
           return response;
         }
         return fetch(event.request);
-      }
-    )
+      })
   );
 });
 
-// Update a service worker
-self.addEventListener('activate', (event) => {
-  const cacheWhitelist = [CACHE_NAME];
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
+// Listen for messages from the client
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+
+  if (event.data && event.data.type === 'CHECK_UPDATE') {
+    // Respond with current cache version for comparison
+    event.ports[0].postMessage({
+      type: 'CACHE_VERSION',
+      version: CACHE_NAME
+    });
+  }
 });

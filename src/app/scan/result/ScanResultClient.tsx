@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useAuthStore } from '@/lib/store';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/common/Header';
@@ -79,7 +79,7 @@ export default function ScanResultClient() {
 
   useEffect(() => {
     if (!isLoggedIn) {
-      router.push('/login');
+      router.push('/login/');
       return;
     }
 
@@ -94,7 +94,12 @@ export default function ScanResultClient() {
   };
 
   const handleScanAnother = () => {
-    router.push('/scan?eventId=' + new URLSearchParams(window.location.search).get('eventId'));
+    if (typeof window !== 'undefined') {
+      router.push('/scan?eventId=' + new URLSearchParams(window.location.search).get('eventId'));
+    } else {
+      // Fallback behavior if window is not available
+      router.push('/scan');
+    }
   };
 
   return (

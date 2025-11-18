@@ -3,8 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ClientLayout from './ClientLayout';
 import { ThemeProvider } from '@/context/theme-provider';
-import { PWAProvider } from '@/context/PWAContext';
-import AddToHomeScreenPrompt from '@/components/AddToHomeScreenPrompt';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -56,12 +54,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <PWAProvider>
-            <div className="flex flex-col min-h-screen">
-              <ClientLayout>{children}</ClientLayout>
-              <AddToHomeScreenPrompt />
-            </div>
-          </PWAProvider>
+          <ClientLayout>{children}</ClientLayout>
         </ThemeProvider>
       </body>
     </html>

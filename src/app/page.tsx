@@ -18,7 +18,7 @@ export default function HomePage() {
     if (!showOnboarding && isLoggedIn) {
       router.push('/events');
     } else if (!showOnboarding && !isLoggedIn) {
-      router.push('/login');
+      router.push('/login/');
     }
 
     setIsLoading(false);

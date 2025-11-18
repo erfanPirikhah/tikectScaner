@@ -14,7 +14,7 @@ export default function Profile() {
   const router = useRouter();
 
   if (!isLoggedIn) {
-    router.push('/login');
+    router.push('/login/');
     return null;
   }
 
@@ -32,7 +32,7 @@ export default function Profile() {
       showToast.success('با موفقیت خارج شدید');
     }
     logout();
-    router.push('/login');
+    router.push('/login/');
   };
 
   return (

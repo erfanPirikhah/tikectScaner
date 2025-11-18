@@ -54,7 +54,7 @@ export default function Header({ title, showBackButton = false, backButtonAction
       showToast.success('با موفقیت خارج شدید');
     }
     logout();
-    router.push('/login');
+    router.push('/login/');
     setLogoutDialogOpen(false);
   };
 

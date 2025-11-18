@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useScannerStore, useAuthStore } from '@/lib/store';
 import { wordpressService } from '@/services/wordpress';
-import { mockWordPressService } from '@/services/mockService';
 import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import Header from '@/components/common/Header';
@@ -12,13 +11,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Camera, CameraOff, RotateCcw } from 'lucide-react';
+import jsQR from 'jsqr';
 
 // Dynamically import Webcam to avoid SSR issues
 const Webcam = dynamic<any>(
   () => import('react-webcam').then((mod) => mod.default),
   { ssr: false, loading: () => <div>در حال بارگذاری...</div> }
 );
-import jsQR from 'jsqr';
 
 export default function ScannerClient() {
   const router = useRouter();
@@ -38,7 +37,7 @@ export default function ScannerClient() {
   // Validate we have required params
   useEffect(() => {
     if (!isLoggedIn || !token || !websiteUrl || !eventId) {
-      router.push('/login');
+      router.push('/login/');
     }
   }, [isLoggedIn, token, websiteUrl, eventId, router]);
 
@@ -355,7 +354,7 @@ export default function ScannerClient() {
       showToast.success('با موفقیت خارج شدید');
     }
     logout();
-    router.push('/login');
+    router.push('/login/');
   };
 
   // Function to request camera permissions explicitly with fallbacks
@@ -460,7 +459,7 @@ export default function ScannerClient() {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => window.location.reload()}
+                onClick={() => typeof window !== 'undefined' && window.location.reload()}
                 className="w-full"
               >
                 <RotateCcw className="ml-2 h-4 w-4" />

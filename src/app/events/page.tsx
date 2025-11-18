@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useEventStore, useAuthStore } from '@/lib/store';
 import { wordpressService } from '@/services/wordpress';
-import { mockWordPressService } from '@/services/mockService';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/common/Header';
 import { showToast } from '@/lib/toast';
@@ -50,7 +49,7 @@ export default function Events() {
 
   useEffect(() => {
     if (!isLoggedIn || !token || !websiteUrl) {
-      router.push('/login');
+      router.push('/login/');
       return;
     }
 
@@ -346,7 +345,7 @@ export default function Events() {
               </CardContent>
               <CardFooter className="flex justify-center">
                 <Button
-                  onClick={() => window.location.reload()}
+                  onClick={() => typeof window !== 'undefined' && window.location.reload()}
                 >
                   تازه‌سازی
                 </Button>

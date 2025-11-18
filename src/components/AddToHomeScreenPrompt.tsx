@@ -21,18 +21,22 @@ export default function AddToHomeScreenPrompt() {
   const [isVisible, setIsVisible] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
   const [hasDismissed, setHasDismissed] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   // Check if the app is already installed
   const isAppInstalled = () => {
     // Check for standalone mode (PWA installed)
-    return window.matchMedia('(display-mode: standalone)').matches ||
-           (window.navigator as any).standalone === true;
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(display-mode: standalone)').matches ||
+             (window.navigator as any).standalone === true;
+    }
+    return false;
   };
 
   // Check if the app is installable (using beforeinstallprompt event or manual detection)
   const isAppInstallable = (): boolean => {
     // Check if we're in a browser context
-    if (typeof window === 'undefined') {
+    if (typeof window === 'undefined' || !isClient) {
       return false;
     }
 
@@ -46,59 +50,62 @@ export default function AddToHomeScreenPrompt() {
     return true;
   };
 
-  // Check if the user has dismissed the prompt before and if app is installed
   useEffect(() => {
-    const dismissed = localStorage.getItem('add-to-home-dismissed');
-    if (dismissed === 'true') {
-      setHasDismissed(true);
-    } else if (isAppInstalled()) {
-      setHasDismissed(true);
-      localStorage.setItem('add-to-home-dismissed', 'true');
-    } else {
-      // Show the prompt after a delay if the user hasn't dismissed it
-      const timer = setTimeout(() => {
-        setIsVisible(true);
-      }, 3000); // 3 second delay
+    // Mark that we're on the client
+    setIsClient(true);
 
-      return () => clearTimeout(timer);
-    }
-  }, []);
+    if (typeof window === 'undefined') return;
 
-  // Set up the beforeinstallprompt event listener (for browsers that support it)
-  useEffect(() => {
-    const isSupported = 'beforeinstallprompt' in window;
+    const handleBeforeInstallPrompt = (e: Event) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later
+      setDeferredPrompt(e);
+    };
 
-    // If beforeinstallprompt is supported, set up the handler
-    if (isSupported) {
-      const handleBeforeInstallPrompt = (e: Event) => {
-        // Prevent the mini-infobar from appearing on mobile
-        e.preventDefault();
-        // Stash the event so it can be triggered later
-        setDeferredPrompt(e);
-      };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-      // Also handle the appinstalled event
-      const handleAppInstalled = () => {
-        // App was installed, hide any prompts
-        setIsVisible(false);
+    // Also handle the appinstalled event
+    const handleAppInstalled = () => {
+      // App was installed, hide any prompts
+      setIsVisible(false);
+      if (typeof localStorage !== 'undefined') {
         localStorage.setItem('add-to-home-dismissed', 'true');
+      }
+      setHasDismissed(true);
+    };
+
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    // Check if the user has dismissed the prompt before and if app is installed
+    if (typeof localStorage !== 'undefined') {
+      const dismissed = localStorage.getItem('add-to-home-dismissed');
+      if (dismissed === 'true') {
         setHasDismissed(true);
-      };
+      } else if (isAppInstalled()) {
+        setHasDismissed(true);
+        localStorage.setItem('add-to-home-dismissed', 'true');
+      } else {
+        // Show the prompt after a delay if the user hasn't dismissed it
+        const timer = setTimeout(() => {
+          setIsVisible(true);
+        }, 3000); // 3 second delay
 
-      window.addEventListener('appinstalled', handleAppInstalled);
-
-      // Cleanup
-      return () => {
-        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-        window.removeEventListener('appinstalled', handleAppInstalled);
-      };
+        return () => clearTimeout(timer);
+      }
     }
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
   }, []);
 
   // Handle install button click
   const handleInstallClick = useCallback(async () => {
+    if (typeof window === 'undefined') return;
+
     // If we have the deferred prompt (browser supports it), use it
     if (deferredPrompt) {
       const promptEvent = deferredPrompt as any;
@@ -119,21 +126,34 @@ export default function AddToHomeScreenPrompt() {
       setDeferredPrompt(null);
     } else {
       // Manual installation instructions for browsers that don't support install prompts
-      alert('برای نصب برنامه:\n\n1. در گوشه بالا سمت راست صفحه (یا در نوار آدرس) روی دکمه منو کلیک کنید\n2. گزینه "افزودن به صفحه اصلی" یا "Install" را انتخاب کنید\n\n(روی دستگاه موبایل باید این گزینه نمایان شود)');
+      if (typeof alert !== 'undefined') {
+        alert('برای نصب برنامه:\n\n1. در گوشه بالا سمت راست صفحه (یا در نوار آدرس) روی دکمه منو کلیک کنید\n2. گزینه "افزودن به صفحه اصلی" یا "Install" را انتخاب کنید\n\n(روی دستگاه موبایل باید این گزینه نمایان شود)');
+      }
     }
 
     // Hide the prompt and mark as dismissed
     setIsVisible(false);
-    localStorage.setItem('add-to-home-dismissed', 'true');
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('add-to-home-dismissed', 'true');
+    }
     setHasDismissed(true);
   }, [deferredPrompt]);
 
   // Handle dismiss button click
   const handleDismissClick = () => {
+    if (typeof window === 'undefined') return;
+
     setIsVisible(false);
-    localStorage.setItem('add-to-home-dismissed', 'true');
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('add-to-home-dismissed', 'true');
+    }
     setHasDismissed(true);
   };
+
+  // Don't render anything on the server
+  if (!isClient) {
+    return null;
+  }
 
   // If the prompt has been dismissed or is not visible, don't render anything
   if (!isVisible || hasDismissed) {
