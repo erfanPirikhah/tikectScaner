@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/dialog';
 import { LogOut, User } from 'lucide-react';
 import { showToast } from '@/lib/toast';
+import Logo from '@/components/Logo';
 
 interface HeaderProps {
   title: string;
@@ -77,11 +78,12 @@ export default function Header({ title, showBackButton = false, backButtonAction
               <span className="ml-2">→</span> بازگشت
             </Button>
           ) : (
-            <div className="text-xl font-bold text-foreground">{title}</div>
+            <Logo size="sm" showText={false} />
           )}
         </div>
 
         <div className="flex items-center gap-3">
+          <div className="text-xl font-bold text-foreground">{title}</div>
           {!hideLogout && isLoggedIn && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { CalendarIcon } from 'lucide-react';
+import Image from 'next/image';
 
 // Define types for events
 interface Event {
@@ -100,12 +101,18 @@ export default function Events() {
     fetchEvents();
   }, [isLoggedIn, token, websiteUrl, router, setEvents, setStoreError, setStoreLoading]);
 
+  const [loadingEventId, setLoadingEventId] = useState<number | null>(null);
+
   const handleEventSelect = (event: Event) => {
     // If it's a mock event (negative ID), don't navigate
     if (event.event_id < 0) {
       showToast.info('این یک رویداد نمونه است و داده واقعی ندارد');
       return;
     }
+
+    // Set loading state
+    setLoadingEventId(event.event_id);
+
     // In a real app, you might want to set the selected event in the store
     // For now, we'll just pass the event ID to the scanner
     router.push(`/scan?eventId=${event.event_id}`);
@@ -126,7 +133,10 @@ export default function Events() {
             {Array.from({ length: 15 }).map((_, index) => (
               <Card key={index} className="overflow-hidden">
                 <CardHeader className="pb-3">
-                  <Skeleton className="h-6 w-3/4" />
+                  <div className="flex justify-between items-start">
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="w-5 h-5 rounded-sm" />
+                  </div>
                 </CardHeader>
                 <CardContent className="pb-3">
                   <Skeleton className="h-4 w-full" />
@@ -156,13 +166,21 @@ export default function Events() {
               {currentEvents.map((event: Event) => (
                 <Card
                   key={event.event_id}
-                  className={`overflow-hidden ${event.event_id >= 0 ? 'cursor-pointer transition-all duration-300 hover:shadow-lg' : 'opacity-70 cursor-not-allowed'}`}
+                  className={`overflow-hidden ${event.event_id >= 0 ? 'cursor-pointer transition-all duration-300 hover:shadow-lg' : 'opacity-70 cursor-not-allowed'} ${loadingEventId === event.event_id ? 'opacity-70' : ''}`}
                   onClick={() => handleEventSelect(event)}
                 >
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-xl line-clamp-2">{event.event_name}</CardTitle>
-                      <CalendarIcon className="h-5 w-5 text-muted-foreground" />
+                      <div className="w-5 h-5 relative">
+                        <Image
+                          src="/ALogo.png"
+                          alt="Event Logo"
+                          fill
+                          style={{ objectFit: 'contain' }}
+                          className="rounded-sm"
+                        />
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -176,13 +194,21 @@ export default function Events() {
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={event.event_id < 0}
+                      disabled={event.event_id < 0 || loadingEventId === event.event_id}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleEventSelect(event);
                       }}
                     >
-                      {event.event_id < 0 ? 'ناموجود' : 'مشاهده جزئیات'}
+                      {loadingEventId === event.event_id ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          در حال بارگذاری...
+                        </>
+                      ) : event.event_id < 0 ? 'ناموجود' : 'مشاهده جزئیات'}
                     </Button>
                   </CardFooter>
                 </Card>

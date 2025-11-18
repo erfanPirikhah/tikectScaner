@@ -7,6 +7,54 @@ import Header from '@/components/common/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
+// Function to convert Arabic/Persian digits to English digits
+const normalizeDigits = (str: string): string => {
+  if (!str) return str;
+  return str.replace(/[\u0660-\u0669\u06F0-\u06F9]/g, (char) => {
+    const arabicDigit = '\u0660-\u0669';
+    const persianDigit = '\u06F0-\u06F9';
+    const codePoint = char.codePointAt(0);
+    if (codePoint && codePoint >= 0x0660 && codePoint <= 0x0669) {
+      // Arabic digits (U+0660 to U+0669)
+      return String.fromCharCode(codePoint - 0x0660 + 0x0030);
+    } else if (codePoint && codePoint >= 0x06F0 && codePoint <= 0x06F9) {
+      // Persian digits (U+06F0 to U+06F9)
+      return String.fromCharCode(codePoint - 0x06F0 + 0x0030);
+    }
+    return char;
+  });
+};
+
+// Function to format date and time strings to Persian format
+const formatDate = (dateStr: string): string => {
+  try {
+    if (!dateStr) return '';
+
+    // Normalize digits first
+    const cleanStr = normalizeDigits(dateStr);
+
+    // For ISO strings, parse and format them
+    if (cleanStr.includes('T')) {
+      const date = new Date(cleanStr);
+      if (isNaN(date.getTime())) return dateStr; // If parsing fails, return original string
+
+      // Format to YYYY/MM/DD HH:mm
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+
+      return `${year}/${month}/${day} ${hours}:${minutes}`;
+    }
+
+    // If it's already in a known format, return as is
+    return cleanStr;
+  } catch (error) {
+    return dateStr;
+  }
+};
+
 export default function ScanResultClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -115,13 +163,13 @@ export default function ScanResultClient() {
                 {time && (
                   <div className="flex justify-between">
                     <span className="font-medium text-muted-foreground">زمان چک‌این:</span>
-                    <span className="mr-2 text-foreground">{time}</span>
+                    <span className="mr-2 text-foreground">{formatDate(time)}</span>
                   </div>
                 )}
                 {eCal && (
                   <div className="flex justify-between">
                     <span className="font-medium text-muted-foreground">تاریخ رویداد:</span>
-                    <span className="mr-2 text-foreground">{eCal}</span>
+                    <span className="mr-2 text-foreground">{formatDate(eCal)}</span>
                   </div>
                 )}
                 {ticketStatus && (

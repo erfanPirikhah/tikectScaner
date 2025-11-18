@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showToast } from '@/lib/toast';
 import { Loader2 } from 'lucide-react';
+import Logo from '@/components/Logo';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -67,10 +68,7 @@ export default function Login() {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto bg-primary/10 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-3">
-            <span className="text-2xl font-bold text-primary">i</span>
-          </div>
-          <CardTitle className="text-2xl font-bold">itiket</CardTitle>
+          <Logo size="lg" showText={true} />
           <CardDescription>ورود به حساب کاربری</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
