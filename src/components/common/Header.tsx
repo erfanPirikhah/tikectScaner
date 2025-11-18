@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useAuthStore } from '@/lib/store';
 import { wordpressService } from '@/services/wordpress';
 import { useRouter } from 'next/navigation';
@@ -14,8 +15,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { LogOut, User } from 'lucide-react';
-import { ModeToggle } from './ModeToggle';
 import { showToast } from '@/lib/toast';
 
 interface HeaderProps {
@@ -28,6 +36,7 @@ interface HeaderProps {
 export default function Header({ title, showBackButton = false, backButtonAction, hideLogout = false }: HeaderProps) {
   const router = useRouter();
   const { isLoggedIn, logout, websiteUrl, user } = useAuthStore();
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
 
   const handleLogout = async () => {
     const token = useAuthStore.getState().token;
@@ -45,6 +54,11 @@ export default function Header({ title, showBackButton = false, backButtonAction
     }
     logout();
     router.push('/login');
+    setLogoutDialogOpen(false);
+  };
+
+  const handleCancelLogout = () => {
+    setLogoutDialogOpen(false);
   };
 
   const initials = user?.name ? user.name.charAt(0).toUpperCase() : '?';
@@ -68,8 +82,6 @@ export default function Header({ title, showBackButton = false, backButtonAction
         </div>
 
         <div className="flex items-center gap-3">
-          <ModeToggle />
-
           {!hideLogout && isLoggedIn && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -98,7 +110,10 @@ export default function Header({ title, showBackButton = false, backButtonAction
                     <span>پروفایل</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout} className="flex items-center">
+                <DropdownMenuItem
+                  onClick={() => setLogoutDialogOpen(true)}
+                  className="flex items-center text-destructive"
+                >
                   <LogOut className="ml-2 h-4 w-4" />
                   <span>خروج</span>
                 </DropdownMenuItem>
@@ -107,6 +122,34 @@ export default function Header({ title, showBackButton = false, backButtonAction
           )}
         </div>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      <Dialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>تایید خروج</DialogTitle>
+            <DialogDescription>
+              آیا از خروج از حساب کاربری خود اطمینان دارید؟
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-center">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCancelLogout}
+            >
+              لغو
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleLogout}
+            >
+              خروج
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 }

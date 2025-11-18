@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ClientLayout from './ClientLayout';
 import { ThemeProvider } from '@/context/theme-provider';
+import { PWAProvider } from '@/context/PWAContext';
+import AddToHomeScreenPrompt from '@/components/AddToHomeScreenPrompt';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,11 +45,14 @@ export default function RootLayout({
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="light"
+          enableSystem={false}
           disableTransitionOnChange
         >
-          <ClientLayout>{children}</ClientLayout>
+          <PWAProvider>
+            <ClientLayout>{children}</ClientLayout>
+            <AddToHomeScreenPrompt />
+          </PWAProvider>
         </ThemeProvider>
       </body>
     </html>

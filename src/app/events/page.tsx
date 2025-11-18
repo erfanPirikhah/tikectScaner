@@ -28,12 +28,23 @@ export default function Events() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const eventsPerPage = 6; // Number of events to show per page
+  const eventsPerPage = 15; // Updated to show 15 events per page
 
   // Calculate pagination
   const indexOfLastEvent = currentPage * eventsPerPage;
   const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
-  const currentEvents = allEvents.slice(indexOfFirstEvent, indexOfLastEvent);
+  let currentEvents = allEvents.slice(indexOfFirstEvent, indexOfLastEvent);
+
+  // Fill with mock events to ensure we show exactly 15 events if on first page
+  if (currentPage === 1 && currentEvents.length < eventsPerPage) {
+    const mockEventsCount = eventsPerPage - currentEvents.length;
+    for (let i = 0; i < mockEventsCount; i++) {
+      currentEvents.push({
+        event_id: -1 - i, // Using negative IDs to identify mock events
+        event_name: `رویداد آزمایشی ${i + 1}`
+      });
+    }
+  }
   const totalPages = Math.ceil(allEvents.length / eventsPerPage);
 
   useEffect(() => {
@@ -90,6 +101,11 @@ export default function Events() {
   }, [isLoggedIn, token, websiteUrl, router, setEvents, setStoreError, setStoreLoading]);
 
   const handleEventSelect = (event: Event) => {
+    // If it's a mock event (negative ID), don't navigate
+    if (event.event_id < 0) {
+      showToast.info('این یک رویداد نمونه است و داده واقعی ندارد');
+      return;
+    }
     // In a real app, you might want to set the selected event in the store
     // For now, we'll just pass the event ID to the scanner
     router.push(`/scan?eventId=${event.event_id}`);
@@ -106,9 +122,9 @@ export default function Events() {
       <div className="flex flex-col min-h-screen">
         <Header title="رویدادها" />
         <main className="flex-1 p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((item) => (
-              <Card key={item} className="overflow-hidden">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {Array.from({ length: 15 }).map((_, index) => (
+              <Card key={index} className="overflow-hidden">
                 <CardHeader className="pb-3">
                   <Skeleton className="h-6 w-3/4" />
                 </CardHeader>
@@ -136,11 +152,11 @@ export default function Events() {
       <main className="flex-1 p-4 max-w-7xl mx-auto w-full">
         {currentEvents.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {currentEvents.map((event: Event) => (
                 <Card
                   key={event.event_id}
-                  className="overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg"
+                  className={`overflow-hidden ${event.event_id >= 0 ? 'cursor-pointer transition-all duration-300 hover:shadow-lg' : 'opacity-70 cursor-not-allowed'}`}
                   onClick={() => handleEventSelect(event)}
                 >
                   <CardHeader className="pb-3">
@@ -160,12 +176,13 @@ export default function Events() {
                     <Button
                       variant="outline"
                       size="sm"
+                      disabled={event.event_id < 0}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleEventSelect(event);
                       }}
                     >
-                      مشاهده جزئیات
+                      {event.event_id < 0 ? 'ناموجود' : 'مشاهده جزئیات'}
                     </Button>
                   </CardFooter>
                 </Card>
