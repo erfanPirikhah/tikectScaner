@@ -2,7 +2,7 @@
 
 // Use a cache version that changes only when you want to force an update
 // Increment this version number when you deploy a new version of your app
-const CACHE_VERSION = 'itiket-pwa-v1.1'; // Change this when deploying updates
+const CACHE_VERSION = 'itiket-pwa-v1.2'; // Updated with Dana font implementation
 const CACHE_NAME = CACHE_VERSION;
 
 const urlsToCache = [
@@ -17,7 +17,19 @@ const urlsToCache = [
   '/globe.svg',
   '/next.svg',
   '/vercel.svg',
-  '/window.svg'
+  '/window.svg',
+  // Dana font files
+  '/Webfonts/css/fontiran.css',
+  '/Webfonts/css/style.css',
+  '/Webfonts/woff2/Dana-Thin.woff2',
+  '/Webfonts/woff2/Dana-UltraLight.woff2',
+  '/Webfonts/woff2/Dana-Light.woff2',
+  '/Webfonts/woff2/Dana-Regular.woff2',
+  '/Webfonts/woff2/Dana-Medium.woff2',
+  '/Webfonts/woff2/Dana-DemiBold.woff2',
+  '/Webfonts/woff2/Dana-Bold.woff2',
+  '/Webfonts/woff2/Dana-ExtraBold.woff2',
+  '/Webfonts/woff2/Dana-Black.woff2'
 ];
 
 // Install a service worker

@@ -1,7 +1,7 @@
 {
-  "name": "Ticket Scanner PWA",
-  "short_name": "Itiket",
-  "description": "QR code ticket scanning application",
+  "name": "نرم افزار اختصاصی CheckIn بلیت",
+  "short_name": "CheckIn",
+  "description": "نرم افزار اختصاصی CheckIn بلیت",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

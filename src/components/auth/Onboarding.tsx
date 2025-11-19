@@ -17,22 +17,22 @@ const Onboarding = () => {
 
   const onboardingSlides = [
     {
-      title: "به اسکنر بلیت خوش آمدید",
-      description: "پیشرفته‌ترین سیستم اعتبارسنجی بلیت با فناوری هوش مصنوعی و اسکن QR پیشرفته",
+      title: "اپراتور گرامی، خوش آمدید.",
+      description: "بدون محدودیت در هر دیوایس فرآیند چک این را انجام دهید.",
       icon: <QrCode className="w-16 h-16" />,
       gradient: "from-blue-500 to-purple-600",
       bgGradient: "from-blue-50 to-purple-50"
     },
     {
-      title: "فرآیند هوشمند",
-      description: "اسکن فوری و اعتبارسنجی خودکار بلیت‌ها با دقت ۹۹.۹٪ و سرعت فوق‌العاده",
+      title: "عملکرد سریع و هوشمند",
+      description: "بی وقفه و در کمترین زمان ممکن بلیت ها بررسی کنید.",
       icon: <Scan className="w-16 h-16" />,
       gradient: "from-green-500 to-teal-600",
       bgGradient: "from-green-50 to-teal-50"
     },
     {
-      title: "آماده شروع هستید؟",
-      description: "با ورود به سیستم، از تمامی قابلیت‌های پیشرفته اسکنر بلیت بهره‌مند شوید",
+      title: "یک قدم فاصله دارید",
+      description: "با دسترسی خود به سامانه وارد شوید و چک‌این را آغاز کنید.",
       icon: <CheckCircle2 className="w-16 h-16" />,
       gradient: "from-orange-500 to-red-600",
       bgGradient: "from-orange-50 to-red-50"
@@ -80,10 +80,10 @@ const Onboarding = () => {
               <div className="flex items-center gap-3">
                 <Logo size="lg" showText={false} />
                 <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                  iticket
+                  نرم افزار اختصاصی CheckIn بلیت
                 </span>
               </div>
-              
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -174,10 +174,10 @@ const Onboarding = () => {
               <div className="flex items-center gap-3">
                 <Logo size="lg" showText={false} />
                 <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                  iticket
+                  نرم افزار اختصاصی CheckIn بلیت
                 </span>
               </div>
-              
+
               <Button
                 variant="ghost"
                 size="sm"

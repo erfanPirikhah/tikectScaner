@@ -1,22 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ClientLayout from './ClientLayout';
 import { ThemeProvider } from '@/context/theme-provider';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin", "cyrillic"], // Using available subsets that support extended characters
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin", "cyrillic"], // Using available subsets that support extended characters
-});
-
 export const metadata: Metadata = {
-  title: "اسکنر بلیت PWA",
-  description: "برنامه اسکن بلیت کد QR",
+  title: "نرم افزار اختصاصی CheckIn بلیت",
+  description: "نرم افزار اختصاصی CheckIn بلیت",
   manifest: "/manifest.json",
 };
 
@@ -43,10 +32,9 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="16x16" href="/ALogo.png" />
         <link rel="apple-touch-icon" href="/ALogo.png" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v31.0.0/dist/font-face.css" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className="antialiased"
       >
         <ThemeProvider
           attribute="class"

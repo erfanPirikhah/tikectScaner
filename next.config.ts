@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true, // This is important for static exports
   },
+  // Add asset prefix for fonts - using empty string for static export
+  assetPrefix: '',
   // Remove any server-side features
   trailingSlash: true, // Optional: adds trailing slashes to URLs
 };

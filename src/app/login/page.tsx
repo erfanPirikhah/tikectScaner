@@ -76,10 +76,10 @@ export default function Login() {
               </div>
               <div>
                 <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                  iticket
+                  نرم افزار اختصاصی CheckIn بلیت
                 </CardTitle>
                 <CardDescription className="text-lg mt-2">
-                  ورود به پنل مدیریت
+                  ورود به پنل چک این
                 </CardDescription>
               </div>
             </div>
@@ -106,7 +106,7 @@ export default function Login() {
                   <Globe className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  آدرس سایت وردپرس خود را وارد کنید
+                  لطفا آدرس سایت سامانه را وارد کنید.
                 </p>
               </div>
 
@@ -127,6 +127,9 @@ export default function Login() {
                   />
                   <User className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                 </div>
+                <p className="text-sm text-muted-foreground">
+                  نام کاربری اپراتور چک‌این را وارد کنید.
+                </p>
               </div>
 
               {/* Password Field */}
@@ -152,6 +155,9 @@ export default function Login() {
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
+                <p className="text-sm text-muted-foreground">
+                  رمزعبور اپراتور چک‌این را وارد کنید.
+                </p>
               </div>
 
               <Button
@@ -194,10 +200,10 @@ export default function Login() {
               </div>
               <div>
                 <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                  iticket
+                  نرم افزار اختصاصی CheckIn بلیت
                 </CardTitle>
                 <CardDescription className="text-lg mt-2">
-                  ورود به پنل مدیریت اسکنر بلیت
+                  ورود به پنل چک این
                 </CardDescription>
               </div>
             </div>
@@ -224,7 +230,7 @@ export default function Login() {
                   <Globe className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  آدرس سایت وردپرس خود را وارد کنید
+                  لطفا آدرس سایت سامانه را وارد کنید.
                 </p>
               </div>
 
@@ -245,6 +251,9 @@ export default function Login() {
                   />
                   <User className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                 </div>
+                <p className="text-sm text-muted-foreground">
+                  نام کاربری اپراتور چک‌این را وارد کنید.
+                </p>
               </div>
 
               {/* Password Field */}
@@ -270,6 +279,9 @@ export default function Login() {
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
+                <p className="text-sm text-muted-foreground">
+                  رمزعبور اپراتور چک‌این را وارد کنید.
+                </p>
               </div>
 
               <Button
