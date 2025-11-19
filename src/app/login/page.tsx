@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showToast } from '@/lib/toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, LogIn, Globe, User, Lock, Eye, EyeOff } from 'lucide-react';
 import Logo from '@/components/Logo';
 
 export default function Login() {
@@ -16,6 +16,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [websiteUrl, setWebsiteUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const router = useRouter();
   const { login } = useAuth();
@@ -64,75 +65,241 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="flex flex-col items-center text-center">
-          <div className="mb-4">
-            <Logo size="xl" showText={false} />
-          </div>
-          <CardTitle className="text-2xl font-bold mb-1">iticket</CardTitle>
-          <CardDescription>ورود به حساب کاربری</CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="websiteUrl">آدرس وب‌سایت</Label>
-              <Input
-                id="websiteUrl"
-                type="url"
-                value={websiteUrl}
-                onChange={(e) => setWebsiteUrl(e.target.value)}
-                placeholder="https://your-website.com"
-                required
-              />
-              <p className="text-xs text-muted-foreground mt-2">
-                آدرس سایت وردپرس خود را وارد کنید
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 p-4">
+      {/* Mobile Full Screen Card */}
+      <div className="sm:hidden w-full h-full">
+        <Card className="w-full h-full rounded-none border-none shadow-2xl flex flex-col">
+          <CardHeader className="flex-shrink-0 pt-12 pb-8 px-6">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="p-4 bg-gradient-to-br from-primary to-primary/80 rounded-2xl shadow-lg">
+                <Logo size="xl" showText={false} className="text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                  iticket
+                </CardTitle>
+                <CardDescription className="text-lg mt-2">
+                  ورود به پنل مدیریت
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardContent className="flex-1 px-6 pb-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Website URL Field */}
+              <div className="space-y-3">
+                <Label htmlFor="websiteUrl" className="text-base font-medium flex items-center gap-2">
+                  <Globe className="w-4 h-4" />
+                  آدرس وب‌سایت
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="websiteUrl"
+                    type="url"
+                    value={websiteUrl}
+                    onChange={(e) => setWebsiteUrl(e.target.value)}
+                    placeholder="https://your-website.com"
+                    required
+                    className="h-12 text-lg pr-12 border-2 focus:border-primary transition-colors"
+                  />
+                  <Globe className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  آدرس سایت وردپرس خود را وارد کنید
+                </p>
+              </div>
+
+              {/* Username Field */}
+              <div className="space-y-3">
+                <Label htmlFor="username" className="text-base font-medium flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  نام کاربری
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="username"
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                    className="h-12 text-lg pr-12 border-2 focus:border-primary transition-colors"
+                  />
+                  <User className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+                </div>
+              </div>
+
+              {/* Password Field */}
+              <div className="space-y-3">
+                <Label htmlFor="password" className="text-base font-medium flex items-center gap-2">
+                  <Lock className="w-4 h-4" />
+                  رمز عبور
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="h-12 text-lg pr-12 border-2 focus:border-primary transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full h-12 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                disabled={loading}
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    در حال ورود...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <LogIn className="w-5 h-5" />
+                    ورود به سیستم
+                  </span>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+
+          <CardFooter className="flex-shrink-0 pb-8 px-6">
+            <div className="w-full text-center">
+              <p className="text-sm text-muted-foreground">
+                سیستم مدیریت بلیت‌های رویداد
               </p>
             </div>
-
-            <div>
-              <Label htmlFor="username">نام کاربری</Label>
-              <Input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="password">رمز عبور</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col">
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  در حال ورود...
-                </>
-              ) : (
-                'ورود'
-              )}
-            </Button>
           </CardFooter>
-        </form>
-        {/* <div className="pb-6 text-center text-sm text-muted-foreground">
-          ساخته شده با{' '}
-          <span className="text-primary font-medium">Next.js PWA</span>
-        </div> */}
+        </Card>
+      </div>
+
+      {/* Desktop Card */}
+      <Card className="hidden sm:flex w-full max-w-lg mx-auto shadow-2xl border-0 overflow-hidden">
+        <div className="flex-1 p-8 bg-gradient-to-br from-blue-50 to-purple-50">
+          <CardHeader className="px-0 pt-4 pb-8">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="p-4 bg-gradient-to-br from-primary to-primary/80 rounded-2xl shadow-lg">
+                <Logo size="xl" showText={false} className="text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                  iticket
+                </CardTitle>
+                <CardDescription className="text-lg mt-2">
+                  ورود به پنل مدیریت اسکنر بلیت
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardContent className="px-0 pb-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Website URL Field */}
+              <div className="space-y-3">
+                <Label htmlFor="websiteUrl-desktop" className="text-base font-medium flex items-center gap-2">
+                  <Globe className="w-4 h-4" />
+                  آدرس وب‌سایت
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="websiteUrl-desktop"
+                    type="url"
+                    value={websiteUrl}
+                    onChange={(e) => setWebsiteUrl(e.target.value)}
+                    placeholder="https://your-website.com"
+                    required
+                    className="h-12 text-lg pr-12 border-2 focus:border-primary transition-colors"
+                  />
+                  <Globe className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  آدرس سایت وردپرس خود را وارد کنید
+                </p>
+              </div>
+
+              {/* Username Field */}
+              <div className="space-y-3">
+                <Label htmlFor="username-desktop" className="text-base font-medium flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  نام کاربری
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="username-desktop"
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                    className="h-12 text-lg pr-12 border-2 focus:border-primary transition-colors"
+                  />
+                  <User className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+                </div>
+              </div>
+
+              {/* Password Field */}
+              <div className="space-y-3">
+                <Label htmlFor="password-desktop" className="text-base font-medium flex items-center gap-2">
+                  <Lock className="w-4 h-4" />
+                  رمز عبور
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="password-desktop"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="h-12 text-lg pr-12 border-2 focus:border-primary transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full h-12 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                disabled={loading}
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    در حال ورود...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <LogIn className="w-5 h-5" />
+                    ورود به سیستم
+                  </span>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+
+          <CardFooter className="px-0 pb-4">
+            <div className="w-full text-center">
+              <p className="text-sm text-muted-foreground">
+                پیشرفته‌ترین سیستم اسکن و اعتبارسنجی بلیت
+              </p>
+            </div>
+          </CardFooter>
+        </div>
       </Card>
     </div>
   );
