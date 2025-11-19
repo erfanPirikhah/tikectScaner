@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useEventStore, useAuthStore } from '@/lib/store';
 import { wordpressService } from '@/services/wordpress';
 import { useRouter } from 'next/navigation';
-import Header from '@/components/common/Header';
 import { showToast } from '@/lib/toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -205,7 +204,7 @@ export default function Events() {
                           </svg>
                           در حال بارگذاری...
                         </>
-                      ) : event.event_id < 0 ? 'ناموجود' : 'مشاهده جزئیات'}
+                      ) : event.event_id < 0 ? 'ناموجود' :'بررسی بلیت'}
                     </Button>
                   </CardFooter>
                 </Card>

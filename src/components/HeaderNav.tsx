@@ -34,7 +34,7 @@ const HeaderNav = () => {
               className="w-8 h-8 rounded-sm"
             />
             <span className=" font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              نرم افزار  CheckIn بلیت
+          CheckIn 
             </span>
           </Link>
         </div>

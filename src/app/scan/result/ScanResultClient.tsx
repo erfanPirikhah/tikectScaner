@@ -114,10 +114,24 @@ export default function ScanResultClient() {
         <Card className="w-full max-w-md">
           <CardHeader className="items-center">
             {/* Status icon */}
-            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <span className={`text-4xl ${status === 'SUCCESS' ? 'text-success' : 'text-error'}`}>
-                {status === 'SUCCESS' ? '✓' : '✕'}
-              </span>
+            <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 ${status === 'SUCCESS' ? 'bg-green-600' : 'bg-red-600'}`}>
+              {status === 'SUCCESS' ? (
+                <img
+                  src="/icons/scan/Ok.png"
+                  alt="تایید"
+                  width={80}
+                  height={80}
+                  className="w-20 h-20"
+                />
+              ) : (
+                <img
+                  src="/icons/scan/Not.png"
+                  alt="رد"
+                  width={80}
+                  height={80}
+                  className="w-20 h-20"
+                />
+              )}
             </div>
 
             {/* Status text */}
