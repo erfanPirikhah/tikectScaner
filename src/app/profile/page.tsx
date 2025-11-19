@@ -2,7 +2,6 @@
 
 import { useAuthStore } from '@/lib/store';
 import { useRouter } from 'next/navigation';
-import Header from '@/components/common/Header';
 import { wordpressService } from '@/services/wordpress';
 import { showToast } from '@/lib/toast';
 import { Button } from '@/components/ui/button';
@@ -37,7 +36,7 @@ export default function Profile() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header title="پروفایل" />
+      {/* <Header title="پروفایل" /> */}
 
       {/* Content */}
       <main className="flex-1 p-4">

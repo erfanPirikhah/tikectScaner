@@ -3,7 +3,6 @@
 import { useEffect } from 'react';
 import { useAuthStore } from '@/lib/store';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Header from '@/components/common/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -104,11 +103,11 @@ export default function ScanResultClient() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header
+      {/* <Header
         title="نتیجه اسکن"
         showBackButton={true}
         backButtonAction={handleGoBack}
-      />
+      /> */}
 
       {/* Content */}
       <main className="flex-1 flex flex-col items-center justify-center p-6">

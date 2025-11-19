@@ -79,7 +79,7 @@ const Onboarding = () => {
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-3">
                 <Logo size="lg" showText={false} />
-                <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                <span className="text-accent font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                   نرم افزار اختصاصی CheckIn بلیت
                 </span>
               </div>
@@ -173,7 +173,7 @@ const Onboarding = () => {
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-3">
                 <Logo size="lg" showText={false} />
-                <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                <span className="text-lg font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                   نرم افزار اختصاصی CheckIn بلیت
                 </span>
               </div>

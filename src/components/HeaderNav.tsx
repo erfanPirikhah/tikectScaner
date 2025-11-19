@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Calendar, User } from 'lucide-react';
+import { Calendar, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const HeaderNav = () => {
@@ -33,8 +33,8 @@ const HeaderNav = () => {
               height={32}
               className="w-8 h-8 rounded-sm"
             />
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              نرم افزار اختصاصی CheckIn بلیت
+            <span className=" font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              نرم افزار  CheckIn بلیت
             </span>
           </Link>
         </div>
@@ -55,7 +55,7 @@ const HeaderNav = () => {
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 )}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className="w-2.5 h-2.5" />
                 <span className="text-xs">{item.label}</span>
               </Link>
             );
