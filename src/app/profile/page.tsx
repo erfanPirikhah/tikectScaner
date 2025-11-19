@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useAuthStore } from '@/lib/store';
 import { useRouter } from 'next/navigation';
 import { wordpressService } from '@/services/wordpress';
@@ -7,13 +8,27 @@ import { showToast } from '@/lib/toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 export default function Profile() {
   const { user, isLoggedIn, logout, websiteUrl } = useAuthStore();
   const router = useRouter();
 
+  useEffect(() => {
+    if (!isLoggedIn) {
+      router.push('/login/');
+    }
+  }, [isLoggedIn, router]);
+
   if (!isLoggedIn) {
-    router.push('/login/');
     return null;
   }
 
@@ -76,13 +91,35 @@ export default function Profile() {
               <Separator className="my-6" />
 
               <div className="mt-6">
-                <Button
-                  onClick={handleLogout}
-                  variant="destructive"
-                  className="w-full"
-                >
-                  خروج
-                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      className="w-full"
+                    >
+                      خروج
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>تایید خروج</DialogTitle>
+                      <DialogDescription>
+                        آیا از خروج از حساب کاربری خود اطمینان دارید؟
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={(e) => {
+                        e.stopPropagation();
+                      }} className="mr-2">لغو</Button>
+                      <Button onClick={(e) => {
+                        e.stopPropagation();
+                        handleLogout();
+                      }}>
+                        خروج
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
             </CardContent>
           </Card>

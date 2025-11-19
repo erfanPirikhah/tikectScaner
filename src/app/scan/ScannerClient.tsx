@@ -256,14 +256,22 @@ export default function ScannerClient() {
 
       setScanResult(response);
 
-      // Show appropriate toast based on result
+      // Play appropriate sound based on result
+      let audio: HTMLAudioElement;
       if (response.status === 'SUCCESS') {
+        audio = new Audio('/ring/ok.mp3');
         console.log('[DEBUG] Ticket validation successful:', response);
         showToast.success( 'بلیت با موفقیت تأیید شد');
       } else {
+        audio = new Audio('/ring/bad.mp3');
         console.log('[DEBUG] Ticket validation failed:', response);
         showToast.error( 'خطا در تأیید بلیت');
       }
+
+      // Play the sound
+      audio.play().catch(error => {
+        console.error('Error playing sound:', error);
+      });
 
       // Always navigate to results after a short delay, regardless of validity status
       setTimeout(() => {
@@ -305,6 +313,12 @@ export default function ScannerClient() {
       });
       showToast.error('اعتبارسنجی بلیت ناموفق بود. لطفاً دوباره تلاش کنید.');
       setError('اعتبارسنجی بلیت ناموفق بود. لطفاً دوباره تلاش کنید.');
+
+      // Play error sound
+      const audio = new Audio('/ring/bad.mp3');
+      audio.play().catch(error => {
+        console.error('Error playing sound:', error);
+      });
 
       // Set the scan result as a failure and navigate to results
       const errorResult = {
