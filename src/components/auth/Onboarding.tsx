@@ -6,7 +6,7 @@ import { storageService } from '@/services/storage';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ChevronLeft, ChevronRight, Scan, QrCode, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { cn } from '@/lib/utils';
 
@@ -19,21 +19,21 @@ const Onboarding = () => {
     {
       title: "اپراتور گرامی، خوش آمدید.",
       description: "بدون محدودیت در هر دیوایس فرآیند چک این را انجام دهید.",
-      icon: <QrCode className="w-16 h-16" />,
+      icon: <img src="/icons/onboard/onboard-1.png" alt="بررسی بلیت" className="w-24 h-24" />,
       gradient: "from-blue-500 to-purple-600",
       bgGradient: "from-blue-50 to-purple-50"
     },
     {
       title: "عملکرد سریع و هوشمند",
       description: "بی وقفه و در کمترین زمان ممکن بلیت ها بررسی کنید.",
-      icon: <Scan className="w-16 h-16" />,
+      icon: <img src="/icons/onboard/onboard-2.png" alt="سیستم چک این" className="w-24 h-24" />,
       gradient: "from-green-500 to-teal-600",
       bgGradient: "from-green-50 to-teal-50"
     },
     {
       title: "یک قدم فاصله دارید",
       description: "با دسترسی خود به سامانه وارد شوید و چک‌این را آغاز کنید.",
-      icon: <CheckCircle2 className="w-16 h-16" />,
+      icon: <img src="/icons/onboard/onboard-3.png" alt="تاییدیه" className="w-24 h-24" />,
       gradient: "from-orange-500 to-red-600",
       bgGradient: "from-orange-50 to-red-50"
     },
