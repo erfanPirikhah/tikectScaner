@@ -431,12 +431,6 @@ export default function ScannerClient() {
   if (cameraError) {
     return (
       <div className="flex flex-col min-h-screen">
-        <Header
-          title="اسکنر"
-          showBackButton={true}
-          backButtonAction={handleGoBack}
-        />
-
         <main className="flex-1 flex flex-col items-center justify-center p-6">
           <Card className="max-w-md w-full">
             <CardHeader>
@@ -474,13 +468,6 @@ export default function ScannerClient() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-900 to-black">
-      {/* Custom header for scanner with different styling */}
-      <Header
-        title="اسکن بلیت"
-        showBackButton={true}
-        backButtonAction={handleGoBack}
-        hideLogout={false}
-      />
 
       {/* Show loading state initially, then check for client-side capabilities */}
       {!isClient ? (
