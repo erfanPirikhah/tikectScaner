@@ -5,7 +5,6 @@ import { useScannerStore, useAuthStore } from '@/lib/store';
 import { wordpressService } from '@/services/wordpress';
 import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import Header from '@/components/common/Header';
 import { showToast } from '@/lib/toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -260,10 +259,10 @@ export default function ScannerClient() {
       // Show appropriate toast based on result
       if (response.status === 'SUCCESS') {
         console.log('[DEBUG] Ticket validation successful:', response);
-        showToast.success(response.msg || 'بلیت با موفقیت تأیید شد');
+        showToast.success( 'بلیت با موفقیت تأیید شد');
       } else {
         console.log('[DEBUG] Ticket validation failed:', response);
-        showToast.error(response.msg || 'خطا در تأیید بلیت');
+        showToast.error( 'خطا در تأیید بلیت');
       }
 
       // Always navigate to results after a short delay, regardless of validity status

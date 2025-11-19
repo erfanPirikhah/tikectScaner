@@ -5,6 +5,7 @@ import { useAuthStore } from '@/lib/store';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { toJalaali } from 'jalaali-js';
 
 // Function to convert Arabic/Persian digits to English digits
 const normalizeDigits = (str: string): string => {
@@ -24,27 +25,100 @@ const normalizeDigits = (str: string): string => {
   });
 };
 
-// Function to format date and time strings to Persian format
+// Function to format date and time strings to Persian (Shamsi) format
 const formatDate = (dateStr: string): string => {
   try {
     if (!dateStr) return '';
-
     // Normalize digits first
     const cleanStr = normalizeDigits(dateStr);
 
-    // For ISO strings, parse and format them
+    // Handle ISO format (YYYY-MM-DDTHH:mm:ss)
     if (cleanStr.includes('T')) {
+      
       const date = new Date(cleanStr);
+      console.log('===>',date)
+
       if (isNaN(date.getTime())) return dateStr; // If parsing fails, return original string
 
-      // Format to YYYY/MM/DD HH:mm
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
+      // Convert to Jalaali (Persian) calendar
+      const jalaaliDate = toJalaali(date);
+
+      const year = jalaaliDate.jy;
+      const month = jalaaliDate.jm;
+      const day = jalaaliDate.jd;
       const hours = String(date.getHours()).padStart(2, '0');
       const minutes = String(date.getMinutes()).padStart(2, '0');
 
-      return `${year}/${month}/${day} ${hours}:${minutes}`;
+      // Month names in Persian
+      const persianMonths = [
+        'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+        'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
+      ];
+
+      const monthName = persianMonths[month - 1];
+
+      return `${day} ${monthName} ${year} ${hours}:${minutes}`;
+    }
+
+    // Handle the Persian date format "Month dd, yyyy h:mm a" and ranges like "Month dd, yyyy h:mm a-h:mm a"
+    // Example: "نوامبر 17, 2025 7:28 ب.ظ" or "سپتامبر 28, 2028 6:45 ب.ظ-8:00 ب.ظ"
+    const persianDateRegex = /([^\d\s]+) (\d{1,2}), (\d{4}) (\d{1,2}):(\d{2})/;
+    const match = cleanStr.match(persianDateRegex);
+
+    if (match) {
+      const [, monthStr, day, year, hour, minute] = match;
+      const hourNum = parseInt(hour);
+      let hour24 = hourNum;
+
+      // Handle AM/PM
+      if (cleanStr.includes('PM') && hourNum < 12) {
+        hour24 = hourNum + 12;
+      } else if (cleanStr.includes('AM') && hourNum === 12) {
+        hour24 = 0;
+      } else if (cleanStr.includes('ب.ظ') && hourNum < 12) {
+        hour24 = hourNum + 12;
+      } else if (cleanStr.includes('ق.ظ') && hourNum === 12) {
+        hour24 = 0;
+      }
+
+      // Map Persian month names to indices
+      const persianMonthMap: { [key: string]: number } = {
+        'ژانویه': 0, 'فوریه': 1, 'مارس': 2, 'آوریل': 3,
+        'می': 4, 'ژوئن': 5, 'جولای': 6, 'آگوست': 7,
+        'سپتامبر': 8, 'اکتبر': 9, 'نوامبر': 10, 'دسامبر': 11,
+        'January': 0, 'February': 1, 'March': 2, 'April': 3,
+        'May': 4, 'June': 5, 'July': 6, 'August': 7,
+        'September': 8, 'October': 9, 'November': 10, 'December': 11
+      };
+
+      const monthIndex = persianMonthMap[monthStr.trim()];
+      if (monthIndex !== undefined) {
+        const date = new Date(parseInt(year), monthIndex, parseInt(day), hour24, parseInt(minute));
+
+        // Convert to Jalaali (Persian) calendar
+        const jalaaliDate = toJalaali(date);
+
+        const jYear = jalaaliDate.jy;
+        const jMonth = jalaaliDate.jm;
+        const jDay = jalaaliDate.jd;
+
+        // Month names in Persian
+        const persianMonths = [
+          'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+          'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
+        ];
+
+        const monthName = persianMonths[jMonth - 1];
+
+        // Check if it's a time range (like "6:45 PM-8:00 PM" or "6:45 ب.ظ-8:00 ب.ظ")
+        const timeRangeMatch = cleanStr.match(/(\d{1,2}):(\d{2})\s*[-–]\s*(\d{1,2}):(\d{2})/);
+        if (timeRangeMatch && timeRangeMatch[1] && timeRangeMatch[2] && timeRangeMatch[3] && timeRangeMatch[4]) {
+          // Full time range like "h:mm-h:mm"
+          return `${jDay} ${monthName} ${jYear} ${timeRangeMatch[1]}:${timeRangeMatch[2]}-${timeRangeMatch[3]}:${timeRangeMatch[4]}`;
+        }
+
+        return `${jDay} ${monthName} ${jYear} ${String(hour24).padStart(2, '0')}:${minute}`;
+      }
     }
 
     // If it's already in a known format, return as is
@@ -136,14 +210,12 @@ export default function ScanResultClient() {
 
             {/* Status text */}
             <CardTitle className={`${status === 'SUCCESS' ? 'text-success' : 'text-error'}`}>
-              {status === 'SUCCESS' ?
-                (msgShow ? msgShow : (ticketStatus === 'checked' ? 'بلیت با موفقیت چک شد' : 'بلیت معتبر')) :
-                'بلیت نامعتبر'}
+              {status === 'SUCCESS' ? 'تایید شد، بلیت معتبر است.' : 'بلیت نامعتبر'}
             </CardTitle>
           </CardHeader>
           
           <CardContent className="text-center">
-            <p className="text-foreground mb-6">{message}</p>
+            {/* <p className="text-foreground mb-6">{message}</p> */}
 
             {/* Ticket details */}
             {(name || seat || time || ticketId || nameEvent || ticketType || extraService || eCal || ticketStatus || timesChecked || checksRemaining || betweenDate) && (
