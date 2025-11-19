@@ -34,20 +34,23 @@ const formatDate = (dateStr: string): string => {
 
     // Handle ISO format (YYYY-MM-DDTHH:mm:ss)
     if (cleanStr.includes('T')) {
-      
+
       const date = new Date(cleanStr);
       console.log('===>',date)
 
       if (isNaN(date.getTime())) return dateStr; // If parsing fails, return original string
 
+      // Add 3.5 hours to the time
+      const adjustedDate = new Date(date.getTime() + (3.5 * 3600000)); // Add 3.5 hours
+
       // Convert to Jalaali (Persian) calendar
-      const jalaaliDate = toJalaali(date);
+      const jalaaliDate = toJalaali(adjustedDate);
 
       const year = jalaaliDate.jy;
       const month = jalaaliDate.jm;
       const day = jalaaliDate.jd;
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const hours = String(adjustedDate.getHours()).padStart(2, '0');
+      const minutes = String(adjustedDate.getMinutes()).padStart(2, '0');
 
       // Month names in Persian
       const persianMonths = [
@@ -95,8 +98,11 @@ const formatDate = (dateStr: string): string => {
       if (monthIndex !== undefined) {
         const date = new Date(parseInt(year), monthIndex, parseInt(day), hour24, parseInt(minute));
 
+        // Add 3.5 hours to the time
+        const adjustedDate = new Date(date.getTime() + (3.5 * 3600000)); // Add 3.5 hours
+
         // Convert to Jalaali (Persian) calendar
-        const jalaaliDate = toJalaali(date);
+        const jalaaliDate = toJalaali(adjustedDate);
 
         const jYear = jalaaliDate.jy;
         const jMonth = jalaaliDate.jm;
@@ -117,7 +123,7 @@ const formatDate = (dateStr: string): string => {
           return `${jDay} ${monthName} ${jYear} ${timeRangeMatch[1]}:${timeRangeMatch[2]}-${timeRangeMatch[3]}:${timeRangeMatch[4]}`;
         }
 
-        return `${jDay} ${monthName} ${jYear} ${String(hour24).padStart(2, '0')}:${minute}`;
+        return `${jDay} ${monthName} ${jYear} ${String(adjustedDate.getHours()).padStart(2, '0')}:${minute}`;
       }
     }
 

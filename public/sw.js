@@ -2,7 +2,7 @@
 
 // Use a cache version that changes only when you want to force an update
 // Increment this version number when you deploy a new version of your app
-const CACHE_VERSION = "itiket-pwa-v1.6"; // Updated to version 1.1.0
+const CACHE_VERSION = "itiket-pwa-v1.7"; // Updated to version 1.1.0
 const CACHE_NAME = CACHE_VERSION;
 
 const urlsToCache = [
