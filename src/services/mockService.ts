@@ -1,4 +1,5 @@
 import { storageService } from './storage';
+import { getBaseUrlWithoutSubdomain } from '@/lib/utils';
 
 interface LoginCredentials {
   username: string;
@@ -95,6 +96,9 @@ class MockWordPressService {
   }
 
   async login(credentials: LoginCredentials, websiteUrl: string): Promise<LoginResponse> {
+    // Normalize website URL to ensure consistent format (though not used in mock service)
+    const normalizedWebsiteUrl = websiteUrl.endsWith('/') ? websiteUrl.slice(0, -1) : websiteUrl;
+
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -130,6 +134,9 @@ class MockWordPressService {
   }
 
   async getEvents(websiteUrl: string, token: string, userId: number): Promise<EventsResponse> {
+    // Normalize website URL to ensure consistent format (though not used in mock service)
+    const normalizedWebsiteUrl = websiteUrl.endsWith('/') ? websiteUrl.slice(0, -1) : websiteUrl;
+
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 300));
 
@@ -151,6 +158,9 @@ class MockWordPressService {
   }
 
   async validateTicket(websiteUrl: string, request: ValidateTicketRequest): Promise<ValidateTicketResponse> {
+    // Normalize website URL to ensure consistent format (though not used in mock service)
+    const normalizedWebsiteUrl = websiteUrl.endsWith('/') ? websiteUrl.slice(0, -1) : websiteUrl;
+
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 400));
     
@@ -194,8 +204,11 @@ class MockWordPressService {
   }
 
   async validateToken(websiteUrl: string, request: ValidateTokenRequest): Promise<ValidateTokenResponse> {
+    // Normalize website URL to ensure consistent format (though not used in mock service)
+    const normalizedWebsiteUrl = websiteUrl.endsWith('/') ? websiteUrl.slice(0, -1) : websiteUrl;
+
     const validation = this.validateTokenInternal(request.token);
-    
+
     if (validation.valid) {
       return {
         status: 'SUCCESS',
@@ -211,6 +224,9 @@ class MockWordPressService {
   }
 
   async logout(websiteUrl: string, request: LogoutRequest): Promise<LogoutResponse> {
+    // Normalize website URL to ensure consistent format (though not used in mock service)
+    const normalizedWebsiteUrl = websiteUrl.endsWith('/') ? websiteUrl.slice(0, -1) : websiteUrl;
+
     // Clear the stored token to simulate logout
     storageService.setToken(null);
 

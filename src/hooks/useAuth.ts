@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useAuthStore } from '@/lib/store';
 import { storageService } from '@/services/storage';
 import { wordpressService } from '@/services/wordpress';
+import { getBaseUrlWithoutSubdomain } from '@/lib/utils';
 
 export const useAuth = () => {
   const { 
@@ -22,7 +23,10 @@ export const useAuth = () => {
     if (storedData.token) {
       const token = storedData.token;
       // Use stored websiteUrl if available, otherwise use current domain
-      const websiteUrl = storedData.websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+      let websiteUrl = storedData.websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+
+      // Remove subdomain from websiteUrl
+      websiteUrl = getBaseUrlWithoutSubdomain(websiteUrl);
 
       // Verify token is still valid
       const verifyToken = async () => {
@@ -71,7 +75,10 @@ export const useAuth = () => {
         await new Promise(resolve => setTimeout(resolve, 100));
 
         // Use current domain if no websiteUrl is provided
-        const currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+        let currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+
+        // Remove subdomain from websiteUrl
+        currentWebsiteUrl = getBaseUrlWithoutSubdomain(currentWebsiteUrl);
 
         const loginResponse = await wordpressService.login({
           username,

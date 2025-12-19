@@ -26,6 +26,7 @@ import {
 import { LogOut, User } from 'lucide-react';
 import { showToast } from '@/lib/toast';
 import Logo from '@/components/Logo';
+import { getBaseUrlWithoutSubdomain } from '@/lib/utils';
 
 interface HeaderProps {
   title: string;
@@ -41,7 +42,9 @@ export default function Header({ title, showBackButton = false, backButtonAction
 
   const handleLogout = async () => {
     // Use current domain if websiteUrl is not available in store
-    const currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+    let currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+    // Remove subdomain from websiteUrl
+    currentWebsiteUrl = getBaseUrlWithoutSubdomain(currentWebsiteUrl);
     const token = useAuthStore.getState().token;
     if (currentWebsiteUrl && token) {
       try {

@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Camera, CameraOff, RotateCcw } from 'lucide-react';
 import jsQR from 'jsqr';
+import { getBaseUrlWithoutSubdomain } from '@/lib/utils';
 
 // Dynamically import Webcam to avoid SSR issues
 const Webcam = dynamic<any>(
@@ -36,7 +37,9 @@ export default function ScannerClient() {
   // Validate we have required params
   useEffect(() => {
     // Use current domain if websiteUrl is not available in store
-    const currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+    let currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+    // Remove subdomain from websiteUrl
+    currentWebsiteUrl = getBaseUrlWithoutSubdomain(currentWebsiteUrl);
     if (!isLoggedIn || !token || !currentWebsiteUrl || !eventId) {
       router.push('/login/');
     }
@@ -138,7 +141,9 @@ export default function ScannerClient() {
     };
 
     // Use current domain if websiteUrl is not available in store
-    const currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+    let currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+    // Remove subdomain from websiteUrl
+    currentWebsiteUrl = getBaseUrlWithoutSubdomain(currentWebsiteUrl);
 
     // Only try to request permissions if we're in a valid state and on the client
     if (isClient && isLoggedIn && token && currentWebsiteUrl && eventId) {
@@ -230,7 +235,9 @@ export default function ScannerClient() {
     });
 
     // Use current domain if websiteUrl is not available in store
-    const currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+    let currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+    // Remove subdomain from websiteUrl
+    currentWebsiteUrl = getBaseUrlWithoutSubdomain(currentWebsiteUrl);
 
     if (!token || !currentWebsiteUrl || !useAuthStore.getState().user?.id) {
       console.log('[DEBUG] Missing required parameters for validation:', {

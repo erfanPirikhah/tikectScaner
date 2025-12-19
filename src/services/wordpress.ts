@@ -68,7 +68,10 @@ class WordPressService {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<any> {
-    const url = `${websiteUrl}${endpoint}`;
+    // Ensure there's a trailing slash in websiteUrl and no leading slash in endpoint to avoid double slashes
+    const normalizedWebsiteUrl = websiteUrl.endsWith('/') ? websiteUrl.slice(0, -1) : websiteUrl;
+    const normalizedEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+    const url = `${normalizedWebsiteUrl}/${normalizedEndpoint}`;
 
     // Enhanced logging for API request
     console.log('[DEBUG API] Making request:', {
@@ -136,7 +139,8 @@ class WordPressService {
   }
 
   async login(credentials: LoginCredentials, websiteUrl: string): Promise<LoginResponse> {
-    const url = `${websiteUrl}wp-json/itiket-api/v1/login`;
+    const normalizedWebsiteUrl = websiteUrl.endsWith('/') ? websiteUrl.slice(0, -1) : websiteUrl;
+    const url = `${normalizedWebsiteUrl}/wp-json/itiket-api/v1/login`;
 
     console.log('[DEBUG API] Login request:', {
       url: url,
@@ -206,8 +210,11 @@ class WordPressService {
   }
 
   async getEvents(websiteUrl: string, token: string, userId: number): Promise<EventsResponse> {
+    const normalizedWebsiteUrl = websiteUrl.endsWith('/') ? websiteUrl.slice(0, -1) : websiteUrl;
+    const url = `${normalizedWebsiteUrl}/wp-json/itiket-api/v1/get-events`;
+
     console.log('[DEBUG API] Get events request:', {
-      url: `${websiteUrl}wp-json/itiket-api/v1/get-events`,
+      url: url,
       userId: userId,
       hasToken: !!token
     });
@@ -216,8 +223,6 @@ class WordPressService {
       console.error('[DEBUG API] No authentication token available for getEvents');
       throw new Error('هیچ توکن احراز هویتی در دسترس نیست');
     }
-
-    const url = `${websiteUrl}wp-json/itiket-api/v1/get-events`;
 
     const options: RequestInit = {
       method: 'POST',
@@ -357,8 +362,11 @@ class WordPressService {
   }
 
   async validateToken(websiteUrl: string, request: ValidateTokenRequest): Promise<ValidateTokenResponse> {
+    const normalizedWebsiteUrl = websiteUrl.endsWith('/') ? websiteUrl.slice(0, -1) : websiteUrl;
+    const url = `${normalizedWebsiteUrl}/wp-json/meup/v1/check_login`;
+
     console.log('[DEBUG API] Validate token request details:', {
-      url: `${websiteUrl}wp-json/meup/v1/check_login`,
+      url: url,
       token: '***' // Don't log actual token
     });
 
@@ -375,8 +383,11 @@ class WordPressService {
   }
 
   async logout(websiteUrl: string, request: LogoutRequest): Promise<LogoutResponse> {
+    const normalizedWebsiteUrl = websiteUrl.endsWith('/') ? websiteUrl.slice(0, -1) : websiteUrl;
+    const url = `${normalizedWebsiteUrl}/wp-json/itiket-api/v1/logout`;
+
     console.log('[DEBUG API] Logout request details:', {
-      url: `${websiteUrl}wp-json/itiket-api/v1/logout`,
+      url: url,
       token: '***' // Don't log actual token
     });
 
