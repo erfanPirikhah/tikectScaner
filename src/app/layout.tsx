@@ -4,8 +4,8 @@ import ClientLayout from './ClientLayout';
 import { ThemeProvider } from '@/context/theme-provider';
 
 export const metadata: Metadata = {
-  title: "نرم افزار اختصاصی CheckIn بلیت",
-  description: "نرم افزار اختصاصی CheckIn بلیت",
+  title: "Evento | Ticket Check-In System",
+  description: "Evento | Ticket Check-In System",
   manifest: "/manifest.json",
 };
 

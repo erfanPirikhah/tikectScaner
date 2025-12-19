@@ -1,7 +1,7 @@
 {
-  "name": "نرم افزار اختصاصی CheckIn بلیت",
+  "name": "Evento | Ticket Check-In System",
   "short_name": "CheckIn",
-  "description": "نرم افزار اختصاصی CheckIn بلیت",
+  "description": "Evento | Ticket Check-In System",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

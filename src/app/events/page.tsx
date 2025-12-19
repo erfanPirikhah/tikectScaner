@@ -34,16 +34,6 @@ export default function Events() {
   const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
   let currentEvents = allEvents.slice(indexOfFirstEvent, indexOfLastEvent);
 
-  // Fill with mock events to ensure we show exactly 15 events if on first page
-  if (currentPage === 1 && currentEvents.length < eventsPerPage) {
-    const mockEventsCount = eventsPerPage - currentEvents.length;
-    for (let i = 0; i < mockEventsCount; i++) {
-      currentEvents.push({
-        event_id: -1 - i, // Using negative IDs to identify mock events
-        event_name: `رویداد آزمایشی ${i + 1}`
-      });
-    }
-  }
   const totalPages = Math.ceil(allEvents.length / eventsPerPage);
 
   useEffect(() => {
@@ -105,12 +95,6 @@ export default function Events() {
   const [loadingEventId, setLoadingEventId] = useState<number | null>(null);
 
   const handleEventSelect = (event: Event) => {
-    // If it's a mock event (negative ID), don't navigate
-    if (event.event_id < 0) {
-      showToast.info('این یک رویداد نمونه است و داده واقعی ندارد');
-      return;
-    }
-
     // Set loading state
     setLoadingEventId(event.event_id);
 
@@ -165,7 +149,7 @@ export default function Events() {
               {currentEvents.map((event: Event) => (
                 <Card
                   key={event.event_id}
-                  className={`overflow-hidden ${event.event_id >= 0 ? 'cursor-pointer transition-all duration-300 hover:shadow-lg' : 'opacity-70 cursor-not-allowed'} ${loadingEventId === event.event_id ? 'opacity-70' : ''}`}
+                  className={`overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg ${loadingEventId === event.event_id ? 'opacity-70' : ''}`}
                   onClick={() => handleEventSelect(event)}
                 >
                   <CardHeader className="pb-3">
@@ -193,7 +177,7 @@ export default function Events() {
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={event.event_id < 0 || loadingEventId === event.event_id}
+                      disabled={loadingEventId === event.event_id}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleEventSelect(event);
@@ -207,7 +191,7 @@ export default function Events() {
                           </svg>
                           در حال بارگذاری...
                         </>
-                      ) : event.event_id < 0 ? 'ناموجود' :'بررسی بلیت'}
+                      ) : 'بررسی بلیت'}
                     </Button>
                   </CardFooter>
                 </Card>

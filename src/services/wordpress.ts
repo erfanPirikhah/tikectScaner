@@ -1,4 +1,5 @@
 import { useAuthStore } from '@/lib/store';
+import { getBaseUrlWithoutSubdomain } from '@/utils/url';
 
 interface LoginCredentials {
   username: string;
@@ -68,11 +69,20 @@ class WordPressService {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<any> {
-    const url = `${websiteUrl}${endpoint}`;
+    const baseUrl = getBaseUrlWithoutSubdomain(websiteUrl);
+    // Ensure proper URL formation: remove trailing slash from base and leading slash from endpoint
+    const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const url = `${cleanBaseUrl}${cleanEndpoint}`;
 
     // Enhanced logging for API request
     console.log('[DEBUG API] Making request:', {
-      url: url,
+      originalUrl: websiteUrl,
+      baseUrl: baseUrl,
+      cleanBaseUrl: cleanBaseUrl,
+      endpoint: endpoint,
+      cleanEndpoint: cleanEndpoint,
+      finalUrl: url,
       method: options.method || 'GET',
       headers: options.headers,
       body: options.body ? '***' : undefined // Don't log request body content
@@ -136,9 +146,19 @@ class WordPressService {
   }
 
   async login(credentials: LoginCredentials, websiteUrl: string): Promise<LoginResponse> {
-    const url = `${websiteUrl}wp-json/itiket-api/v1/login`;
+    const baseUrl = getBaseUrlWithoutSubdomain(websiteUrl);
+    // Ensure proper URL formation: remove trailing slash from base and leading slash from endpoint
+    const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    const endpoint = 'wp-json/itiket-api/v1/login';
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const url = `${cleanBaseUrl}${cleanEndpoint}`;
 
     console.log('[DEBUG API] Login request:', {
+      originalUrl: websiteUrl,
+      baseUrl: baseUrl,
+      cleanBaseUrl: cleanBaseUrl,
+      endpoint: endpoint,
+      cleanEndpoint: cleanEndpoint,
       url: url,
       credentials: {
         username: credentials.username,
@@ -206,8 +226,20 @@ class WordPressService {
   }
 
   async getEvents(websiteUrl: string, token: string, userId: number): Promise<EventsResponse> {
+    const baseUrl = getBaseUrlWithoutSubdomain(websiteUrl);
+    // Ensure proper URL formation: remove trailing slash from base and leading slash from endpoint
+    const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    const endpoint = 'wp-json/itiket-api/v1/get-events';
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const fullUrl = `${cleanBaseUrl}${cleanEndpoint}`;
+
     console.log('[DEBUG API] Get events request:', {
-      url: `${websiteUrl}wp-json/itiket-api/v1/get-events`,
+      originalUrl: websiteUrl,
+      baseUrl: baseUrl,
+      cleanBaseUrl: cleanBaseUrl,
+      endpoint: endpoint,
+      cleanEndpoint: cleanEndpoint,
+      url: fullUrl,
       userId: userId,
       hasToken: !!token
     });
@@ -217,7 +249,7 @@ class WordPressService {
       throw new Error('هیچ توکن احراز هویتی در دسترس نیست');
     }
 
-    const url = `${websiteUrl}wp-json/itiket-api/v1/get-events`;
+    const url = fullUrl;
 
     const options: RequestInit = {
       method: 'POST',
@@ -293,8 +325,20 @@ class WordPressService {
       qrCodeHash = urlParams.get('check_qrcode') || request.qr_code;
     }
 
+    const baseUrl = getBaseUrlWithoutSubdomain(websiteUrl);
+    // Ensure proper URL formation: remove trailing slash from base and leading slash from endpoint
+    const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    const endpoint = 'wp-json/itiket-api/v1/check-qr-code';
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const fullUrl = `${cleanBaseUrl}${cleanEndpoint}`;
+
     console.log('[DEBUG API] Validate ticket request details:', {
-      url: `${websiteUrl}wp-json/itiket-api/v1/check-qr-code`,
+      originalUrl: websiteUrl,
+      baseUrl: baseUrl,
+      cleanBaseUrl: cleanBaseUrl,
+      endpoint: endpoint,
+      cleanEndpoint: cleanEndpoint,
+      url: fullUrl,
       payload: {
         qr_code: qrCodeHash,
         user_id: userId,
@@ -357,8 +401,20 @@ class WordPressService {
   }
 
   async validateToken(websiteUrl: string, request: ValidateTokenRequest): Promise<ValidateTokenResponse> {
+    const baseUrl = getBaseUrlWithoutSubdomain(websiteUrl);
+    // Ensure proper URL formation: remove trailing slash from base and leading slash from endpoint
+    const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    const endpoint = 'wp-json/meup/v1/check_login';
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const fullUrl = `${cleanBaseUrl}${cleanEndpoint}`;
+
     console.log('[DEBUG API] Validate token request details:', {
-      url: `${websiteUrl}wp-json/meup/v1/check_login`,
+      originalUrl: websiteUrl,
+      baseUrl: baseUrl,
+      cleanBaseUrl: cleanBaseUrl,
+      endpoint: endpoint,
+      cleanEndpoint: cleanEndpoint,
+      url: fullUrl,
       token: '***' // Don't log actual token
     });
 
@@ -375,8 +431,20 @@ class WordPressService {
   }
 
   async logout(websiteUrl: string, request: LogoutRequest): Promise<LogoutResponse> {
+    const baseUrl = getBaseUrlWithoutSubdomain(websiteUrl);
+    // Ensure proper URL formation: remove trailing slash from base and leading slash from endpoint
+    const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    const endpoint = 'wp-json/itiket-api/v1/logout';
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const fullUrl = `${cleanBaseUrl}${cleanEndpoint}`;
+
     console.log('[DEBUG API] Logout request details:', {
-      url: `${websiteUrl}wp-json/itiket-api/v1/logout`,
+      originalUrl: websiteUrl,
+      baseUrl: baseUrl,
+      cleanBaseUrl: cleanBaseUrl,
+      endpoint: endpoint,
+      cleanEndpoint: cleanEndpoint,
+      url: fullUrl,
       token: '***' // Don't log actual token
     });
 

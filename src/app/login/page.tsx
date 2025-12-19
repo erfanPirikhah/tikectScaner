@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showToast } from '@/lib/toast';
-import { Loader2, LogIn, Globe, User, Lock, Eye, EyeOff } from 'lucide-react';
+import { Loader2, LogIn, User, Lock, Eye, EyeOff } from 'lucide-react';
 import Logo from '@/components/Logo';
 
 export default function Login() {
@@ -73,15 +73,15 @@ export default function Login() {
         <Card className="w-full h-full rounded-none border-none shadow-2xl flex flex-col">
           <CardHeader className="flex-shrink-0 pt-12 pb-8 px-6">
             <div className="flex flex-col items-center text-center space-y-4">
-              <div className="p-4 bg-gradient-to-br from-primary to-primary/80 rounded-2xl shadow-lg">
+              <div className="p-4 bg-white rounded-2xl shadow-lg">
                 <Logo size="xl" showText={false} className="text-white" />
               </div>
               <div>
                 <CardTitle className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                  نرم افزار اختصاصی CheckIn بلیت
+                  Evento | Ticket Check-In System
                 </CardTitle>
                 <CardDescription className="text-lg mt-2">
-                  ورود به پنل چک این
+                   ایونتو ، استانداردی نوین در فروش بلیت
                 </CardDescription>
               </div>
             </div>
@@ -174,15 +174,15 @@ export default function Login() {
         <div className="flex-1 p-8 bg-gradient-to-br from-blue-50 to-purple-50">
           <CardHeader className="px-0 pt-4 pb-8">
             <div className="flex flex-col items-center text-center space-y-4">
-              <div className="p-4 bg-gradient-to-br from-primary to-primary/80 rounded-2xl shadow-lg">
+              <div className="p-4 bg-white rounded-2xl shadow-lg">
                 <Logo size="xl" showText={false} className="text-white" />
               </div>
               <div>
                 <CardTitle className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                  نرم افزار اختصاصی CheckIn بلیت
+                  Evento | Ticket Check-In System
                 </CardTitle>
                 <CardDescription className="text-lg mt-2">
-                  ورود به پنل چک این
+                   ایونتو ، استانداردی نوین در فروش بلیت
                 </CardDescription>
               </div>
             </div>
