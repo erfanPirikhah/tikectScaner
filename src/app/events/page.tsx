@@ -47,7 +47,10 @@ export default function Events() {
   const totalPages = Math.ceil(allEvents.length / eventsPerPage);
 
   useEffect(() => {
-    if (!isLoggedIn || !token || !websiteUrl) {
+    // Use current domain if websiteUrl is not available in store
+    const currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+
+    if (!isLoggedIn || !token || !currentWebsiteUrl) {
       router.push('/login/');
       return;
     }
@@ -61,12 +64,12 @@ export default function Events() {
         const userId = useAuthStore.getState().user?.id || 0;
 
         // Debug logging
-        console.log('Debug - Website URL:', websiteUrl);
+        console.log('Debug - Website URL:', currentWebsiteUrl);
         console.log('Debug - Token:', token ? 'Exists' : 'Missing');
         console.log('Debug - User ID:', userId);
 
         try {
-          const response = await wordpressService.getEvents(websiteUrl, token, userId);
+          const response = await wordpressService.getEvents(currentWebsiteUrl, token, userId);
           console.log('Debug - API Response:', response);
 
           if (response.status === 'SUCCESS') {

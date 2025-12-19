@@ -19,9 +19,10 @@ export const useAuth = () => {
   useEffect(() => {
     const storedData = storageService.getAll();
 
-    if (storedData.token && storedData.websiteUrl) {
+    if (storedData.token) {
       const token = storedData.token;
-      const websiteUrl = storedData.websiteUrl;
+      // Use stored websiteUrl if available, otherwise use current domain
+      const websiteUrl = storedData.websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
 
       // Verify token is still valid
       const verifyToken = async () => {
@@ -64,21 +65,25 @@ export const useAuth = () => {
     token,
     websiteUrl,
     isLoggedIn,
-    login: async (username: string, password: string, websiteUrl: string) => {
+    login: async (username: string, password: string, websiteUrl?: string) => {
       try {
         // Add a small delay to simulate network request
         await new Promise(resolve => setTimeout(resolve, 100));
 
+        // Use current domain if no websiteUrl is provided
+        const currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+
         const loginResponse = await wordpressService.login({
           username,
           password,
-        }, websiteUrl); // Pass websiteUrl directly to login method
+        }, currentWebsiteUrl); // Pass currentWebsiteUrl directly to login method
 
         if (loginResponse.status === 'SUCCESS' && loginResponse.token) {
           // Store the website URL and token
-          storageService.setWebsiteUrl(websiteUrl);
+          storageService.setWebsiteUrl(currentWebsiteUrl);
           storageService.setToken(loginResponse.token);
 
+          // Call the store's login function with the current website URL
           login(
             {
               id: loginResponse.user_id || 0,
@@ -86,7 +91,7 @@ export const useAuth = () => {
               email: loginResponse.email || ''
             },
             loginResponse.token,
-            websiteUrl
+            currentWebsiteUrl
           );
 
           return { success: true, message: loginResponse.msg || 'ورود موفقیت‌آمیز' };

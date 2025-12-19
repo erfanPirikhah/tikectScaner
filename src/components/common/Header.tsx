@@ -40,10 +40,12 @@ export default function Header({ title, showBackButton = false, backButtonAction
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
 
   const handleLogout = async () => {
+    // Use current domain if websiteUrl is not available in store
+    const currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
     const token = useAuthStore.getState().token;
-    if (websiteUrl && token) {
+    if (currentWebsiteUrl && token) {
       try {
-        await wordpressService.logout(websiteUrl, { token });
+        await wordpressService.logout(currentWebsiteUrl, { token });
         showToast.success('با موفقیت خارج شدید');
       } catch (error) {
         console.error('خطای API خروج:', error);

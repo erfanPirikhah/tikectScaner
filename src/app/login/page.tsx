@@ -14,7 +14,6 @@ import Logo from '@/components/Logo';
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [websiteUrl, setWebsiteUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -38,14 +37,17 @@ export default function Login() {
       return;
     }
 
-    if (!websiteUrl.trim()) {
-      showToast.error('آدرس وب‌سایت الزامی است');
+    // Get the current domain URL from window.location
+    const currentDomain = typeof window !== 'undefined' ? window.location.origin : '';
+
+    if (!currentDomain) {
+      showToast.error('آدرس وب‌سایت قابل شناسایی نیست');
       setLoading(false);
       return;
     }
 
     // Ensure URL ends with a slash
-    const normalizedUrl = websiteUrl.endsWith('/') ? websiteUrl : `${websiteUrl}/`;
+    const normalizedUrl = currentDomain.endsWith('/') ? currentDomain : `${currentDomain}/`;
 
     try {
       const result = await login(username, password, normalizedUrl);
@@ -87,29 +89,6 @@ export default function Login() {
 
           <CardContent className="flex-1 px-6 pb-4">
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Website URL Field */}
-              <div className="space-y-3">
-                <Label htmlFor="websiteUrl" className="text-base font-medium flex items-center gap-2">
-                  <Globe className="w-4 h-4" />
-                  آدرس وب‌سایت
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="websiteUrl"
-                    type="url"
-                    value={websiteUrl}
-                    onChange={(e) => setWebsiteUrl(e.target.value)}
-                    placeholder="https://your-website.com"
-                    required
-                    className="h-12 text-lg pr-12 border-2 focus:border-primary transition-colors"
-                  />
-                  <Globe className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  لطفا آدرس سایت سامانه را وارد کنید.
-                </p>
-              </div>
-
               {/* Username Field */}
               <div className="space-y-3">
                 <Label htmlFor="username" className="text-base font-medium flex items-center gap-2">
@@ -211,29 +190,6 @@ export default function Login() {
 
           <CardContent className="px-0 pb-8">
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Website URL Field */}
-              <div className="space-y-3">
-                <Label htmlFor="websiteUrl-desktop" className="text-base font-medium flex items-center gap-2">
-                  <Globe className="w-4 h-4" />
-                  آدرس وب‌سایت
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="websiteUrl-desktop"
-                    type="url"
-                    value={websiteUrl}
-                    onChange={(e) => setWebsiteUrl(e.target.value)}
-                    placeholder="https://your-website.com"
-                    required
-                    className="h-12 text-lg pr-12 border-2 focus:border-primary transition-colors"
-                  />
-                  <Globe className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  لطفا آدرس سایت سامانه را وارد کنید.
-                </p>
-              </div>
-
               {/* Username Field */}
               <div className="space-y-3">
                 <Label htmlFor="username-desktop" className="text-base font-medium flex items-center gap-2">

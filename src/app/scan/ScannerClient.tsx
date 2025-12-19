@@ -35,7 +35,9 @@ export default function ScannerClient() {
 
   // Validate we have required params
   useEffect(() => {
-    if (!isLoggedIn || !token || !websiteUrl || !eventId) {
+    // Use current domain if websiteUrl is not available in store
+    const currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+    if (!isLoggedIn || !token || !currentWebsiteUrl || !eventId) {
       router.push('/login/');
     }
   }, [isLoggedIn, token, websiteUrl, eventId, router]);
@@ -135,16 +137,25 @@ export default function ScannerClient() {
       }
     };
 
+    // Use current domain if websiteUrl is not available in store
+    const currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+
     // Only try to request permissions if we're in a valid state and on the client
-    if (isClient && isLoggedIn && token && websiteUrl && eventId) {
-      console.log('[DEBUG] Conditions met, requesting camera permissions');
+    if (isClient && isLoggedIn && token && currentWebsiteUrl && eventId) {
+      console.log('[DEBUG] Conditions met, requesting camera permissions', {
+        isClient: isClient,
+        isLoggedIn: isLoggedIn,
+        hasToken: !!token,
+        hasWebsiteUrl: !!currentWebsiteUrl,
+        hasEventId: !!eventId
+      });
       requestCameraPermissionOnLoad();
     } else {
       console.log('[DEBUG] Conditions not met for requesting camera permissions:', {
         isClient: isClient,
         isLoggedIn: isLoggedIn,
         hasToken: !!token,
-        hasWebsiteUrl: !!websiteUrl,
+        hasWebsiteUrl: !!currentWebsiteUrl,
         hasEventId: !!eventId
       });
     }
@@ -218,10 +229,13 @@ export default function ScannerClient() {
       websiteUrl: websiteUrl
     });
 
-    if (!token || !websiteUrl || !useAuthStore.getState().user?.id) {
+    // Use current domain if websiteUrl is not available in store
+    const currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+
+    if (!token || !currentWebsiteUrl || !useAuthStore.getState().user?.id) {
       console.log('[DEBUG] Missing required parameters for validation:', {
         token: token ? '***' : null,
-        websiteUrl: websiteUrl,
+        websiteUrl: currentWebsiteUrl,
         userId: useAuthStore.getState().user?.id
       });
       setError('Missing website URL, user ID or authentication token');
@@ -231,7 +245,7 @@ export default function ScannerClient() {
 
     try {
       console.log('[DEBUG] Preparing API request for ticket validation:', {
-        url: websiteUrl,
+        url: currentWebsiteUrl,
         endpoint: 'wp-json/itiket-api/v1/check-qr-code',
         payload: {
           qr_code: qrCode,
@@ -242,7 +256,7 @@ export default function ScannerClient() {
 
       // Use real service for normal operation
       // According to API spec, we need to send user_id as well
-      const response = await wordpressService.validateTicket(websiteUrl, {
+      const response = await wordpressService.validateTicket(currentWebsiteUrl, {
         event_id: parseInt(eventId || '0'), // Still using for compatibility but may not send in body
         qr_code: qrCode,
         token: token,

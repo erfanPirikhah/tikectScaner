@@ -33,9 +33,13 @@ export default function Profile() {
   }
 
   const handleLogout = async () => {
-    if (websiteUrl && useAuthStore.getState().token) {
+    // Use current domain if websiteUrl is not available in store
+    const currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+    const token = useAuthStore.getState().token;
+
+    if (currentWebsiteUrl && token) {
       try {
-        await wordpressService.logout(websiteUrl, { token: useAuthStore.getState().token! });
+        await wordpressService.logout(currentWebsiteUrl, { token: token! });
         showToast.success('با موفقیت خارج شدید');
       } catch (error) {
         console.error('خطای API خروج:', error);
@@ -84,7 +88,7 @@ export default function Profile() {
                     <h3 className="font-medium">آدرس وب‌سایت</h3>
                     <p className="text-sm text-muted-foreground">سایت متصل به حساب</p>
                   </div>
-                  <p className="mt-1 sm:mt-0 text-sm sm:text-base text-foreground break-all">{useAuthStore.getState().websiteUrl || 'موجود نیست'}</p>
+                  <p className="mt-1 sm:mt-0 text-sm sm:text-base text-foreground break-all">{typeof window !== 'undefined' ? window.location.origin : useAuthStore.getState().websiteUrl || 'موجود نیست'}</p>
                 </div>
               </div>
 
