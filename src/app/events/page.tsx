@@ -11,7 +11,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { CalendarIcon } from 'lucide-react';
 import Image from 'next/image';
-import { getBaseUrlWithoutSubdomain } from '@/lib/utils';
 
 // Define types for events
 interface Event {
@@ -49,9 +48,7 @@ export default function Events() {
 
   useEffect(() => {
     // Use current domain if websiteUrl is not available in store
-    let currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
-    // Remove subdomain from websiteUrl
-    currentWebsiteUrl = getBaseUrlWithoutSubdomain(currentWebsiteUrl);
+    const currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
 
     if (!isLoggedIn || !token || !currentWebsiteUrl) {
       router.push('/login/');

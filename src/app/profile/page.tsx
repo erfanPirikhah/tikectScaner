@@ -17,7 +17,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { getBaseUrlWithoutSubdomain } from '@/lib/utils';
 
 export default function Profile() {
   const { user, isLoggedIn, logout, websiteUrl } = useAuthStore();
@@ -35,9 +34,7 @@ export default function Profile() {
 
   const handleLogout = async () => {
     // Use current domain if websiteUrl is not available in store
-    let currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
-    // Remove subdomain from websiteUrl
-    currentWebsiteUrl = getBaseUrlWithoutSubdomain(currentWebsiteUrl);
+    const currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
     const token = useAuthStore.getState().token;
 
     if (currentWebsiteUrl && token) {
