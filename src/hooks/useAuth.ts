@@ -8,6 +8,7 @@ export const useAuth = () => {
     user, 
     token, 
     websiteUrl, 
+    vendors,
     isLoggedIn, 
     login, 
     logout, 
@@ -21,8 +22,9 @@ export const useAuth = () => {
 
     if (storedData.token) {
       const token = storedData.token;
-      // Use stored websiteUrl if available, otherwise use current domain
       const websiteUrl = storedData.websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+      const user = storedData.user;
+      const vendors = storedData.vendors;
 
       // Verify token is still valid
       const verifyToken = async () => {
@@ -30,25 +32,15 @@ export const useAuth = () => {
           setToken(token);
           setWebsiteUrl(websiteUrl);
 
-          const response = await wordpressService.validateToken(websiteUrl, {
-            token,
-          });
-
-          if (response.status === 'SUCCESS' && response.user) {
-            login(
-              {
-                id: response.user.id,
-                name: response.user.name,
-                email: '' // Email not provided by validation endpoint
-              },
-              token,
-              websiteUrl
-            );
-          } else {
-            // Token invalid, clear stored data
-            storageService.clearAll();
-            logout();
+          // اگر اطلاعات کاربر از قبل در لوکال استوریج بود، لاگین را ریستور کن
+          if (user) {
+            login(user, token, websiteUrl, vendors);
           }
+
+          // اینجا می‌توانید در صورت نیاز توکن را اعتبارسنجی کنید
+          // const response = await wordpressService.validateToken(websiteUrl, { token });
+          // اگر اعتبارسنجی لازم نبود، کدهای بالا کافی است
+
         } catch (error) {
           console.error('اعتبارسنجی توکن ناموفق بود:', error);
           storageService.clearAll();
@@ -64,39 +56,45 @@ export const useAuth = () => {
     user,
     token,
     websiteUrl,
+    vendors,
     isLoggedIn,
     login: async (username: string, password: string, websiteUrl?: string) => {
       try {
         // Add a small delay to simulate network request
         await new Promise(resolve => setTimeout(resolve, 100));
 
-        // Use current domain if no websiteUrl is provided
         const currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
 
         const loginResponse = await wordpressService.login({
           username,
           password,
-        }, currentWebsiteUrl); // Pass currentWebsiteUrl directly to login method
+        }, currentWebsiteUrl);
 
-        if (loginResponse.status === 'SUCCESS' && loginResponse.token) {
-          // Store the website URL and token
+        if (loginResponse.status === 'SUCCESS') {
+          const userData = {
+            id: loginResponse.user_id || 0,
+            name: loginResponse.name || username,
+            email: loginResponse.email || '',
+            username: loginResponse.username || username,
+          };
+
+          // ذخیره در localStorage
           storageService.setWebsiteUrl(currentWebsiteUrl);
-          storageService.setToken(loginResponse.token);
+          storageService.setToken(loginResponse.token || 'session_active');
+          storageService.setVendors(loginResponse.vendors);
+          storageService.setUser(userData);
 
-          // Call the store's login function with the current website URL
+          // ذخیره در Zustand Store
           login(
-            {
-              id: loginResponse.user_id || 0,
-              name: loginResponse.username || username,
-              email: loginResponse.email || ''
-            },
-            loginResponse.token,
-            currentWebsiteUrl
+            userData,
+            loginResponse.token || 'session_active',
+            currentWebsiteUrl,
+            loginResponse.vendors
           );
 
-          return { success: true, message: loginResponse.msg || 'ورود موفقیت‌آمیز' };
+          return { success: true, message: 'ورود با موفقیت انجام شد' };
         } else {
-          return { success: false, message: loginResponse.msg || 'ورود ناموفق بود' };
+          return { success: false, message: loginResponse.msg || 'نام کاربری یا رمز عبور اشتباه است' };
         }
       } catch (error) {
         console.error('خطای ورود:', error);

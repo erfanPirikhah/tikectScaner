@@ -3,6 +3,15 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  username?: string;
+}
+
+// انواع فروشنده (Vendor)
+export interface Vendor {
+  term_id: number;
+  name: string;
+  slug: string;
+  meta?: any;
 }
 
 // وضعیت احراز هویت
@@ -10,6 +19,7 @@ export interface AuthState {
   user: User | null;
   token: string | null;
   websiteUrl: string | null;
+  vendors: Vendor[] | null; // اضافه شدن vendors
   isLoggedIn: boolean;
   loading: boolean;
   error: string | null;

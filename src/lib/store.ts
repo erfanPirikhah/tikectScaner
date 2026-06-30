@@ -1,9 +1,9 @@
 import { create } from 'zustand';
-import { AuthState, EventState, ScannerState, UIState, User, Event, ScanResult } from '@/types';
+import { AuthState, EventState, ScannerState, UIState, User, Event, ScanResult, Vendor } from '@/types';
 
 // Auth Store
 interface AuthStore extends AuthState {
-  login: (user: User, token: string, websiteUrl: string) => void;
+  login: (user: User, token: string, websiteUrl: string, vendors?: Vendor[] | null) => void;
   logout: () => void;
   setToken: (token: string | null) => void;
   setWebsiteUrl: (url: string | null) => void;
@@ -15,14 +15,16 @@ export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
   token: null,
   websiteUrl: null,
+  vendors: null,
   isLoggedIn: false,
   loading: false,
   error: null,
   
-  login: (user, token, websiteUrl) => set({ 
+  login: (user, token, websiteUrl, vendors) => set({ 
     user, 
     token, 
     websiteUrl, 
+    vendors: vendors || null,
     isLoggedIn: true, 
     loading: false, 
     error: null 
@@ -32,6 +34,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     user: null, 
     token: null, 
     websiteUrl: null, 
+    vendors: null,
     isLoggedIn: false, 
     loading: false, 
     error: null 

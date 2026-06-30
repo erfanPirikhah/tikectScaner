@@ -5,19 +5,24 @@ import { usePathname } from 'next/navigation';
 import { Toaster } from '@/components/ui/sonner';
 import { PWAProvider } from '@/context/PWAContext';
 import AddToHomeScreenPrompt from '@/components/AddToHomeScreenPrompt';
-import HeaderNav from '@/components/HeaderNav';
+import DashboardLayout from '@/components/DashboardLayout';
 
 export default function ClientLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
-  // Don't show header nav on intro/onboarding or login pages
-  const showHeaderNav = !(pathname === '/' || pathname.startsWith('/login') || pathname.startsWith('/onboarding'));
+  // صفحاتی که سایدبار نباید داشته باشند
+  const isAuthPage = pathname === '/' || pathname.startsWith('/login') || pathname.startsWith('/onboarding');
+  const isScanPage = pathname.startsWith('/scan'); // صفحه اسکن معمولا تمام صفحه است
+  const showDashboard = !isAuthPage && !isScanPage;
 
   return (
     <PWAProvider>
       <div className="flex flex-col min-h-screen">
-        {showHeaderNav && <HeaderNav />}
-        {children}
+        {showDashboard ? (
+          <DashboardLayout>{children}</DashboardLayout>
+        ) : (
+          children
+        )}
         <Toaster position="top-right" dir="rtl" />
         <AddToHomeScreenPrompt />
       </div>

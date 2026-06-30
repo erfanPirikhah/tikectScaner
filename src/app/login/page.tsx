@@ -37,8 +37,10 @@ export default function Login() {
       return;
     }
 
-    // Get the current domain URL from window.location
-    const currentDomain = typeof window !== 'undefined' ? window.location.origin : '';
+    // برای تست روی لوکال‌هاست، آدرس دمو را قرار دادیم.
+    // اگر پروژه روی دامنه اصلی دیپلوی شد، می‌توانید این خط را به حالت قبلی برگردانید:
+    // const currentDomain = typeof window !== 'undefined' ? window.location.origin : '';
+    const currentDomain = 'https://demotheme.ir/takhfifan';
 
     if (!currentDomain) {
       showToast.error('آدرس وب‌سایت قابل شناسایی نیست');
