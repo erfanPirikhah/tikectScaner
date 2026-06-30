@@ -12,8 +12,11 @@ export default function ClientLayout({ children }: { children: ReactNode }) {
 
   // صفحاتی که سایدبار نباید داشته باشند
   const isAuthPage = pathname === '/' || pathname.startsWith('/login') || pathname.startsWith('/onboarding');
-  const isScanPage = pathname.startsWith('/scan'); // صفحه اسکن معمولا تمام صفحه است
-  const showDashboard = !isAuthPage && !isScanPage;
+  
+  // فقط صفحه دوربین فول اسکرین باشد، نه صفحه /scan اصلی
+  const isCameraPage = pathname.startsWith('/scan/camera');
+  
+  const showDashboard = !isAuthPage && !isCameraPage;
 
   return (
     <PWAProvider>

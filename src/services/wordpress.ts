@@ -157,16 +157,21 @@ class WordPressService {
     }
   }
 
-  async login(credentials: LoginCredentials, websiteUrl: string): Promise<LoginResponse> {
-    const cleanBaseUrl = websiteUrl.endsWith('/') ? websiteUrl.slice(0, -1) : websiteUrl;
-    const endpoint = 'wp-json/takhfifanbizpwa/v1/login';
-    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  async login(
+    credentials: LoginCredentials,
+    websiteUrl: string,
+  ): Promise<LoginResponse> {
+    const cleanBaseUrl = websiteUrl.endsWith("/")
+      ? websiteUrl.slice(0, -1)
+      : websiteUrl;
+    const endpoint = "wp-json/takhfifanbizpwa/v1/login";
+    const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
     const url = `${cleanBaseUrl}${cleanEndpoint}`;
 
     const defaultOptions: RequestInit = {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         username: credentials.username,
@@ -179,27 +184,29 @@ class WordPressService {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`HTTP Error! Status: ${response.status}, Message: ${errorText}`);
+        throw new Error(
+          `HTTP Error! Status: ${response.status}, Message: ${errorText}`,
+        );
       }
 
       const data = await response.json();
 
       // خروجی جدید API دارای فیلد success و data است
-      const normalizedStatus = data.success ? 'SUCCESS' : 'FAIL';
+      const normalizedStatus = data.success ? "SUCCESS" : "FAIL";
 
       return {
         status: normalizedStatus,
-        token: data.data?.token || '', // اگر توکن وجود نداشت خالی می‌ماند
+        token: data.data?.token || "", // اگر توکن وجود نداشت خالی می‌ماند
         code: 200,
-        email: data.data?.user?.email || '',
+        email: data.data?.user?.email || "",
         user_id: data.data?.user?.id || 0,
         username: data.data?.user?.username || credentials.username,
-        name: data.data?.user?.name || '',
+        name: data.data?.user?.name || "",
         vendors: data.data?.vendors || [],
-        msg: data.success ? 'ورود با موفقیت انجام شد' : 'ورود ناموفق بود'
+        msg: data.success ? "ورود با موفقیت انجام شد" : "ورود ناموفق بود",
       };
     } catch (error) {
-      console.error('[DEBUG API] Login request failed:', error);
+      console.error("[DEBUG API] Login request failed:", error);
       throw error;
     }
   }
@@ -473,6 +480,194 @@ class WordPressService {
         token: request.token,
       }),
     });
+  }
+
+  async getOrders(
+    websiteUrl: string,
+    username: string,
+    password: string,
+  ): Promise<any[]> {
+    const cleanBaseUrl = websiteUrl.endsWith("/")
+      ? websiteUrl.slice(0, -1)
+      : websiteUrl;
+    const endpoint = "wp-json/takhfifanbizpwa/v1/orders";
+    const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+    const url = `${cleanBaseUrl}${cleanEndpoint}`;
+
+    console.log("[DEBUG API] Get orders request:", { url, username });
+
+    const options: RequestInit = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password }), // ارسال یوزرنیم و پسورد به API
+    };
+
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `HTTP Error! Status: ${response.status}, Message: ${errorText}`,
+        );
+      }
+      const data = await response.json();
+
+      // خروجی API دارای فیلد success و data.orders است
+      if (data.success && data.data && data.data.orders) {
+        return data.data.orders;
+      }
+      return [];
+    } catch (error) {
+      console.error("[DEBUG API] Get orders failed:", error);
+      throw error;
+    }
+  }
+
+  async getStats(username: string, password: string): Promise<any> {
+    // استفاده از آدرس دقیقی که برای API آمار دادید
+    const url = "https://takhfinet.com/wp-json/takhfifanbizpwa/v1/vendor/stats";
+
+    const options: RequestInit = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+    };
+
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `HTTP Error! Status: ${response.status}, Message: ${errorText}`,
+        );
+      }
+      const data = await response.json();
+
+      if (data.success && data.data && data.data.stats) {
+        return data.data.stats;
+      }
+      return {};
+    } catch (error) {
+      console.error("[DEBUG API] Get stats failed:", error);
+      throw error;
+    }
+  }
+
+  async getProducts(
+    websiteUrl: string,
+    username: string,
+    password: string,
+  ): Promise<any[]> {
+    const cleanBaseUrl = websiteUrl.endsWith("/")
+      ? websiteUrl.slice(0, -1)
+      : websiteUrl;
+    const endpoint = "wp-json/takhfifanbizpwa/v1/products";
+    const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+    const url = `${cleanBaseUrl}${cleanEndpoint}`;
+
+    const options: RequestInit = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+    };
+
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `HTTP Error! Status: ${response.status}, Message: ${errorText}`,
+        );
+      }
+      const data = await response.json();
+
+      if (data.success && data.data && data.data.products) {
+        return data.data.products;
+      }
+      return [];
+    } catch (error) {
+      console.error("[DEBUG API] Get products failed:", error);
+      throw error;
+    }
+  }
+
+  async getVouchers(
+    websiteUrl: string,
+    username: string,
+    password: string,
+  ): Promise<any[]> {
+    const cleanBaseUrl = websiteUrl.endsWith("/")
+      ? websiteUrl.slice(0, -1)
+      : websiteUrl;
+    const endpoint = "wp-json/takhfifanbizpwa/v1/vouchers";
+    const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+    const url = `${cleanBaseUrl}${cleanEndpoint}`;
+
+    const options: RequestInit = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+    };
+
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `HTTP Error! Status: ${response.status}, Message: ${errorText}`,
+        );
+      }
+      const data = await response.json();
+
+      if (data.success && data.data && data.data.vouchers) {
+        return data.data.vouchers;
+      }
+      return [];
+    } catch (error) {
+      console.error("[DEBUG API] Get vouchers failed:", error);
+      throw error;
+    }
+  }
+
+  async checkVoucher(
+    websiteUrl: string,
+    username: string,
+    password: string,
+    voucherCode: string,
+  ): Promise<any> {
+    const cleanBaseUrl = websiteUrl.endsWith("/")
+      ? websiteUrl.slice(0, -1)
+      : websiteUrl;
+    const endpoint = "wp-json/takhfifanbizpwa/v1/voucher/check";
+    const url = `${cleanBaseUrl}/${endpoint}`;
+
+    const options: RequestInit = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password, voucher_code: voucherCode }),
+    };
+
+    try {
+      const response = await fetch(url, options);
+      const data = await response.json();
+
+      // اگر وضعیت success=false بود، خطا را پرتاب می‌کنیم تا در صفحه بگیریم
+      if (!response.ok || !data.success) {
+        throw new Error(data?.error?.msg || "خطا در بررسی کوپن");
+      }
+      return data;
+    } catch (error) {
+      console.error("[DEBUG API] Check voucher failed:", error);
+      throw error;
+    }
   }
 }
 
