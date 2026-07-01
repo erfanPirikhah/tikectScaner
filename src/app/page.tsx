@@ -16,7 +16,7 @@ export default function HomePage() {
   // Normal flow without test mode
   useEffect(() => {
     if (!showOnboarding && isLoggedIn) {
-      router.push('/events');
+      router.push('/dashboard/');
     } else if (!showOnboarding && !isLoggedIn) {
       router.push('/login/');
     }

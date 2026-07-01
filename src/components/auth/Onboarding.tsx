@@ -17,7 +17,7 @@ const Onboarding = () => {
 
   const onboardingSlides = [
     {
-      title: "اپراتور گرامی، خوش آمدید.",
+      title: "پذیرنده گرامی، خوش آمدید",
       description: "بدون محدودیت در هر دیوایس فرآیند چک این را انجام دهید.",
       icon: <img src="/icons/onboard/onboard-1.png" alt="بررسی بلیت" className="w-24 h-24" />,
       gradient: "from-blue-500 to-purple-600",
@@ -25,7 +25,7 @@ const Onboarding = () => {
     },
     {
       title: "عملکرد سریع و هوشمند",
-      description: "بی وقفه و در کمترین زمان ممکن بلیت ها بررسی کنید.",
+      description: "بی وقفه و در کمترین زمان ممکن کوپن مشتریان را چک کنید",
       icon: <img src="/icons/onboard/onboard-2.png" alt="سیستم چک این" className="w-24 h-24" />,
       gradient: "from-green-500 to-teal-600",
       bgGradient: "from-green-50 to-teal-50"
@@ -80,7 +80,7 @@ const Onboarding = () => {
               <div className="flex items-center gap-3">
                 <Logo size="lg" showText={false} />
                 <span className="text-accent font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                  Evento | Ticket Check-In System  
+                   تخفیفان | پرتال کسب و کارها و پذیرندگان
                   
                  </span>
               </div>
@@ -175,7 +175,7 @@ const Onboarding = () => {
               <div className="flex items-center gap-3">
                 <Logo size="lg" showText={false} />
                 <span className="text-lg font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                  Evento | Ticket Check-In System
+                   تخفیفان | پرتال کسب و کارها و پذیرندگان
                 </span>
               </div>
 

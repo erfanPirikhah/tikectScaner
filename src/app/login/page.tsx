@@ -1,20 +1,27 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { showToast } from '@/lib/toast';
-import { Loader2, LogIn, User, Lock, Eye, EyeOff } from 'lucide-react';
-import Logo from '@/components/Logo';
-import { API_BASE_URL } from '@/config/api';
+import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { showToast } from "@/lib/toast";
+import { Loader2, LogIn, User, Lock, Eye, EyeOff } from "lucide-react";
+import Logo from "@/components/Logo";
+import { API_BASE_URL } from "@/config/api";
 
 export default function Login() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -27,13 +34,13 @@ export default function Login() {
 
     // Basic validation
     if (!username.trim()) {
-      showToast.error('نام کاربری الزامی است');
+      showToast.error("نام کاربری الزامی است");
       setLoading(false);
       return;
     }
 
     if (!password.trim()) {
-      showToast.error('رمز عبور الزامی است');
+      showToast.error("رمز عبور الزامی است");
       setLoading(false);
       return;
     }
@@ -41,26 +48,28 @@ export default function Login() {
     const currentDomain = API_BASE_URL;
 
     if (!currentDomain) {
-      showToast.error('آدرس وب‌سایت قابل شناسایی نیست');
+      showToast.error("آدرس وب‌سایت قابل شناسایی نیست");
       setLoading(false);
       return;
     }
 
     // Ensure URL ends with a slash
-    const normalizedUrl = currentDomain.endsWith('/') ? currentDomain : `${currentDomain}/`;
+    const normalizedUrl = currentDomain.endsWith("/")
+      ? currentDomain
+      : `${currentDomain}/`;
 
     try {
       const result = await login(username, password, normalizedUrl);
 
       if (result.success) {
-        showToast.success('ورود با موفقیت انجام شد');
-        router.push('/dashboard');
+        showToast.success("ورود با موفقیت انجام شد");
+        router.push("/dashboard");
       } else {
         showToast.error(result.message);
       }
     } catch (err) {
-      showToast.error('خطای غیرمنتظره رخ داد. لطفاً دوباره تلاش کنید.');
-      console.error('خطای ورود:', err);
+      showToast.error("خطای غیرمنتظره رخ داد. لطفاً دوباره تلاش کنید.");
+      console.error("خطای ورود:", err);
     } finally {
       setLoading(false);
     }
@@ -78,10 +87,10 @@ export default function Login() {
               </div>
               <div>
                 <CardTitle className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                  Evento | Ticket Check-In System
+                  تخفیفان | پرتال کسب و کارها و پذیرندگان
                 </CardTitle>
                 <CardDescription className="text-lg mt-2">
-                   ایونتو ، استانداردی نوین در فروش بلیت
+                  پرتال اختصاصی پذیرندگان و کسب و کارها
                 </CardDescription>
               </div>
             </div>
@@ -91,7 +100,10 @@ export default function Login() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Username Field */}
               <div className="space-y-3">
-                <Label htmlFor="username" className="text-base font-medium flex items-center gap-2">
+                <Label
+                  htmlFor="username"
+                  className="text-base font-medium flex items-center gap-2"
+                >
                   <User className="w-4 h-4" />
                   نام کاربری
                 </Label>
@@ -107,13 +119,16 @@ export default function Login() {
                   <User className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  نام کاربری اپراتور چک‌این را وارد کنید.
+                  نام کاربری پذیرندگی / کسب و کار خود را وارد کنید
                 </p>
               </div>
 
               {/* Password Field */}
               <div className="space-y-3">
-                <Label htmlFor="password" className="text-base font-medium flex items-center gap-2">
+                <Label
+                  htmlFor="password"
+                  className="text-base font-medium flex items-center gap-2"
+                >
                   <Lock className="w-4 h-4" />
                   رمز عبور
                 </Label>
@@ -131,11 +146,15 @@ export default function Login() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
                   </button>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  رمزعبور اپراتور چک‌این را وارد کنید.
+                  رمزعبور پذیرندگی / کسب و کار خود را وارد کنید.
                 </p>
               </div>
 
@@ -162,8 +181,9 @@ export default function Login() {
           <CardFooter className="flex-shrink-0 pb-8 px-6">
             <div className="w-full text-center">
               <p className="text-sm text-muted-foreground">
-                سیستم مدیریت بلیت‌های رویداد
+                پیشرفته ترین سامانه اعتبارسنجی و Check-In کوپن ایران{" "}
               </p>
+              <p> ver 1.0.0 - 1405</p>
             </div>
           </CardFooter>
         </Card>
@@ -179,10 +199,10 @@ export default function Login() {
               </div>
               <div>
                 <CardTitle className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                  Evento | Ticket Check-In System
+                  تخفیفان | پرتال کسب و کارها و پذیرندگان
                 </CardTitle>
                 <CardDescription className="text-lg mt-2">
-                   ایونتو ، استانداردی نوین در فروش بلیت
+                  پرتال اختصاصی پذیرندگان و کسب و کارها
                 </CardDescription>
               </div>
             </div>
@@ -192,7 +212,10 @@ export default function Login() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Username Field */}
               <div className="space-y-3">
-                <Label htmlFor="username-desktop" className="text-base font-medium flex items-center gap-2">
+                <Label
+                  htmlFor="username-desktop"
+                  className="text-base font-medium flex items-center gap-2"
+                >
                   <User className="w-4 h-4" />
                   نام کاربری
                 </Label>
@@ -208,13 +231,16 @@ export default function Login() {
                   <User className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  نام کاربری اپراتور چک‌این را وارد کنید.
+                  نام کاربری پذیرندگی / کسب و کار خود را وارد کنید
                 </p>
               </div>
 
               {/* Password Field */}
               <div className="space-y-3">
-                <Label htmlFor="password-desktop" className="text-base font-medium flex items-center gap-2">
+                <Label
+                  htmlFor="password-desktop"
+                  className="text-base font-medium flex items-center gap-2"
+                >
                   <Lock className="w-4 h-4" />
                   رمز عبور
                 </Label>
@@ -232,11 +258,15 @@ export default function Login() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
                   </button>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  رمزعبور اپراتور چک‌این را وارد کنید.
+                  رمزعبور پذیرندگی / کسب و کار خود را وارد کنید.
                 </p>
               </div>
 
@@ -263,8 +293,9 @@ export default function Login() {
           <CardFooter className="px-0 pb-4">
             <div className="w-full text-center">
               <p className="text-sm text-muted-foreground">
-                پیشرفته‌ترین سیستم اسکن و اعتبارسنجی بلیت
+                پیشرفته ترین سامانه اعتبارسنجی و Check-In کوپن ایران{" "}
               </p>
+              <p> ver 1.0.0 - 1405</p>
             </div>
           </CardFooter>
         </div>
