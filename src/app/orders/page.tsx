@@ -3,9 +3,17 @@
 import { useEffect, useState } from 'react';
 import { storageService } from '@/services/storage';
 import { wordpressService } from '@/services/wordpress';
-import { ShoppingBag, Eye, Loader2 } from 'lucide-react';
+import { ShoppingBag, Eye, Loader2, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -18,6 +26,12 @@ import { showToast } from '@/lib/toast';
 export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // استیت‌های صفحه‌بندی
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [hasMore, setHasMore] = useState(false);
+  const [maxPageReached, setMaxPageReached] = useState<number | null>(null);
 
   // استیت‌های مودال جزئیات
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,10 +44,26 @@ export default function OrdersPage() {
     const storedUrl = storageService.getWebsiteUrl();
 
     if (storedUrl && username && password) {
-      wordpressService.getOrders(storedUrl, username, password)
+      setLoading(true);
+      wordpressService.getOrders(storedUrl, username, password, {
+        page: page.toString(),
+        per_page: perPage.toString(),
+      })
         .then((data) => {
-          const sorted = data.sort((a, b) => b.order_id - a.order_id);
-          setOrders(sorted);
+          // اگر API آرایه خالی برگرداند یعنی به آخر صفحه رسیده‌ایم
+          if (data.length === 0 && page > 1) {
+            setMaxPageReached(page - 1); // ثبت صفحه فعلی به عنوان آخرین صفحه مجاز
+            setPage(page - 1); // بازگشت به صفحه قبلی
+          } else {
+            setOrders(data);
+            // اگر تعداد آیتم‌های دریافت شده کمتر از per_page باشد، قطعا صفحه آخر است
+            if (data.length < perPage) {
+              setMaxPageReached(page);
+              setHasMore(false);
+            } else {
+              setHasMore(true);
+            }
+          }
         })
         .catch((error) => {
           console.error('خطا در دریافت سفارش‌ها:', error);
@@ -44,7 +74,7 @@ export default function OrdersPage() {
     } else {
       setLoading(false);
     }
-  }, []);
+  }, [page, perPage]);
 
   const formatPrice = (price: string | number) => {
     try {
@@ -141,7 +171,6 @@ export default function OrdersPage() {
               <div className="lg:hidden divide-y divide-gray-200 w-full">
                 {orders.map((order) => (
                   <div key={order.order_id} className="p-4 hover:bg-gray-50 transition-colors w-full overflow-hidden">
-                    {/* هدر کارت */}
                     <div className="flex justify-between items-center mb-3 gap-2 w-full">
                       <span className="font-bold text-gray-900 text-base flex-shrink-0">
                         #{order.order_id}
@@ -151,7 +180,6 @@ export default function OrdersPage() {
                       </span>
                     </div>
                     
-                    {/* لیست محصولات */}
                     <div className="text-sm text-gray-600 mb-4 space-y-2 bg-gray-50 p-3 rounded-lg w-full overflow-hidden">
                       {order.items.map((item: any) => (
                         <div key={item.item_id} className="flex justify-between items-start gap-2 w-full min-w-0">
@@ -161,7 +189,6 @@ export default function OrdersPage() {
                       ))}
                     </div>
                     
-                    {/* فوتر کارت */}
                     <div className="flex justify-between items-center w-full">
                       <div className="flex flex-col gap-1 text-xs text-gray-500 break-words">
                         <span>{formatDate(order.date)}</span>
@@ -234,6 +261,54 @@ export default function OrdersPage() {
                   </tbody>
                 </table>
               </div>
+
+              {/* بخش صفحه‌بندی (Pagination) */}
+              <div className="flex flex-col sm:flex-row items-center justify-between p-4 border-t border-gray-200 gap-4">
+                <div className="flex items-center gap-2">
+                  <Label className="text-sm whitespace-nowrap">تعداد در هر صفحه:</Label>
+                  <Select 
+                    value={String(perPage)} 
+                    onValueChange={(val) => {
+                      setPerPage(Number(val)); 
+                      setPage(1);
+                      setMaxPageReached(null); // ریست کردن محدودیت صفحه در صورت تغییر تعداد
+                    }}
+                  >
+                    <SelectTrigger className="w-24">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="20">20</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    disabled={page === 1 || loading} 
+                    onClick={() => setPage(prev => Math.max(1, prev - 1))}
+                  >
+                    <ChevronRight className="ml-2 h-4 w-4" /> قبلی
+                  </Button>
+                  
+                  <span className="text-sm text-gray-600 font-medium">
+                    صفحه {page.toLocaleString('fa-IR')}
+                  </span>
+                  
+                  <Button 
+                    variant="outline" 
+                    // غیرفعال کردن دکمه بعدی اگر به صفحه آخر رسیده باشیم یا در حال لود باشد
+                    disabled={loading || (maxPageReached !== null && page >= maxPageReached) || !hasMore} 
+                    onClick={() => setPage(prev => prev + 1)}
+                  >
+                    بعدی <ChevronLeft className="mr-2 h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             </>
           )}
         </div>
@@ -257,7 +332,6 @@ export default function OrdersPage() {
           ) : orderDetails ? (
             <div className="space-y-6 mt-4">
               
-              {/* اطلاعات کلی سفارش */}
               <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
                 <div>
                   <p className="text-xs text-gray-500 mb-1">شماره سفارش</p>
@@ -279,7 +353,6 @@ export default function OrdersPage() {
                 </div>
               </div>
 
-              {/* اطلاعات صورت‌حساب (مشتری) */}
               <div>
                 <h4 className="text-sm font-bold text-gray-800 mb-2 border-b pb-2">اطلاعات مشتری</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
@@ -291,7 +364,6 @@ export default function OrdersPage() {
                 </div>
               </div>
 
-              {/* اقلام سفارش */}
               <div>
                 <h4 className="text-sm font-bold text-gray-800 mb-2 border-b pb-2">اقلام خریداری شده</h4>
                 <div className="space-y-2">
@@ -309,7 +381,6 @@ export default function OrdersPage() {
                 </div>
               </div>
 
-              {/* جمع کل */}
               <div className="border-t pt-4 space-y-2 text-sm">
                 <div className="flex justify-between text-gray-600">
                   <span>جمع کل (بدون تخفیف):</span>

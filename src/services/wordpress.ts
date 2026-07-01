@@ -448,18 +448,17 @@ class WordPressService {
     websiteUrl: string,
     username: string,
     password: string,
+    filters: { page?: string; per_page?: string } = {}
   ): Promise<any[]> {
     const endpoint = "orders";
     const url = buildApiUrl(endpoint);
-
-    console.log("[DEBUG API] Get orders request:", { url, username });
 
     const options: RequestInit = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ username, password }), // ارسال یوزرنیم و پسورد به API
+      body: JSON.stringify({ username, password, ...filters }),
     };
 
     try {
@@ -472,7 +471,6 @@ class WordPressService {
       }
       const data = await response.json();
 
-      // خروجی API دارای فیلد success و data.orders است
       if (data.success && data.data && data.data.orders) {
         return data.data.orders;
       }
@@ -482,7 +480,6 @@ class WordPressService {
       throw error;
     }
   }
-
   async getStats(username: string, password: string): Promise<any> {
     const url = buildApiUrl("vendor/stats");
 
