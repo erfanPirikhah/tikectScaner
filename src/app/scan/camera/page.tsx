@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import ScannerClient from './ScannerClient';
+import ScannerClient from '../ScannerClient';
 
 export default function QRScanner() {
   return (
