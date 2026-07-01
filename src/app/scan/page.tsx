@@ -9,16 +9,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Camera, Keyboard, Loader2, Search, CheckCircle2, XCircle } from 'lucide-react';
+import { Camera, Keyboard, Loader2, Search, CheckCircle2, XCircle, Ban, User, Mail, Phone, MapPin, Package } from 'lucide-react';
 
 export default function ScanPage() {
   const [voucherCode, setVoucherCode] = useState('');
   const [loading, setLoading] = useState(false);
+  const [redeeming, setRedeeming] = useState(false);
   
   // استیت‌های مربوط به مدال
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [resultData, setResultData] = useState<any>(null);
+  const [voucherData, setVoucherData] = useState<any>(null);
+  const [orderDetails, setOrderDetails] = useState<any>(null);
 
   // تابع پخش صدا
   const playSound = (success: boolean) => {
@@ -34,6 +36,7 @@ export default function ScanPage() {
     }
 
     setLoading(true);
+    setOrderDetails(null); // ریست جزئیات سفارش قبلی
 
     const username = storageService.getUsername();
     const password = storageService.getPassword();
@@ -46,26 +49,60 @@ export default function ScanPage() {
     }
 
     try {
-      const response = await wordpressService.checkVoucher(storedUrl, username, password, voucherCode);
+      // ۱. بررسی کوپن
+      const voucher = await wordpressService.checkVoucher(storedUrl, username, password, voucherCode);
       
-      // اگر اینجا رسید یعنی success=true است
       setIsSuccess(true);
-      setResultData(response.data.voucher); // ذخیره اطلاعات کوپن
-      setIsModalOpen(true); // باز کردن مدال
-      playSound(true); // پخش صدای موفقیت
+      setVoucherData(voucher);
+      playSound(true); 
       
+      // ۲. گرفتن جزئیات سفارش با استفاده از order_id
+      if (voucher.order_id) {
+        try {
+          const details = await wordpressService.getOrderDetails(storedUrl, username, password, voucher.order_id);
+          setOrderDetails(details);
+        } catch (orderError) {
+          console.error('خطا در دریافت جزئیات سفارش:', orderError);
+          // نیازی نیست کل فرآیند را شکست دهیم، فقط جزئیات سفارش خالی می‌ماند
+        }
+      }
+
+      setIsModalOpen(true); // باز کردن مدال
       setVoucherCode(''); // پاک کردن اینپوت
       
     } catch (error: any) {
       const errorMsg = error.message || 'کوپن نامعتبر است';
       
-      // تنظیمات برای مدال خطا
       setIsSuccess(false);
-      setResultData({ message: errorMsg });
-      setIsModalOpen(true); // باز کردن مدال
-      playSound(false); // پخش صدای خطا
+      setVoucherData({ message: errorMsg });
+      setIsModalOpen(true); 
+      playSound(false); 
     } finally {
       setLoading(false);
+    }
+  };
+
+  // تابع ابطال کوپن
+  const handleRedeemVoucher = async () => {
+    if (!voucherData?.voucher_code) return;
+
+    setRedeeming(true);
+    const username = storageService.getUsername();
+    const password = storageService.getPassword();
+    const storedUrl = storageService.getWebsiteUrl();
+
+    try {
+      const updatedVoucher = await wordpressService.redeemVoucher(storedUrl, username, password, voucherData.voucher_code);
+      
+      // آپدیت اطلاعات کوپن در مودال
+      setVoucherData(updatedVoucher);
+      playSound(true);
+      showToast.success('کوپن با موفقیت ابطال شد');
+    } catch (error: any) {
+      playSound(false);
+      showToast.error(error.message || 'خطا در ابطال کوپن');
+    } finally {
+      setRedeeming(false);
     }
   };
 
@@ -75,6 +112,19 @@ export default function ScanPage() {
       return Number(price).toLocaleString('fa-IR') + ' تومان';
     } catch {
       return String(price);
+    }
+  };
+
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return '—';
+    try {
+      const date = new Date(dateStr.replace(' ', 'T'));
+      if (isNaN(date.getTime())) return dateStr;
+      return new Intl.DateTimeFormat('fa-IR', {
+        year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+      }).format(date);
+    } catch {
+      return dateStr;
     }
   };
 
@@ -165,7 +215,7 @@ export default function ScanPage() {
 
       {/* مدال نمایش نتیجه */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader className="items-center text-center">
             <div className={`mx-auto mb-4 p-3 rounded-full ${isSuccess ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
               {isSuccess ? <CheckCircle2 className="w-12 h-12" /> : <XCircle className="w-12 h-12" />}
@@ -174,43 +224,114 @@ export default function ScanPage() {
               {isSuccess ? 'کوپن با موفقیت تایید شد' : 'خطا در بررسی کوپن'}
             </DialogTitle>
             <DialogDescription>
-              {isSuccess ? 'جزئیات کوپن در زیر نمایش داده شده است.' : 'کوپن وارد شده معتبر نیست یا متعلق به شما نیست.'}
+              {isSuccess ? 'جزئیات کوپن و سفارش در زیر نمایش داده شده است.' : 'کوپن وارد شده معتبر نیست.'}
             </DialogDescription>
           </DialogHeader>
           
-          {isSuccess && resultData ? (
-            <div className="border-t border-b border-gray-100 py-4 my-2 space-y-3 text-sm">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-500">نام محصول:</span>
-                <span className="font-medium text-gray-900 text-left">{resultData.product_name}</span>
+          {isSuccess && voucherData ? (
+            <div className="space-y-4 text-sm">
+              
+              {/* بخش دکمه ابطال (فقط اگر کوپن فعال باشد) */}
+              {voucherData.status === 'active' && (
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 flex justify-between items-center">
+                  <div>
+                    <p className="font-medium text-orange-800">آماده برای ابطال</p>
+                    <p className="text-xs text-orange-600">برای استفاده نهایی، دکمه ابطال را بزنید</p>
+                  </div>
+                  <Button 
+                    onClick={handleRedeemVoucher} 
+                    disabled={redeeming}
+                    variant="destructive"
+                    size="sm"
+                  >
+                    {redeeming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Ban className="h-4 w-4 ml-1" />}
+                    ابطال کوپن
+                  </Button>
+                </div>
+              )}
+
+              {voucherData.status === 'redeemed' && (
+                <div className="bg-gray-100 border border-gray-200 rounded-lg p-3 text-center text-gray-700 font-medium">
+                  این کوپن پیش‌تر در تاریخ {formatDate(voucherData.redeemed_at)} ابطال شده است.
+                </div>
+              )}
+
+              {/* اطلاعات کوپن */}
+              <div className="border-t border-b border-gray-100 py-4 space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-500">نام محصول:</span>
+                  <span className="font-medium text-gray-900 text-left max-w-[60%]">{voucherData.product_name}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-500">کد کوپن:</span>
+                  <span className="font-mono text-xs text-gray-900 bg-gray-100 px-2 py-1 rounded">
+                    {voucherData.voucher_code}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-500">مبلغ:</span>
+                  <span className="font-medium text-gray-900">{formatPrice(voucherData.voucher_price)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-500">تعداد:</span>
+                  <span className="font-medium text-gray-900">{voucherData.qty}</span>
+                </div>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-500">کد کوپن:</span>
-                <span className="font-mono text-xs text-gray-900 bg-gray-100 px-2 py-1 rounded">
-                  {resultData.voucher_code}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-500">مبلغ:</span>
-                <span className="font-medium text-gray-900">{formatPrice(resultData.voucher_price)}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-500">شناسه سفارش:</span>
-                <span className="font-medium text-gray-900">#{resultData.order_id}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-500">تعداد:</span>
-                <span className="font-medium text-gray-900">{resultData.qty}</span>
-              </div>
+
+              {/* اطلاعات سفارش (در صورت وجود) */}
+              {orderDetails && (
+                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                  <h4 className="font-bold text-gray-800 text-sm flex items-center gap-2 border-b pb-2 mb-2">
+                    <Package className="h-4 w-4" /> اطلاعات سفارش (#{orderDetails.order_id})
+                  </h4>
+                  
+                  <div className="grid grid-cols-1 gap-2">
+                    <div className="flex items-start gap-2">
+                      <User className="h-4 w-4 text-gray-400 mt-0.5" />
+                      <div>
+                        <span className="text-gray-500 block text-xs">مشتری:</span>
+                        <span className="font-medium text-gray-800">{orderDetails.billing?.first_name} {orderDetails.billing?.last_name}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Phone className="h-4 w-4 text-gray-400 mt-0.5" />
+                      <div>
+                        <span className="text-gray-500 block text-xs">تلفن:</span>
+                        <span className="font-medium text-gray-800">{orderDetails.billing?.phone || '—'}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Mail className="h-4 w-4 text-gray-400 mt-0.5" />
+                      <div>
+                        <span className="text-gray-500 block text-xs">ایمیل:</span>
+                        <span className="font-medium text-gray-800 break-all">{orderDetails.billing?.email || '—'}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <MapPin className="h-4 w-4 text-gray-400 mt-0.5" />
+                      <div>
+                        <span className="text-gray-500 block text-xs">آدرس:</span>
+                        <span className="font-medium text-gray-800">{orderDetails.billing?.state} - {orderDetails.billing?.city}، {orderDetails.billing?.address_1}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center pt-2 border-t mt-2">
+                    <span className="text-gray-500">مبلغ کل سفارش:</span>
+                    <span className="font-bold text-gray-900">{formatPrice(orderDetails.totals?.total || 0)}</span>
+                  </div>
+                </div>
+              )}
+
             </div>
           ) : (
             <div className="text-center text-red-600 font-medium py-4">
-              {resultData?.message}
+              {voucherData?.message}
             </div>
           )}
           
           <DialogFooter className="sm:justify-center">
-            <Button onClick={() => setIsModalOpen(false)} className="w-full">
+            <Button onClick={() => setIsModalOpen(false)} className="w-full" variant="outline">
               بستن
             </Button>
           </DialogFooter>

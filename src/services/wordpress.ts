@@ -448,7 +448,7 @@ class WordPressService {
     websiteUrl: string,
     username: string,
     password: string,
-    filters: { page?: string; per_page?: string } = {}
+    filters: { page?: string; per_page?: string } = {},
   ): Promise<any[]> {
     const endpoint = "orders";
     const url = buildApiUrl(endpoint);
@@ -522,7 +522,7 @@ class WordPressService {
       per_page?: string;
       product_id?: string;
       status?: string;
-    } = {}
+    } = {},
   ): Promise<any[]> {
     const endpoint = "products";
     const url = buildApiUrl(endpoint);
@@ -563,7 +563,7 @@ class WordPressService {
     websiteUrl: string,
     username: string,
     password: string,
-    filters: { page?: string; per_page?: string } = {}
+    filters: { page?: string; per_page?: string } = {},
   ): Promise<any[]> {
     const endpoint = "vouchers";
     const url = buildApiUrl(endpoint);
@@ -614,13 +614,50 @@ class WordPressService {
       const response = await fetch(url, options);
       const data = await response.json();
 
-      // اگر وضعیت success=false بود، خطا را پرتاب می‌کنیم تا در صفحه بگیریم
-      if (!response.ok || !data.success) {
-        throw new Error(data?.error?.msg || "خطا در بررسی کوپن");
+      // تطبیق با ساختار خروجی { voucher: {...} }
+      const voucherData = data.data?.voucher || data.voucher;
+
+      if (!response.ok || !voucherData) {
+        throw new Error(
+          data?.error?.msg || data?.message || "کوپن نامعتبر است",
+        );
       }
-      return data;
+      return voucherData;
     } catch (error) {
       console.error("[DEBUG API] Check voucher failed:", error);
+      throw error;
+    }
+  }
+
+  async redeemVoucher(
+    websiteUrl: string,
+    username: string,
+    password: string,
+    voucherCode: string,
+  ): Promise<any> {
+    const endpoint = "voucher/redeem";
+    const url = buildApiUrl(endpoint);
+
+    const options: RequestInit = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password, voucher_code: voucherCode }),
+    };
+
+    try {
+      const response = await fetch(url, options);
+      const data = await response.json();
+
+      const voucherData = data.data?.voucher || data.voucher;
+
+      if (!response.ok || !data.success || !voucherData) {
+        throw new Error(
+          data?.error?.msg || data?.message || "خطا در ابطال کوپن",
+        );
+      }
+      return voucherData;
+    } catch (error) {
+      console.error("[DEBUG API] Redeem voucher failed:", error);
       throw error;
     }
   }
