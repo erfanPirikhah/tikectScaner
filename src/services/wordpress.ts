@@ -444,42 +444,6 @@ class WordPressService {
     });
   }
 
-  async getOrders(
-    websiteUrl: string,
-    username: string,
-    password: string,
-    filters: { page?: string; per_page?: string } = {},
-  ): Promise<any[]> {
-    const endpoint = "orders";
-    const url = buildApiUrl(endpoint);
-
-    const options: RequestInit = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ username, password, ...filters }),
-    };
-
-    try {
-      const response = await fetch(url, options);
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `HTTP Error! Status: ${response.status}, Message: ${errorText}`,
-        );
-      }
-      const data = await response.json();
-
-      if (data.success && data.data && data.data.orders) {
-        return data.data.orders;
-      }
-      return [];
-    } catch (error) {
-      console.error("[DEBUG API] Get orders failed:", error);
-      throw error;
-    }
-  }
   async getStats(username: string, password: string): Promise<any> {
     const url = buildApiUrl("vendor/stats");
 
@@ -558,21 +522,23 @@ class WordPressService {
       throw error;
     }
   }
-
-  async getVouchers(
+  async getOrders(
     websiteUrl: string,
     username: string,
     password: string,
-    filters: { page?: string; per_page?: string } = {},
+    filters: {
+      page?: string;
+      per_page?: string;
+      date_from?: string;
+      date_to?: string;
+    } = {},
   ): Promise<any[]> {
-    const endpoint = "vouchers";
+    const endpoint = "orders";
     const url = buildApiUrl(endpoint);
 
     const options: RequestInit = {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password, ...filters }),
     };
 
@@ -585,16 +551,53 @@ class WordPressService {
         );
       }
       const data = await response.json();
+      if (data.success && data.data && data.data.orders)
+        return data.data.orders;
+      return [];
+    } catch (error) {
+      console.error("[DEBUG API] Get orders failed:", error);
+      throw error;
+    }
+  }
 
-      if (data.success && data.data && data.data.vouchers) {
-        return data.data.vouchers;
+  async getVouchers(
+    websiteUrl: string,
+    username: string,
+    password: string,
+    filters: {
+      page?: string;
+      per_page?: string;
+      date_from?: string;
+      date_to?: string;
+    } = {},
+  ): Promise<any[]> {
+    const endpoint = "vouchers";
+    const url = buildApiUrl(endpoint);
+
+    const options: RequestInit = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password, ...filters }),
+    };
+
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `HTTP Error! Status: ${response.status}, Message: ${errorText}`,
+        );
       }
+      const data = await response.json();
+      if (data.success && data.data && data.data.vouchers)
+        return data.data.vouchers;
       return [];
     } catch (error) {
       console.error("[DEBUG API] Get vouchers failed:", error);
       throw error;
     }
   }
+
   async checkVoucher(
     websiteUrl: string,
     username: string,
