@@ -56,7 +56,7 @@ export default function Login() {
 
       if (result.success) {
         showToast.success('ورود با موفقیت انجام شد');
-        router.push('/events');
+        router.push('/dashboard');
       } else {
         showToast.error(result.message);
       }

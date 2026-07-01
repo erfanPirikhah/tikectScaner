@@ -47,8 +47,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   };
 
   const SidebarContent = () => (
-    <div className="flex h-full flex-col bg-gray-50 dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800">
-      <div className="flex h-16 items-center justify-center border-b border-gray-200 dark:border-gray-800 px-4">
+    <div className="flex h-full flex-col bg-gray-50 border-l border-gray-200">
+      <div className="flex h-16 items-center justify-center border-b border-gray-200 px-4">
         <span className="text-lg font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
           پنل مدیریت
         </span>
@@ -68,7 +68,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 isActive 
                   ? "bg-primary text-primary-foreground shadow-sm" 
-                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  : "text-gray-700 hover:bg-gray-100"
               )}
             >
               <Icon className="h-5 w-5" />
@@ -78,14 +78,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         })}
       </nav>
 
-      <div className="border-t border-gray-200 dark:border-gray-800 p-4">
+      <div className="border-t border-gray-200 p-4">
         <div className="mb-3 px-3">
-          <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.name || 'کاربر'}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
+          <p className="text-sm font-medium text-gray-900">{user?.name || 'کاربر'}</p>
+          <p className="text-xs text-gray-500 truncate">{user?.email}</p>
         </div>
         <Button 
           variant="outline" 
-          className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 border-gray-200 dark:border-gray-800"
+          className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 border-gray-200"
           onClick={handleLogout}
         >
           <LogOut className="h-5 w-5 ml-2" />
@@ -96,14 +96,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   );
 
   return (
-    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-950">
+    <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar for Desktop (Right Side in RTL) */}
       <aside className="hidden lg:block w-64 fixed right-0 top-0 h-screen z-40">
         <SidebarContent />
       </aside>
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-30 flex items-center justify-between px-4 shadow-sm">
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-30 flex items-center justify-between px-4 shadow-sm">
         <span className="text-lg font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
           پنل مدیریت
         </span>

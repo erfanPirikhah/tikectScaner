@@ -94,19 +94,19 @@ export default function DashboardHome() {
   };
 
   const statsBoxes = [
-    { title: 'مجموع سفارشات', value: formatPrice(stats.total_orders_amount), count: 'مجموع ارزش', icon: DollarSign, color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/30 dark:text-blue-400' },
-    { title: 'تعداد کل سفارشات', value: formatNumber(stats.total_orders_count), count: 'سفارش ثبت شده', icon: ShoppingBag, color: 'text-purple-600 bg-purple-50 dark:bg-purple-950/30 dark:text-purple-400' },
-    { title: 'کوپن های خریداری شده', value: formatNumber(stats.total_vouchers_count), count: 'کوپن فروخته شده', icon: Ticket, color: 'text-green-600 bg-green-50 dark:bg-green-950/30 dark:text-green-400' },
-    { title: 'مجموع خریداران', value: formatNumber(stats.total_unique_customers), count: 'مشتری فعال', icon: Users, color: 'text-orange-600 bg-orange-50 dark:bg-orange-950/30 dark:text-orange-400' },
-    { title: 'محصولات و خدمات', value: formatNumber(stats.total_products_services), count: 'آیتم موجود', icon: Package, color: 'text-pink-600 bg-pink-50 dark:bg-pink-950/30 dark:text-pink-400' },
+    { title: 'مجموع سفارشات', value: formatPrice(stats.total_orders_amount), count: 'مجموع ارزش', icon: DollarSign, color: 'text-blue-600 bg-blue-50' },
+    { title: 'تعداد کل سفارشات', value: formatNumber(stats.total_orders_count), count: 'سفارش ثبت شده', icon: ShoppingBag, color: 'text-purple-600 bg-purple-50' },
+    { title: 'کوپن های خریداری شده', value: formatNumber(stats.total_vouchers_count), count: 'کوپن فروخته شده', icon: Ticket, color: 'text-green-600 bg-green-50' },
+    { title: 'مجموع خریداران', value: formatNumber(stats.total_unique_customers), count: 'مشتری فعال', icon: Users, color: 'text-orange-600 bg-orange-50' },
+    { title: 'محصولات و خدمات', value: formatNumber(stats.total_products_services), count: 'آیتم موجود', icon: Package, color: 'text-pink-600 bg-pink-50' },
   ];
 
   const renderStatus = (status: string) => {
     const statusMap: Record<string, { text: string, color: string }> = {
-      pending: { text: 'در انتظار پرداخت', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' },
-      completed: { text: 'تکمیل شده', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
-      cancelled: { text: 'لغو شده', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' },
-      processing: { text: 'در حال انجام', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' },
+      pending: { text: 'در انتظار پرداخت', color: 'bg-yellow-100 text-yellow-800' },
+      completed: { text: 'تکمیل شده', color: 'bg-green-100 text-green-800' },
+      cancelled: { text: 'لغو شده', color: 'bg-red-100 text-red-800' },
+      processing: { text: 'در حال انجام', color: 'bg-blue-100 text-blue-800' },
     };
     return statusMap[status] || { text: status, color: 'bg-gray-100 text-gray-800' };
   };
@@ -124,29 +124,29 @@ export default function DashboardHome() {
   };
 
   return (
-    <div className="p-4 md:p-8 bg-gray-100 dark:bg-gray-950 min-h-[calc(100vh-4rem)] lg:min-h-screen">
+    <div className="p-4 md:p-8 bg-gray-100 min-h-[calc(100vh-4rem)] lg:min-h-screen">
       <div className="max-w-6xl mx-auto">
         
         {/* بخش خوش آمدید و ساعت */}
-        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-5 md:p-8 mb-6 md:mb-8 text-center">
-          <h1 className="text-xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3 md:mb-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 md:p-8 mb-6 md:mb-8 text-center">
+          <h1 className="text-xl md:text-3xl font-bold text-gray-900 mb-3 md:mb-4">
             مدیر محترم، خوش آمدید
           </h1>
           {user?.name && (
-            <p className="text-base md:text-lg text-gray-600 dark:text-gray-400 mb-5 md:mb-6">
+            <p className="text-base md:text-lg text-gray-600 mb-5 md:mb-6">
               {user.name} عزیز، به پنل مدیریت خوش آمدید.
             </p>
           )}
-          <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 mt-5 md:mt-6 pt-5 md:pt-6 border-t border-gray-100 dark:border-gray-800">
-            <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 mt-5 md:mt-6 pt-5 md:pt-6 border-t border-gray-100">
+            <div className="flex items-center gap-2 text-gray-700">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500">
                 <circle cx="12" cy="12" r="10"></circle>
                 <polyline points="12 6 12 12 16 14"></polyline>
               </svg>
               <span className="text-lg md:text-xl font-mono tracking-wider">{currentTime}</span>
             </div>
-            <div className="hidden md:block w-px h-8 bg-gray-200 dark:bg-gray-700"></div>
-            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+            <div className="hidden md:block w-px h-8 bg-gray-200"></div>
+            <div className="flex items-center gap-2 text-gray-600">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500/80">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                 <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -163,7 +163,7 @@ export default function DashboardHome() {
           {loadingStats ? (
             // نمایش اسکلتون در حالت لودینگ
             Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-4 md:p-5">
+              <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-5">
                 <Skeleton className="h-10 w-10 rounded-lg mb-4" />
                 <Skeleton className="h-3 w-20 mb-2" />
                 <Skeleton className="h-5 w-24 mb-2" />
@@ -174,16 +174,16 @@ export default function DashboardHome() {
             statsBoxes.map((stat, index) => {
               const Icon = stat.icon;
               return (
-                <div key={index} className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-4 md:p-5 hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+                <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-5 hover:shadow-md transition-all duration-300 hover:-translate-y-1">
                   <div className="flex items-center justify-between mb-3 md:mb-4">
                     <div className={`p-2 md:p-2.5 rounded-lg ${stat.color}`}>
                       <Icon className="w-5 h-5 md:w-6 md:h-6" />
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">{stat.title}</p>
-                    <p className="text-sm md:text-base font-bold text-gray-900 dark:text-white truncate">{stat.value}</p>
-                    <p className="text-[10px] md:text-xs text-gray-400 dark:text-gray-500 mt-1">{stat.count}</p>
+                    <p className="text-xs md:text-sm text-gray-500">{stat.title}</p>
+                    <p className="text-sm md:text-base font-bold text-gray-900 truncate">{stat.value}</p>
+                    <p className="text-[10px] md:text-xs text-gray-400 mt-1">{stat.count}</p>
                   </div>
                 </div>
               );
@@ -211,10 +211,10 @@ export default function DashboardHome() {
         </div>
 
         {/* جدول آخرین سفارش‌ها */}
-        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
-          <div className="p-4 md:p-6 border-b border-gray-200 dark:border-gray-800">
-            <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">آخرین سفارش‌ها</h2>
-            <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">۱۰ سفارش اخیر ثبت شده در سیستم</p>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-4 md:p-6 border-b border-gray-200">
+            <h2 className="text-lg md:text-xl font-bold text-gray-900">آخرین سفارش‌ها</h2>
+            <p className="text-xs md:text-sm text-gray-500 mt-1">۱۰ سفارش اخیر ثبت شده در سیستم</p>
           </div>
           
           {loadingOrders ? (
@@ -226,16 +226,16 @@ export default function DashboardHome() {
           ) : (
             <>
               {/* نمای موبایل (کارت‌های زیر هم) */}
-              <div className="md:hidden divide-y divide-gray-200 dark:divide-gray-800">
+              <div className="md:hidden divide-y divide-gray-200">
                 {orders.map((order) => (
-                  <div key={order.order_id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/30">
+                  <div key={order.order_id} className="p-4 hover:bg-gray-50">
                     <div className="flex justify-between items-center mb-3">
-                      <span className="font-bold text-gray-900 dark:text-white">#{order.order_id}</span>
+                      <span className="font-bold text-gray-900">#{order.order_id}</span>
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${renderStatus(order.status).color}`}>
                         {renderStatus(order.status).text}
                       </span>
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-300 mb-3 space-y-1">
+                    <div className="text-sm text-gray-600 mb-3 space-y-1">
                       {order.items.slice(0, 2).map((item: any) => (
                         <div key={item.item_id} className="truncate">
                           {item.name} <span className="text-gray-400">({item.qty} عدد)</span>
@@ -245,9 +245,9 @@ export default function DashboardHome() {
                         <div className="text-xs text-blue-500">+{order.items.length - 2} مورد دیگر</div>
                       )}
                     </div>
-                    <div className="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-gray-800">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">{formatDate(order.date)}</span>
-                      <span className="text-sm font-bold text-gray-900 dark:text-white">{formatPrice(order.total)}</span>
+                    <div className="flex justify-between items-center pt-3 border-t border-gray-100">
+                      <span className="text-xs text-gray-500">{formatDate(order.date)}</span>
+                      <span className="text-sm font-bold text-gray-900">{formatPrice(order.total)}</span>
                     </div>
                   </div>
                 ))}
@@ -257,21 +257,21 @@ export default function DashboardHome() {
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-right min-w-[800px]">
                   <thead>
-                    <tr className="border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
-                      <th className="py-4 px-6 font-medium text-gray-500 dark:text-gray-400 text-sm">شماره سفارش</th>
-                      <th className="py-4 px-6 font-medium text-gray-500 dark:text-gray-400 text-sm">محصولات</th>
-                      <th className="py-4 px-6 font-medium text-gray-500 dark:text-gray-400 text-sm">مبلغ کل</th>
-                      <th className="py-4 px-6 font-medium text-gray-500 dark:text-gray-400 text-sm">وضعیت</th>
-                      <th className="py-4 px-6 font-medium text-gray-500 dark:text-gray-400 text-sm">تاریخ</th>
+                    <tr className="border-b border-gray-200 bg-gray-50">
+                      <th className="py-4 px-6 font-medium text-gray-500 text-sm">شماره سفارش</th>
+                      <th className="py-4 px-6 font-medium text-gray-500 text-sm">محصولات</th>
+                      <th className="py-4 px-6 font-medium text-gray-500 text-sm">مبلغ کل</th>
+                      <th className="py-4 px-6 font-medium text-gray-500 text-sm">وضعیت</th>
+                      <th className="py-4 px-6 font-medium text-gray-500 text-sm">تاریخ</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+                  <tbody className="divide-y divide-gray-200">
                     {orders.map((order) => (
-                      <tr key={order.order_id} className="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
-                        <td className="py-4 px-6 text-sm font-medium text-gray-900 dark:text-white">
+                      <tr key={order.order_id} className="hover:bg-gray-50 transition-colors">
+                        <td className="py-4 px-6 text-sm font-medium text-gray-900">
                           #{order.order_id}
                         </td>
-                        <td className="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">
+                        <td className="py-4 px-6 text-sm text-gray-600">
                           <div className="flex flex-col gap-1">
                             {order.items.slice(0, 2).map((item: any) => (
                               <span key={item.item_id} className="block">
@@ -283,7 +283,7 @@ export default function DashboardHome() {
                             )}
                           </div>
                         </td>
-                        <td className="py-4 px-6 text-sm font-bold text-gray-900 dark:text-white whitespace-nowrap">
+                        <td className="py-4 px-6 text-sm font-bold text-gray-900 whitespace-nowrap">
                           {formatPrice(order.total)}
                         </td>
                         <td className="py-4 px-6">
@@ -291,7 +291,7 @@ export default function DashboardHome() {
                             {renderStatus(order.status).text}
                           </span>
                         </td>
-                        <td className="py-4 px-6 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                        <td className="py-4 px-6 text-xs text-gray-500 whitespace-nowrap">
                           {formatDate(order.date)}
                         </td>
                       </tr>
