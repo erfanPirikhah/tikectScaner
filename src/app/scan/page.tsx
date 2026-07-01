@@ -83,16 +83,22 @@ export default function ScanPage() {
   };
 
   // تابع ابطال کوپن
+  // تابع ابطال کوپن
   const handleRedeemVoucher = async () => {
-    if (!voucherData?.voucher_code) return;
-
-    setRedeeming(true);
     const username = storageService.getUsername();
     const password = storageService.getPassword();
     const storedUrl = storageService.getWebsiteUrl();
+    const vCode = voucherData?.voucher_code;
+
+    if (!storedUrl || !username || !password || !vCode) {
+      showToast.error('اطلاعات کاربری یا کد کوپن یافت نشد');
+      return;
+    }
+
+    setRedeeming(true);
 
     try {
-      const updatedVoucher = await wordpressService.redeemVoucher(storedUrl, username, password, voucherData.voucher_code);
+      const updatedVoucher = await wordpressService.redeemVoucher(storedUrl, username, password, vCode);
       
       // آپدیت اطلاعات کوپن در مودال
       setVoucherData(updatedVoucher);
