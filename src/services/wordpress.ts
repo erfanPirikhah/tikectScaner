@@ -515,6 +515,14 @@ class WordPressService {
     websiteUrl: string,
     username: string,
     password: string,
+    filters: {
+      date_from?: string;
+      date_to?: string;
+      page?: string;
+      per_page?: string;
+      product_id?: string;
+      status?: string;
+    } = {}
   ): Promise<any[]> {
     const endpoint = "products";
     const url = buildApiUrl(endpoint);
@@ -524,7 +532,11 @@ class WordPressService {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({
+        username,
+        password,
+        ...filters, // اضافه کردن پارامترهای فیلتر به بدنه درخواست
+      }),
     };
 
     try {
@@ -551,6 +563,7 @@ class WordPressService {
     websiteUrl: string,
     username: string,
     password: string,
+    filters: { page?: string; per_page?: string } = {}
   ): Promise<any[]> {
     const endpoint = "vouchers";
     const url = buildApiUrl(endpoint);
@@ -560,7 +573,7 @@ class WordPressService {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, ...filters }),
     };
 
     try {
@@ -582,7 +595,6 @@ class WordPressService {
       throw error;
     }
   }
-
   async checkVoucher(
     websiteUrl: string,
     username: string,

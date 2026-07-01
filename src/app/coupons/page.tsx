@@ -3,12 +3,27 @@
 import { useEffect, useState } from 'react';
 import { storageService } from '@/services/storage';
 import { wordpressService } from '@/services/wordpress';
-import { Ticket } from 'lucide-react';
+import { Ticket, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export default function CouponsPage() {
   const [vouchers, setVouchers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // استیت‌های صفحه‌بندی
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [hasMore, setHasMore] = useState(false);
+  const [maxPageReached, setMaxPageReached] = useState<number | null>(null);
 
   useEffect(() => {
     const username = storageService.getUsername();
@@ -16,9 +31,26 @@ export default function CouponsPage() {
     const storedUrl = storageService.getWebsiteUrl();
 
     if (storedUrl && username && password) {
-      wordpressService.getVouchers(storedUrl, username, password)
+      setLoading(true);
+      wordpressService.getVouchers(storedUrl, username, password, {
+        page: page.toString(),
+        per_page: perPage.toString(),
+      })
         .then((data) => {
-          setVouchers(data);
+          // اگر API آرایه خالی برگرداند یعنی به آخر صفحه رسیده‌ایم
+          if (data.length === 0 && page > 1) {
+            setMaxPageReached(page - 1); // ثبت صفحه فعلی به عنوان آخرین صفحه مجاز
+            setPage(page - 1); // بازگشت به صفحه قبلی
+          } else {
+            setVouchers(data);
+            // اگر تعداد آیتم‌های دریافت شده کمتر از per_page باشد، قطعا صفحه آخر است
+            if (data.length < perPage) {
+              setMaxPageReached(page);
+              setHasMore(false);
+            } else {
+              setHasMore(true);
+            }
+          }
         })
         .catch((error) => {
           console.error('خطا در دریافت کوپن‌ها:', error);
@@ -29,7 +61,7 @@ export default function CouponsPage() {
     } else {
       setLoading(false);
     }
-  }, []);
+  }, [page, perPage]);
 
   const formatPrice = (price: string | number) => {
     try {
@@ -196,6 +228,53 @@ export default function CouponsPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+
+              {/* بخش صفحه‌بندی (Pagination) */}
+              <div className="flex flex-col sm:flex-row items-center justify-between p-4 border-t border-gray-200 gap-4">
+                <div className="flex items-center gap-2">
+                  <Label className="text-sm whitespace-nowrap">تعداد در هر صفحه:</Label>
+                  <Select 
+                    value={String(perPage)} 
+                    onValueChange={(val) => {
+                      setPerPage(Number(val)); 
+                      setPage(1);
+                      setMaxPageReached(null); // ریست کردن محدودیت صفحه در صورت تغییر تعداد
+                    }}
+                  >
+                    <SelectTrigger className="w-24">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="20">20</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    disabled={page === 1 || loading} 
+                    onClick={() => setPage(prev => Math.max(1, prev - 1))}
+                  >
+                    <ChevronRight className="ml-2 h-4 w-4" /> قبلی
+                  </Button>
+                  
+                  <span className="text-sm text-gray-600 font-medium">
+                    صفحه {page.toLocaleString('fa-IR')}
+                  </span>
+                  
+                  <Button 
+                    variant="outline" 
+                    disabled={loading || (maxPageReached !== null && page >= maxPageReached) || !hasMore} 
+                    onClick={() => setPage(prev => prev + 1)}
+                  >
+                    بعدی <ChevronLeft className="mr-2 h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </>
           )}

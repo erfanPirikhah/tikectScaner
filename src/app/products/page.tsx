@@ -3,12 +3,29 @@
 import { useEffect, useState } from 'react';
 import { storageService } from '@/services/storage';
 import { wordpressService } from '@/services/wordpress';
-import { Package } from 'lucide-react';
+import { Package, Search, RotateCcw, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // استیت‌های فیلتر
+  const [filters, setFilters] = useState({
+    date_from: "",
+    date_to: "",
+    product_id: "",
+    status: ""
+  });
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
+  const [fetchTrigger, setFetchTrigger] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
 
   useEffect(() => {
     const username = storageService.getUsername();
@@ -16,9 +33,16 @@ export default function ProductsPage() {
     const storedUrl = storageService.getWebsiteUrl();
 
     if (storedUrl && username && password) {
-      wordpressService.getProducts(storedUrl, username, password)
+      setLoading(true);
+      wordpressService.getProducts(storedUrl, username, password, {
+        ...filters,
+        page: page.toString(),
+        per_page: perPage.toString(),
+      })
         .then((data) => {
           setProducts(data);
+          // اگر تعداد محصولات با per_page برابر باشد، احتمالا صفحه بعدی هم وجود دارد
+          setHasMore(data.length === perPage);
         })
         .catch((error) => {
           console.error('خطا در دریافت محصولات:', error);
@@ -29,7 +53,23 @@ export default function ProductsPage() {
     } else {
       setLoading(false);
     }
-  }, []);
+  }, [fetchTrigger, page, perPage]);
+
+  const handleApplyFilters = () => {
+    setPage(1);
+    setFetchTrigger(prev => prev + 1);
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      date_from: "",
+      date_to: "",
+      product_id: "",
+      status: ""
+    });
+    setPage(1);
+    setFetchTrigger(prev => prev + 1);
+  };
 
   const formatPrice = (price: string | number) => {
     try {
@@ -63,6 +103,95 @@ export default function ProductsPage() {
           </div>
         </div>
 
+        {/* بخش فیلترها */}
+        <Card className="mb-6">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">فیلتر محصولات</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="date_from">از تاریخ</Label>
+                <Input 
+                  id="date_from" 
+                  type="date" 
+                  value={filters.date_from} 
+                  onChange={(e) => setFilters({...filters, date_from: e.target.value})} 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="date_to">تا تاریخ</Label>
+                <Input 
+                  id="date_to" 
+                  type="date" 
+                  value={filters.date_to} 
+                  onChange={(e) => setFilters({...filters, date_to: e.target.value})} 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product_id">شناسه محصول</Label>
+                <Input 
+                  id="product_id" 
+                  type="number" 
+                  placeholder="مثال: 5" 
+                  value={filters.product_id} 
+                  onChange={(e) => setFilters({...filters, product_id: e.target.value})} 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="status">وضعیت</Label>
+                <Select 
+                  value={filters.status || "all"} 
+                  onValueChange={(val) => setFilters({...filters, status: val === "all" ? "" : val})}
+                >
+                  <SelectTrigger id="status">
+                    <SelectValue placeholder="همه وضعیت‌ها" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">همه</SelectItem>
+                    <SelectItem value="pending">در انتظار (Pending)</SelectItem>
+                    <SelectItem value="processing">در حال انجام (Processing)</SelectItem>
+                    <SelectItem value="completed">تکمیل شده (Completed)</SelectItem>
+                    <SelectItem value="cancelled">لغو شده (Cancelled)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex flex-col md:flex-row gap-4 mt-4 items-end justify-between">
+              <div className="flex gap-2">
+                <Button onClick={handleApplyFilters}>
+                  <Search className="ml-2 h-4 w-4" /> اعمال فیلتر
+                </Button>
+                <Button variant="outline" onClick={handleClearFilters}>
+                  <RotateCcw className="ml-2 h-4 w-4" /> پاک کردن فیلترها
+                </Button>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Label className="text-sm whitespace-nowrap">تعداد در هر صفحه:</Label>
+                <Select 
+                  value={String(perPage)} 
+                  onValueChange={(val) => {
+                    setPerPage(Number(val)); 
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger className="w-24">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                    <SelectItem value="100">100</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* محتوای جدول */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           
@@ -79,7 +208,7 @@ export default function ProductsPage() {
             <div className="flex flex-col items-center justify-center p-12 text-center">
               <Package className="w-12 h-12 text-gray-300 mb-4" />
               <p className="text-lg font-medium text-gray-500">هیچ محصولی یافت نشد</p>
-              <p className="text-sm text-gray-400 mt-1">محصولی برای نمایش وجود ندارد.</p>
+              <p className="text-sm text-gray-400 mt-1">محصولی با این فیلترها وجود ندارد.</p>
             </div>
           ) : (
             <>
@@ -149,7 +278,7 @@ export default function ProductsPage() {
                             <span className={product.regular_price !== product.sale_price ? 'text-green-600' : 'text-gray-900'}>
                               {formatPrice(product.sale_price)}
                             </span>
-                          ) :                             <span className="text-green-600">رایگان</span>}
+                          ) : <span className="text-green-600">رایگان</span>}
                         </td>
                         <td className="py-4 px-6 text-sm text-gray-600 whitespace-nowrap">
                           {product.stock_quantity !== null ? Number(product.stock_quantity).toLocaleString('fa-IR') : 'نامحدود'}
@@ -163,6 +292,27 @@ export default function ProductsPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+
+              {/* بخش صفحه‌بندی (Pagination) */}
+              <div className="flex items-center justify-between p-4 border-t border-gray-200">
+                <Button 
+                  variant="outline" 
+                  disabled={page === 1 || loading} 
+                  onClick={() => setPage(prev => Math.max(1, prev - 1))}
+                >
+                  <ChevronRight className="ml-2 h-4 w-4" /> قبلی
+                </Button>
+                
+                <span className="text-sm text-gray-600">صفحه {page.toLocaleString('fa-IR')}</span>
+                
+                <Button 
+                  variant="outline" 
+                  disabled={!hasMore || loading} 
+                  onClick={() => setPage(prev => prev + 1)}
+                >
+                  بعدی <ChevronLeft className="mr-2 h-4 w-4" />
+                </Button>
               </div>
             </>
           )}
