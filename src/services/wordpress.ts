@@ -667,6 +667,43 @@ class WordPressService {
       throw error;
     }
   }
+
+  async getOrderDetails(
+    websiteUrl: string,
+    username: string,
+    password: string,
+    orderId: string | number,
+  ): Promise<any> {
+    const endpoint = "order/details";
+    const url = buildApiUrl(endpoint);
+
+    const options: RequestInit = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password, order_id: orderId }),
+    };
+
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `HTTP Error! Status: ${response.status}, Message: ${errorText}`,
+        );
+      }
+      const data = await response.json();
+
+      if (data.success && data.data && data.data.order) {
+        return data.data.order;
+      }
+      throw new Error("ساختار پاسخ جزئیات سفارش نامعتبر است");
+    } catch (error) {
+      console.error("[DEBUG API] Get order details failed:", error);
+      throw error;
+    }
+  }
 }
 
 export const wordpressService = new WordPressService();

@@ -3,12 +3,26 @@
 import { useEffect, useState } from 'react';
 import { storageService } from '@/services/storage';
 import { wordpressService } from '@/services/wordpress';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, Eye, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { showToast } from '@/lib/toast';
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // استیت‌های مودال جزئیات
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [orderDetails, setOrderDetails] = useState<any>(null);
 
   useEffect(() => {
     const username = storageService.getUsername();
@@ -41,6 +55,7 @@ export default function OrdersPage() {
   };
 
   const formatDate = (dateStr: string) => {
+    if (!dateStr) return '—';
     try {
       const date = new Date(dateStr.replace(' ', 'T'));
       if (isNaN(date.getTime())) return dateStr;
@@ -60,6 +75,33 @@ export default function OrdersPage() {
       processing: { text: 'در حال انجام', color: 'bg-blue-100 text-blue-800' },
     };
     return statusMap[status] || { text: status, color: 'bg-gray-100 text-gray-800' };
+  };
+
+  const handleViewDetails = async (orderId: number) => {
+    setIsModalOpen(true);
+    setDetailsLoading(true);
+    setOrderDetails(null);
+
+    const username = storageService.getUsername();
+    const password = storageService.getPassword();
+    const storedUrl = storageService.getWebsiteUrl();
+
+    if (storedUrl && username && password) {
+      try {
+        const details = await wordpressService.getOrderDetails(storedUrl, username, password, orderId);
+        setOrderDetails(details);
+      } catch (error) {
+        console.error('خطا در دریافت جزئیات:', error);
+        showToast.error('خطا در دریافت اطلاعات سفارش');
+        setIsModalOpen(false);
+      } finally {
+        setDetailsLoading(false);
+      }
+    } else {
+      showToast.error('اطلاعات کاربری یافت نشد');
+      setIsModalOpen(false);
+      setDetailsLoading(false);
+    }
   };
 
   return (
@@ -120,13 +162,19 @@ export default function OrdersPage() {
                     </div>
                     
                     {/* فوتر کارت */}
-                    <div className="flex flex-col gap-2 pt-3 border-t border-gray-100 w-full">
-                      <span className="text-xs text-gray-500 break-words">
-                        {formatDate(order.date)}
-                      </span>
-                      <span className="text-sm font-bold text-gray-900 break-words">
-                        {formatPrice(order.total)}
-                      </span>
+                    <div className="flex justify-between items-center w-full">
+                      <div className="flex flex-col gap-1 text-xs text-gray-500 break-words">
+                        <span>{formatDate(order.date)}</span>
+                        <span className="text-sm font-bold text-gray-900 break-words">{formatPrice(order.total)}</span>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleViewDetails(order.order_id)}
+                        className="flex-shrink-0"
+                      >
+                        <Eye className="h-4 w-4 ml-1" /> جزئیات
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -142,6 +190,7 @@ export default function OrdersPage() {
                       <th className="py-4 px-6 font-medium text-gray-500 text-sm whitespace-nowrap">مبلغ کل</th>
                       <th className="py-4 px-6 font-medium text-gray-500 text-sm whitespace-nowrap">وضعیت</th>
                       <th className="py-4 px-6 font-medium text-gray-500 text-sm whitespace-nowrap">تاریخ</th>
+                      <th className="py-4 px-6 font-medium text-gray-500 text-sm whitespace-nowrap text-center">عملیات</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
@@ -170,6 +219,16 @@ export default function OrdersPage() {
                         <td className="py-4 px-6 text-xs text-gray-500 whitespace-nowrap">
                           {formatDate(order.date)}
                         </td>
+                        <td className="py-4 px-6 text-center">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleViewDetails(order.order_id)}
+                            className="text-blue-600 hover:text-blue-700"
+                          >
+                            <Eye className="h-5 w-5" />
+                          </Button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -178,8 +237,115 @@ export default function OrdersPage() {
             </>
           )}
         </div>
- 
       </div>
+
+      {/* مودال نمایش جزئیات سفارش */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShoppingBag className="h-5 w-5 text-purple-600" />
+              جزئیات سفارش
+            </DialogTitle>
+          </DialogHeader>
+
+          {detailsLoading ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-purple-600 mb-4" />
+              <p className="text-sm text-gray-500">در حال بارگذاری اطلاعات سفارش...</p>
+            </div>
+          ) : orderDetails ? (
+            <div className="space-y-6 mt-4">
+              
+              {/* اطلاعات کلی سفارش */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">شماره سفارش</p>
+                  <p className="font-bold text-gray-900">#{orderDetails.order_id}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">تاریخ ثبت</p>
+                  <p className="font-medium text-gray-800 text-sm">{formatDate(orderDetails.date_created)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">روش پرداخت</p>
+                  <p className="font-medium text-gray-800 text-sm capitalize">{orderDetails.payment_method || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">وضعیت</p>
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${renderStatus(orderDetails.status).color}`}>
+                    {renderStatus(orderDetails.status).text}
+                  </span>
+                </div>
+              </div>
+
+              {/* اطلاعات صورت‌حساب (مشتری) */}
+              <div>
+                <h4 className="text-sm font-bold text-gray-800 mb-2 border-b pb-2">اطلاعات مشتری</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  <div><span className="text-gray-500">نام:</span> <span className="font-medium text-gray-800">{orderDetails.billing?.first_name} {orderDetails.billing?.last_name}</span></div>
+                  <div><span className="text-gray-500">ایمیل:</span> <span className="font-medium text-gray-800 break-all">{orderDetails.billing?.email || '—'}</span></div>
+                  <div><span className="text-gray-500">تلفن:</span> <span className="font-medium text-gray-800">{orderDetails.billing?.phone || '—'}</span></div>
+                  <div><span className="text-gray-500">استان/شهر:</span> <span className="font-medium text-gray-800">{orderDetails.billing?.state} - {orderDetails.billing?.city}</span></div>
+                  <div className="md:col-span-2"><span className="text-gray-500">آدرس:</span> <span className="font-medium text-gray-800">{orderDetails.billing?.address_1} {orderDetails.billing?.address_2}</span></div>
+                </div>
+              </div>
+
+              {/* اقلام سفارش */}
+              <div>
+                <h4 className="text-sm font-bold text-gray-800 mb-2 border-b pb-2">اقلام خریداری شده</h4>
+                <div className="space-y-2">
+                  {orderDetails.items?.map((item: any) => (
+                    <div key={item.item_id} className="flex justify-between items-center text-sm p-3 bg-gray-50 rounded-lg">
+                      <div className="flex-1 ml-3">
+                        <p className="font-medium text-gray-900">{item.product_name}</p>
+                        <p className="text-xs text-gray-500 mt-1">تعداد: {Number(item.quantity).toLocaleString('fa-IR')}</p>
+                      </div>
+                      <div className="text-left">
+                        <p className="font-bold text-gray-900">{formatPrice(item.total)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* جمع کل */}
+              <div className="border-t pt-4 space-y-2 text-sm">
+                <div className="flex justify-between text-gray-600">
+                  <span>جمع کل (بدون تخفیف):</span>
+                  <span>{formatPrice(orderDetails.totals?.subtotal || 0)}</span>
+                </div>
+                {Number(orderDetails.totals?.discount_total) > 0 && (
+                  <div className="flex justify-between text-red-600">
+                    <span>تخفیف:</span>
+                    <span>- {formatPrice(orderDetails.totals?.discount_total || 0)}</span>
+                  </div>
+                )}
+                {Number(orderDetails.totals?.shipping_total) > 0 && (
+                  <div className="flex justify-between text-gray-600">
+                    <span>هزینه ارسال:</span>
+                    <span>{formatPrice(orderDetails.totals?.shipping_total || 0)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-base font-bold text-gray-900 pt-2 border-t mt-2">
+                  <span>مبلغ نهایی پرداخت:</span>
+                  <span>{formatPrice(orderDetails.totals?.total || 0)}</span>
+                </div>
+              </div>
+
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">اطلاعاتی یافت نشد.</div>
+          )}
+
+          <DialogFooter className="mt-4">
+            <Button onClick={() => setIsModalOpen(false)} className="w-full">
+              بستن
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
