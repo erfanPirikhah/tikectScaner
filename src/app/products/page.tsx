@@ -15,8 +15,6 @@ import persian from 'react-date-object/calendars/persian';
 import persian_fa from 'react-date-object/locales/persian_fa';
 import gregorian from 'react-date-object/calendars/gregorian';
 
-
-// تابع تبدیل اعداد فارسی و عربی به انگلیسی
 const toEnglishDigits = (str: string) => {
   if (!str) return str;
   const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
@@ -30,11 +28,9 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // استیت‌های فیلتر (تاریخ‌ها به عنوان آبجکت نگهداری می‌شوند)
   const [dateFrom, setDateFrom] = useState<any>(null);
   const [dateTo, setDateTo] = useState<any>(null);
   const [productId, setProductId] = useState("");
-  const [status, setStatus] = useState("");
   
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
@@ -49,7 +45,6 @@ export default function ProductsPage() {
     if (storedUrl && username && password) {
       setLoading(true);
       
-      // تبدیل تاریخ شمسی به میلادی برای ارسال به API
       const apiFilters: any = {
         page: page.toString(),
         per_page: perPage.toString(),
@@ -57,7 +52,6 @@ export default function ProductsPage() {
       if (dateFrom) apiFilters.date_from = toEnglishDigits(dateFrom.convert(gregorian).format("YYYY-MM-DD"));
       if (dateTo) apiFilters.date_to = toEnglishDigits(dateTo.convert(gregorian).format("YYYY-MM-DD"));
       if (productId) apiFilters.product_id = productId;
-      if (status) apiFilters.status = status;
 
       wordpressService.getProducts(storedUrl, username, password, apiFilters)
         .then((data) => {
@@ -90,7 +84,6 @@ export default function ProductsPage() {
     setDateFrom(null);
     setDateTo(null);
     setProductId("");
-    setStatus("");
     setPage(1);
     setMaxPageReached(null);
     setFetchTrigger(prev => prev + 1);
@@ -121,9 +114,11 @@ export default function ProductsPage() {
         </div>
 
         <Card className="mb-6">
-          <CardHeader className="pb-3"><CardTitle className="text-base">فیلتر محصولات</CardTitle></CardHeader>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">فیلتر محصولات</CardTitle>
+          </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
               <div className="space-y-2">
                 <Label>از تاریخ</Label>
                 <DatePicker
@@ -132,7 +127,7 @@ export default function ProductsPage() {
                   calendar={persian}
                   locale={persian_fa}
                   calendarPosition="bottom-right"
-                  inputClass="w-full p-2 border border-gray-200 rounded-md text-sm h-9"
+                  inputClass="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   placeholder="انتخاب تاریخ"
                 />
               </div>
@@ -144,7 +139,7 @@ export default function ProductsPage() {
                   calendar={persian}
                   locale={persian_fa}
                   calendarPosition="bottom-right"
-                  inputClass="w-full p-2 border border-gray-200 rounded-md text-sm h-9"
+                  inputClass="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   placeholder="انتخاب تاریخ"
                 />
               </div>
@@ -152,23 +147,16 @@ export default function ProductsPage() {
                 <Label htmlFor="product_id">شناسه محصول</Label>
                 <Input id="product_id" type="number" placeholder="مثال: 5" value={productId} onChange={(e) => setProductId(e.target.value)} />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="status">وضعیت</Label>
-                <Select value={status || "all"} onValueChange={(val) => setStatus(val === "all" ? "" : val)}>
-                  <SelectTrigger id="status"><SelectValue placeholder="همه وضعیت‌ها" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">همه</SelectItem>
-                    <SelectItem value="pending">در انتظار</SelectItem>
-                    <SelectItem value="processing">در حال انجام</SelectItem>
-                    <SelectItem value="completed">تکمیل شده</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
-            <div className="flex flex-col md:flex-row gap-4 mt-4 items-end justify-between">
-              <div className="flex gap-2">
-                <Button onClick={handleApplyFilters}><Search className="ml-2 h-4 w-4" /> اعمال فیلتر</Button>
-                <Button variant="outline" onClick={handleClearFilters}><RotateCcw className="ml-2 h-4 w-4" /> پاک کردن</Button>
+
+            <div className="flex flex-col sm:flex-row gap-4 mt-6 items-center justify-between">
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Button onClick={handleApplyFilters} className="flex-1 sm:flex-initial">
+                  <Search className="ml-2 h-4 w-4" /> اعمال فیلتر
+                </Button>
+                <Button variant="outline" onClick={handleClearFilters} className="flex-1 sm:flex-initial">
+                  <RotateCcw className="ml-2 h-4 w-4" /> پاک کردن
+                </Button>
               </div>
               <div className="flex items-center gap-2">
                 <Label className="text-sm whitespace-nowrap">تعداد در صفحه:</Label>

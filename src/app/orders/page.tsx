@@ -16,8 +16,6 @@ import persian from 'react-date-object/calendars/persian';
 import persian_fa from 'react-date-object/locales/persian_fa';
 import gregorian from 'react-date-object/calendars/gregorian';
 
-
-// تابع تبدیل اعداد فارسی و عربی به انگلیسی
 const toEnglishDigits = (str: string) => {
   if (!str) return str;
   const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
@@ -33,6 +31,7 @@ export default function OrdersPage() {
   
   const [dateFrom, setDateFrom] = useState<any>(null);
   const [dateTo, setDateTo] = useState<any>(null);
+  const [status, setStatus] = useState("");
   const [fetchTrigger, setFetchTrigger] = useState(0);
 
   const [page, setPage] = useState(1);
@@ -54,6 +53,7 @@ export default function OrdersPage() {
       const apiFilters: any = { page: page.toString(), per_page: perPage.toString() };
       if (dateFrom) apiFilters.date_from = toEnglishDigits(dateFrom.convert(gregorian).format("YYYY-MM-DD"));
       if (dateTo) apiFilters.date_to = toEnglishDigits(dateTo.convert(gregorian).format("YYYY-MM-DD"));
+      if (status) apiFilters.status = status;
 
       wordpressService.getOrders(storedUrl, username, password, apiFilters)
         .then((data) => {
@@ -74,7 +74,14 @@ export default function OrdersPage() {
   }, [page, perPage, fetchTrigger]);
 
   const handleApplyFilters = () => { setPage(1); setMaxPageReached(null); setFetchTrigger(prev => prev + 1); };
-  const handleClearFilters = () => { setDateFrom(null); setDateTo(null); setPage(1); setMaxPageReached(null); setFetchTrigger(prev => prev + 1); };
+  const handleClearFilters = () => { 
+    setDateFrom(null); 
+    setDateTo(null); 
+    setStatus("");
+    setPage(1); 
+    setMaxPageReached(null); 
+    setFetchTrigger(prev => prev + 1); 
+  };
 
   const formatPrice = (price: string | number) => Number(price).toLocaleString('fa-IR') + ' تومان';
   const formatDate = (dateStr: string) => {
@@ -125,23 +132,72 @@ export default function OrdersPage() {
           </div>
         </div>
 
-        {/* کارت فیلتر تاریخ */}
+        {/* کارت فیلتر تاریخ و وضعیت */}
         <Card className="mb-6">
-          <CardHeader className="pb-3"><CardTitle className="text-base">فیلتر بر اساس تاریخ</CardTitle></CardHeader>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">فیلتر سفارشات</CardTitle>
+          </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
               <div className="space-y-2">
                 <Label>از تاریخ</Label>
-                <DatePicker value={dateFrom} onChange={setDateFrom} calendar={persian} locale={persian_fa} calendarPosition="bottom-right" inputClass="w-full p-2 border border-gray-200 rounded-md text-sm h-9" placeholder="انتخاب تاریخ" />
+                <DatePicker
+                  value={dateFrom}
+                  onChange={setDateFrom}
+                  calendar={persian}
+                  locale={persian_fa}
+                  calendarPosition="bottom-right"
+                  inputClass="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  placeholder="انتخاب تاریخ"
+                />
               </div>
               <div className="space-y-2">
                 <Label>تا تاریخ</Label>
-                <DatePicker value={dateTo} onChange={setDateTo} calendar={persian} locale={persian_fa} calendarPosition="bottom-right" inputClass="w-full p-2 border border-gray-200 rounded-md text-sm h-9" placeholder="انتخاب تاریخ" />
+                <DatePicker
+                  value={dateTo}
+                  onChange={setDateTo}
+                  calendar={persian}
+                  locale={persian_fa}
+                  calendarPosition="bottom-right"
+                  inputClass="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  placeholder="انتخاب تاریخ"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="status">وضعیت سفارش</Label>
+                <Select value={status || "all"} onValueChange={(val) => setStatus(val === "all" ? "" : val)}>
+                  <SelectTrigger id="status"><SelectValue placeholder="همه وضعیت‌ها" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">همه</SelectItem>
+                    <SelectItem value="pending">در انتظار پرداخت</SelectItem>
+                    <SelectItem value="processing">در حال انجام</SelectItem>
+                    <SelectItem value="completed">تکمیل شده</SelectItem>
+                    <SelectItem value="cancelled">لغو شده</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-            <div className="flex gap-2 mt-4">
-              <Button onClick={handleApplyFilters}><Search className="ml-2 h-4 w-4" /> اعمال فیلتر</Button>
-              <Button variant="outline" onClick={handleClearFilters}><RotateCcw className="ml-2 h-4 w-4" /> پاک کردن</Button>
+
+            <div className="flex flex-col sm:flex-row gap-4 mt-6 items-center justify-between">
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Button onClick={handleApplyFilters} className="flex-1 sm:flex-initial">
+                  <Search className="ml-2 h-4 w-4" /> اعمال فیلتر
+                </Button>
+                <Button variant="outline" onClick={handleClearFilters} className="flex-1 sm:flex-initial">
+                  <RotateCcw className="ml-2 h-4 w-4" /> پاک کردن
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <Label className="text-sm whitespace-nowrap">تعداد در صفحه:</Label>
+                <Select value={String(perPage)} onValueChange={(val) => { setPerPage(Number(val)); setPage(1); setMaxPageReached(null); }}>
+                  <SelectTrigger className="w-24"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardContent>
         </Card>
