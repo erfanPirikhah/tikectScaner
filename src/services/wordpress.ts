@@ -331,22 +331,18 @@ class WordPressService {
 
     // Make the API call with the correct specification
     // According to the API spec, we send qr_code and count_check in the body
-    const response = await this.makeRequest(
-      websiteUrl,
-      endpoint,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${request.token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          qr_code: qrCodeHash,
-          user_id: userId, // Include user_id in the request body as specified
-          count_check: "1", // According to the API specification
-        }),
+    const response = await this.makeRequest(websiteUrl, endpoint, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${request.token}`,
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        qr_code: qrCodeHash,
+        user_id: userId, // Include user_id in the request body as specified
+        count_check: "1", // According to the API specification
+      }),
+    });
 
     console.log("[DEBUG API] Raw API response:", response);
 
@@ -616,6 +612,58 @@ class WordPressService {
       return data;
     } catch (error) {
       console.error("[DEBUG API] Check voucher failed:", error);
+      throw error;
+    }
+  }
+
+  async getCustomers(
+    websiteUrl: string,
+    username: string,
+    password: string,
+    filters: {
+      name?: string;
+      email?: string;
+      min_orders?: string;
+      max_orders?: string;
+      min_total?: string;
+      max_total?: string;
+      sort_dir?: string;
+    } = {},
+  ): Promise<{ total: number; customers: any[] }> {
+    const endpoint = "vendor/customers";
+    const url = buildApiUrl(endpoint);
+
+    const options: RequestInit = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username,
+        password,
+        ...filters, // اضافه کردن پارامترهای فیلتر
+      }),
+    };
+
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `HTTP Error! Status: ${response.status}, Message: ${errorText}`,
+        );
+      }
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        return {
+          total: data.data.total || 0,
+          customers: data.data.customers || [],
+        };
+      }
+      return { total: 0, customers: [] };
+    } catch (error) {
+      console.error("[DEBUG API] Get customers failed:", error);
       throw error;
     }
   }
