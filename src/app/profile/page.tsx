@@ -8,6 +8,7 @@ import { showToast } from '@/lib/toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { API_BASE_URL } from '@/config/api';
 import {
   Dialog,
   DialogContent,
@@ -33,8 +34,7 @@ export default function Profile() {
   }
 
   const handleLogout = async () => {
-    // Use current domain if websiteUrl is not available in store
-    const currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+    const currentWebsiteUrl = websiteUrl || API_BASE_URL;
     const token = useAuthStore.getState().token;
 
     if (currentWebsiteUrl && token) {
@@ -88,7 +88,7 @@ export default function Profile() {
                     <h3 className="font-medium">آدرس وب‌سایت</h3>
                     <p className="text-sm text-muted-foreground">سایت متصل به حساب</p>
                   </div>
-                  <p className="mt-1 sm:mt-0 text-sm sm:text-base text-foreground break-all">{typeof window !== 'undefined' ? window.location.origin : useAuthStore.getState().websiteUrl || 'موجود نیست'}</p>
+                  <p className="mt-1 sm:mt-0 text-sm sm:text-base text-foreground break-all">{websiteUrl || API_BASE_URL || 'موجود نیست'}</p>
                 </div>
               </div>
 

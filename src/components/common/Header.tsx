@@ -26,6 +26,7 @@ import {
 import { LogOut, User } from 'lucide-react';
 import { showToast } from '@/lib/toast';
 import Logo from '@/components/Logo';
+import { API_BASE_URL } from '@/config/api';
 
 interface HeaderProps {
   title: string;
@@ -40,8 +41,7 @@ export default function Header({ title, showBackButton = false, backButtonAction
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
 
   const handleLogout = async () => {
-    // Use current domain if websiteUrl is not available in store
-    const currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+    const currentWebsiteUrl = websiteUrl || API_BASE_URL;
     const token = useAuthStore.getState().token;
     if (currentWebsiteUrl && token) {
       try {

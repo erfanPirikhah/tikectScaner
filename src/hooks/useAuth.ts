@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useAuthStore } from "@/lib/store";
 import { storageService } from "@/services/storage";
 import { wordpressService } from "@/services/wordpress";
+import { API_BASE_URL } from "@/config/api";
 
 export const useAuth = () => {
   const {
@@ -24,7 +25,7 @@ export const useAuth = () => {
       const token = storedData.token;
       const websiteUrl =
         storedData.websiteUrl ||
-        (typeof window !== "undefined" ? window.location.origin : "");
+        API_BASE_URL;
       const user = storedData.user;
       const vendors = storedData.vendors;
 
@@ -64,7 +65,7 @@ export const useAuth = () => {
         await new Promise((resolve) => setTimeout(resolve, 100));
         const currentWebsiteUrl =
           websiteUrl ||
-          (typeof window !== "undefined" ? window.location.origin : "");
+          API_BASE_URL;
 
         const loginResponse = await wordpressService.login(
           {

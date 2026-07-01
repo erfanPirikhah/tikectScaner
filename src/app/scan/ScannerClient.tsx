@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Camera, CameraOff, RotateCcw } from 'lucide-react';
 import jsQR from 'jsqr';
+import { API_BASE_URL } from '@/config/api';
 
 // Dynamically import Webcam to avoid SSR issues
 const Webcam = dynamic<any>(
@@ -35,8 +36,7 @@ export default function ScannerClient() {
 
   // Validate we have required params
   useEffect(() => {
-    // Use current domain if websiteUrl is not available in store
-    const currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+    const currentWebsiteUrl = websiteUrl || API_BASE_URL;
     if (!isLoggedIn || !token || !currentWebsiteUrl || !eventId) {
       router.push('/login/');
     }
@@ -137,8 +137,7 @@ export default function ScannerClient() {
       }
     };
 
-    // Use current domain if websiteUrl is not available in store
-    const currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+    const currentWebsiteUrl = websiteUrl || API_BASE_URL;
 
     // Only try to request permissions if we're in a valid state and on the client
     if (isClient && isLoggedIn && token && currentWebsiteUrl && eventId) {
@@ -229,8 +228,7 @@ export default function ScannerClient() {
       websiteUrl: websiteUrl
     });
 
-    // Use current domain if websiteUrl is not available in store
-    const currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+    const currentWebsiteUrl = websiteUrl || API_BASE_URL;
 
     if (!token || !currentWebsiteUrl || !useAuthStore.getState().user?.id) {
       console.log('[DEBUG] Missing required parameters for validation:', {
@@ -246,7 +244,7 @@ export default function ScannerClient() {
     try {
       console.log('[DEBUG] Preparing API request for ticket validation:', {
         url: currentWebsiteUrl,
-        endpoint: 'wp-json/itiket-api/v1/check-qr-code',
+        endpoint: 'check-qr-code',
         payload: {
           qr_code: qrCode,
           user_id: useAuthStore.getState().user?.id,

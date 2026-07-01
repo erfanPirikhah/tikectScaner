@@ -10,6 +10,7 @@ import { useAuthStore } from '@/lib/store';
 import { wordpressService } from '@/services/wordpress';
 import { useRouter } from 'next/navigation';
 import { showToast } from '@/lib/toast';
+import { API_BASE_URL } from '@/config/api';
 import {
     Home, ScanLine, ShoppingBag, Ticket, Users,
     Package, Phone, Info, Menu, LogOut
@@ -33,7 +34,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { user, logout, websiteUrl, token } = useAuthStore();
 
   const handleLogout = async () => {
-    const currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+    const currentWebsiteUrl = websiteUrl || API_BASE_URL;
     if (currentWebsiteUrl && token) {
       try {
         await wordpressService.logout(currentWebsiteUrl, { token });

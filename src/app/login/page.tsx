@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { showToast } from '@/lib/toast';
 import { Loader2, LogIn, User, Lock, Eye, EyeOff } from 'lucide-react';
 import Logo from '@/components/Logo';
+import { API_BASE_URL } from '@/config/api';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -37,10 +38,7 @@ export default function Login() {
       return;
     }
 
-    // برای تست روی لوکال‌هاست، آدرس دمو را قرار دادیم.
-    // اگر پروژه روی دامنه اصلی دیپلوی شد، می‌توانید این خط را به حالت قبلی برگردانید:
-    // const currentDomain = typeof window !== 'undefined' ? window.location.origin : '';
-    const currentDomain = 'https://demotheme.ir/takhfifan';
+    const currentDomain = API_BASE_URL;
 
     if (!currentDomain) {
       showToast.error('آدرس وب‌سایت قابل شناسایی نیست');

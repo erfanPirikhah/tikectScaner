@@ -1,4 +1,4 @@
-import { getBaseUrlWithoutSubdomain } from "@/utils/url";
+import { API_BASE_URL, buildApiUrl } from "@/config/api";
 
 interface LoginCredentials {
   username: string;
@@ -76,19 +76,13 @@ class WordPressService {
     endpoint: string,
     options: RequestInit = {},
   ): Promise<any> {
-    const baseUrl = getBaseUrlWithoutSubdomain(websiteUrl);
-    // Ensure proper URL formation: remove trailing slash from base and leading slash from endpoint
-    const cleanBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
-    const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-    const url = `${cleanBaseUrl}${cleanEndpoint}`;
+    const url = buildApiUrl(endpoint);
 
     // Enhanced logging for API request
     console.log("[DEBUG API] Making request:", {
       originalUrl: websiteUrl,
-      baseUrl: baseUrl,
-      cleanBaseUrl: cleanBaseUrl,
+      baseUrl: API_BASE_URL,
       endpoint: endpoint,
-      cleanEndpoint: cleanEndpoint,
       finalUrl: url,
       method: options.method || "GET",
       headers: options.headers,
@@ -161,12 +155,8 @@ class WordPressService {
     credentials: LoginCredentials,
     websiteUrl: string,
   ): Promise<LoginResponse> {
-    const cleanBaseUrl = websiteUrl.endsWith("/")
-      ? websiteUrl.slice(0, -1)
-      : websiteUrl;
-    const endpoint = "wp-json/takhfifanbizpwa/v1/login";
-    const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-    const url = `${cleanBaseUrl}${cleanEndpoint}`;
+    const endpoint = "login";
+    const url = buildApiUrl(endpoint);
 
     const defaultOptions: RequestInit = {
       method: "POST",
@@ -216,19 +206,13 @@ class WordPressService {
     token: string,
     userId: number,
   ): Promise<EventsResponse> {
-    const baseUrl = getBaseUrlWithoutSubdomain(websiteUrl);
-    // Ensure proper URL formation: remove trailing slash from base and leading slash from endpoint
-    const cleanBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
-    const endpoint = "wp-json/itiket-api/v1/get-events";
-    const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-    const fullUrl = `${cleanBaseUrl}${cleanEndpoint}`;
+    const endpoint = "get-events";
+    const fullUrl = buildApiUrl(endpoint);
 
     console.log("[DEBUG API] Get events request:", {
       originalUrl: websiteUrl,
-      baseUrl: baseUrl,
-      cleanBaseUrl: cleanBaseUrl,
+      baseUrl: API_BASE_URL,
       endpoint: endpoint,
-      cleanEndpoint: cleanEndpoint,
       url: fullUrl,
       userId: userId,
       hasToken: !!token,
@@ -329,19 +313,13 @@ class WordPressService {
       qrCodeHash = urlParams.get("check_qrcode") || request.qr_code;
     }
 
-    const baseUrl = getBaseUrlWithoutSubdomain(websiteUrl);
-    // Ensure proper URL formation: remove trailing slash from base and leading slash from endpoint
-    const cleanBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
-    const endpoint = "wp-json/itiket-api/v1/check-qr-code";
-    const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-    const fullUrl = `${cleanBaseUrl}${cleanEndpoint}`;
+    const endpoint = "check-qr-code";
+    const fullUrl = buildApiUrl(endpoint);
 
     console.log("[DEBUG API] Validate ticket request details:", {
       originalUrl: websiteUrl,
-      baseUrl: baseUrl,
-      cleanBaseUrl: cleanBaseUrl,
+      baseUrl: API_BASE_URL,
       endpoint: endpoint,
-      cleanEndpoint: cleanEndpoint,
       url: fullUrl,
       payload: {
         qr_code: qrCodeHash,
@@ -355,7 +333,7 @@ class WordPressService {
     // According to the API spec, we send qr_code and count_check in the body
     const response = await this.makeRequest(
       websiteUrl,
-      "wp-json/itiket-api/v1/check-qr-code",
+      endpoint,
       {
         method: "POST",
         headers: {
@@ -420,24 +398,18 @@ class WordPressService {
     websiteUrl: string,
     request: ValidateTokenRequest,
   ): Promise<ValidateTokenResponse> {
-    const baseUrl = getBaseUrlWithoutSubdomain(websiteUrl);
-    // Ensure proper URL formation: remove trailing slash from base and leading slash from endpoint
-    const cleanBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
-    const endpoint = "wp-json/meup/v1/check_login";
-    const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-    const fullUrl = `${cleanBaseUrl}${cleanEndpoint}`;
+    const endpoint = "check_login";
+    const fullUrl = buildApiUrl(endpoint);
 
     console.log("[DEBUG API] Validate token request details:", {
       originalUrl: websiteUrl,
-      baseUrl: baseUrl,
-      cleanBaseUrl: cleanBaseUrl,
+      baseUrl: API_BASE_URL,
       endpoint: endpoint,
-      cleanEndpoint: cleanEndpoint,
       url: fullUrl,
       token: "***", // Don't log actual token
     });
 
-    return this.makeRequest(websiteUrl, "wp-json/meup/v1/check_login", {
+    return this.makeRequest(websiteUrl, endpoint, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${request.token}`,
@@ -453,24 +425,18 @@ class WordPressService {
     websiteUrl: string,
     request: LogoutRequest,
   ): Promise<LogoutResponse> {
-    const baseUrl = getBaseUrlWithoutSubdomain(websiteUrl);
-    // Ensure proper URL formation: remove trailing slash from base and leading slash from endpoint
-    const cleanBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
-    const endpoint = "wp-json/itiket-api/v1/logout";
-    const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-    const fullUrl = `${cleanBaseUrl}${cleanEndpoint}`;
+    const endpoint = "logout";
+    const fullUrl = buildApiUrl(endpoint);
 
     console.log("[DEBUG API] Logout request details:", {
       originalUrl: websiteUrl,
-      baseUrl: baseUrl,
-      cleanBaseUrl: cleanBaseUrl,
+      baseUrl: API_BASE_URL,
       endpoint: endpoint,
-      cleanEndpoint: cleanEndpoint,
       url: fullUrl,
       token: "***", // Don't log actual token
     });
 
-    return this.makeRequest(websiteUrl, "wp-json/itiket-api/v1/logout", {
+    return this.makeRequest(websiteUrl, endpoint, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${request.token}`,
@@ -487,12 +453,8 @@ class WordPressService {
     username: string,
     password: string,
   ): Promise<any[]> {
-    const cleanBaseUrl = websiteUrl.endsWith("/")
-      ? websiteUrl.slice(0, -1)
-      : websiteUrl;
-    const endpoint = "wp-json/takhfifanbizpwa/v1/orders";
-    const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-    const url = `${cleanBaseUrl}${cleanEndpoint}`;
+    const endpoint = "orders";
+    const url = buildApiUrl(endpoint);
 
     console.log("[DEBUG API] Get orders request:", { url, username });
 
@@ -526,8 +488,7 @@ class WordPressService {
   }
 
   async getStats(username: string, password: string): Promise<any> {
-    // استفاده از آدرس دقیقی که برای API آمار دادید
-    const url = "https://takhfinet.com/wp-json/takhfifanbizpwa/v1/vendor/stats";
+    const url = buildApiUrl("vendor/stats");
 
     const options: RequestInit = {
       method: "POST",
@@ -562,12 +523,8 @@ class WordPressService {
     username: string,
     password: string,
   ): Promise<any[]> {
-    const cleanBaseUrl = websiteUrl.endsWith("/")
-      ? websiteUrl.slice(0, -1)
-      : websiteUrl;
-    const endpoint = "wp-json/takhfifanbizpwa/v1/products";
-    const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-    const url = `${cleanBaseUrl}${cleanEndpoint}`;
+    const endpoint = "products";
+    const url = buildApiUrl(endpoint);
 
     const options: RequestInit = {
       method: "POST",
@@ -602,12 +559,8 @@ class WordPressService {
     username: string,
     password: string,
   ): Promise<any[]> {
-    const cleanBaseUrl = websiteUrl.endsWith("/")
-      ? websiteUrl.slice(0, -1)
-      : websiteUrl;
-    const endpoint = "wp-json/takhfifanbizpwa/v1/vouchers";
-    const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-    const url = `${cleanBaseUrl}${cleanEndpoint}`;
+    const endpoint = "vouchers";
+    const url = buildApiUrl(endpoint);
 
     const options: RequestInit = {
       method: "POST",
@@ -643,11 +596,8 @@ class WordPressService {
     password: string,
     voucherCode: string,
   ): Promise<any> {
-    const cleanBaseUrl = websiteUrl.endsWith("/")
-      ? websiteUrl.slice(0, -1)
-      : websiteUrl;
-    const endpoint = "wp-json/takhfifanbizpwa/v1/voucher/check";
-    const url = `${cleanBaseUrl}/${endpoint}`;
+    const endpoint = "voucher/check";
+    const url = buildApiUrl(endpoint);
 
     const options: RequestInit = {
       method: "POST",

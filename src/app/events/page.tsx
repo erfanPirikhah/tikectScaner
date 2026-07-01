@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { CalendarIcon } from 'lucide-react';
 import Image from 'next/image';
+import { API_BASE_URL } from '@/config/api';
 
 // Define types for events
 interface Event {
@@ -37,8 +38,7 @@ export default function Events() {
   const totalPages = Math.ceil(allEvents.length / eventsPerPage);
 
   useEffect(() => {
-    // Use current domain if websiteUrl is not available in store
-    const currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+    const currentWebsiteUrl = websiteUrl || API_BASE_URL;
 
     if (!isLoggedIn || !token || !currentWebsiteUrl) {
       router.push('/login/');
