@@ -227,7 +227,7 @@ export default function ScanPage() {
               {isSuccess ? <CheckCircle2 className="w-12 h-12" /> : <XCircle className="w-12 h-12" />}
             </div>
             <DialogTitle className="text-xl">
-              {isSuccess ? 'کوپن با موفقیت تایید شد' : 'خطا در بررسی کوپن'}
+              {isSuccess ? 'تبریک! اطلاعات کوپن بررسی شده معتبر است' : 'خطا در بررسی کوپن'}
             </DialogTitle>
             <DialogDescription>
               {isSuccess ? 'جزئیات کوپن و سفارش در زیر نمایش داده شده است.' : 'کوپن وارد شده معتبر نیست.'}
@@ -257,7 +257,7 @@ export default function ScanPage() {
               )}
 
               {voucherData.status === 'redeemed' && (
-                <div className="bg-gray-100 border border-gray-200 rounded-lg p-3 text-center text-gray-700 font-medium">
+                <div className="bg-red-100 border border-red-200 rounded-lg p-3 text-center text-red-700 font-medium">
                   این کوپن پیش‌تر در تاریخ {formatDate(voucherData.redeemed_at)} ابطال شده است.
                 </div>
               )}

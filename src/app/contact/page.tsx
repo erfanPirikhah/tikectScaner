@@ -24,7 +24,7 @@ export default function ContactPage() {
           <CardContent className="p-6 md:p-8 text-gray-700 leading-8 space-y-6 text-justify">
             
             <p className="text-base">
-              <strong className="text-gray-900">تماس:</strong> تیم توسعه تخفیفان یک مجموعه، کوچک اما خلاق و نوآور است که همیشه تلاش خود را بر این موضوع متمرکز کرده که با تکنولوژی های روز بهترین راهکارها را برای کسب و کارها تولید و توسعه دهد.
+              <strong className="text-gray-900"></strong> تیم توسعه تخفیفان یک مجموعه، کوچک اما خلاق و نوآور است که همیشه تلاش خود را بر این موضوع متمرکز کرده که با تکنولوژی های روز بهترین راهکارها را برای کسب و کارها تولید و توسعه دهد.
             </p>
 
             <p className="text-base">

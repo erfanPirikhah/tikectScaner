@@ -499,6 +499,7 @@ class WordPressService {
       body: JSON.stringify({
         username,
         password,
+        sort_dir: "DESC",
         ...filters, // اضافه کردن پارامترهای فیلتر به بدنه درخواست
       }),
     };
@@ -526,6 +527,7 @@ class WordPressService {
     websiteUrl: string,
     username: string,
     password: string,
+    
     filters: {
       page?: string;
       per_page?: string;
@@ -539,7 +541,7 @@ class WordPressService {
     const options: RequestInit = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password, ...filters }),
+      body: JSON.stringify({ username, password,sort_dir: "DESC", ...filters }),
     };
 
     try {
@@ -577,7 +579,7 @@ class WordPressService {
     const options: RequestInit = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password, ...filters }),
+      body: JSON.stringify({ username, password,sort_dir: "DESC", ...filters }),
     };
 
     try {
@@ -676,7 +678,7 @@ class WordPressService {
       max_orders?: string;
       min_total?: string;
       max_total?: string;
-      sort_dir?: string;
+    
     } = {},
   ): Promise<{ total: number; customers: any[] }> {
     const endpoint = "vendor/customers";
@@ -690,6 +692,7 @@ class WordPressService {
       body: JSON.stringify({
         username,
         password,
+        sort_dir: "DESC",
         ...filters, // اضافه کردن پارامترهای فیلتر
       }),
     };
