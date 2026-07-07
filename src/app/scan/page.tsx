@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/lib/store'; // برای گرفتن نام کاربر
 import { storageService } from '@/services/storage';
 import { wordpressService } from '@/services/wordpress';
 import { showToast } from '@/lib/toast';
@@ -12,15 +14,46 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Camera, Keyboard, Loader2, Search, CheckCircle2, XCircle, Ban, User, Mail, Phone, MapPin, Package } from 'lucide-react';
 
 export default function ScanPage() {
+  const router = useRouter();
+  const { user } = useAuthStore(); // گرفتن اطلاعات کاربر
+  
   const [voucherCode, setVoucherCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [redeeming, setRedeeming] = useState(false);
   
+  // استیت‌های مربوط به ساعت و تاریخ
+  const [currentTime, setCurrentTime] = useState('');
+  const [currentDate, setCurrentDate] = useState('');
+
   // استیت‌های مربوط به مدال
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [voucherData, setVoucherData] = useState<any>(null);
   const [orderDetails, setOrderDetails] = useState<any>(null);
+
+  // افکت آپدیت ساعت (دقیقا مثل داشبورد)
+  useEffect(() => {
+    const updateDateTime = () => {
+      const now = new Date();
+      const dateParts = new Intl.DateTimeFormat('fa-IR', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+      }).formatToParts(now);
+      
+      const getPart = (type: string) => dateParts.find(p => p.type === type)?.value || '';
+      const dateStr = `${getPart('weekday')} ${getPart('day')} ${getPart('month')} ${getPart('year')}`;
+      
+      const timeStr = new Intl.DateTimeFormat('fa-IR', {
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+      }).format(now);
+      
+      setCurrentDate(dateStr);
+      setCurrentTime(timeStr);
+    };
+
+    updateDateTime();
+    const interval = setInterval(updateDateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // تابع پخش صدا
   const playSound = (success: boolean) => {
@@ -36,7 +69,7 @@ export default function ScanPage() {
     }
 
     setLoading(true);
-    setOrderDetails(null); // ریست جزئیات سفارش قبلی
+    setOrderDetails(null);
 
     const username = storageService.getUsername();
     const password = storageService.getPassword();
@@ -49,26 +82,23 @@ export default function ScanPage() {
     }
 
     try {
-      // ۱. بررسی کوپن
       const voucher = await wordpressService.checkVoucher(storedUrl, username, password, voucherCode);
       
       setIsSuccess(true);
       setVoucherData(voucher);
       playSound(true); 
       
-      // ۲. گرفتن جزئیات سفارش با استفاده از order_id
       if (voucher.order_id) {
         try {
           const details = await wordpressService.getOrderDetails(storedUrl, username, password, voucher.order_id);
           setOrderDetails(details);
         } catch (orderError) {
           console.error('خطا در دریافت جزئیات سفارش:', orderError);
-          // نیازی نیست کل فرآیند را شکست دهیم، فقط جزئیات سفارش خالی می‌ماند
         }
       }
 
-      setIsModalOpen(true); // باز کردن مدال
-      setVoucherCode(''); // پاک کردن اینپوت
+      setIsModalOpen(true); 
+      setVoucherCode(''); 
       
     } catch (error: any) {
       const errorMsg = error.message || 'کوپن نامعتبر است';
@@ -82,8 +112,6 @@ export default function ScanPage() {
     }
   };
 
-  // تابع ابطال کوپن
-  // تابع ابطال کوپن
   const handleRedeemVoucher = async () => {
     const username = storageService.getUsername();
     const password = storageService.getPassword();
@@ -99,8 +127,6 @@ export default function ScanPage() {
 
     try {
       const updatedVoucher = await wordpressService.redeemVoucher(storedUrl, username, password, vCode);
-      
-      // آپدیت اطلاعات کوپن در مودال
       setVoucherData(updatedVoucher);
       playSound(true);
       showToast.success('کوپن با موفقیت ابطال شد');
@@ -112,7 +138,6 @@ export default function ScanPage() {
     }
   };
 
-  // تابع فرمت قیمت
   const formatPrice = (price: string | number) => {
     try {
       return Number(price).toLocaleString('fa-IR') + ' تومان';
@@ -136,13 +161,72 @@ export default function ScanPage() {
 
   return (
     <div className="p-4 md:p-8 bg-gray-100 min-h-[calc(100vh-4rem)] lg:min-h-screen">
-      <div className="max-w-2xl mx-auto space-y-8">
+      <div className="max-w-2xl mx-auto space-y-6 md:space-y-8">
         
+        {/* بخش خوش‌آمدگویی و ساعت */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 md:p-8 text-center">
+          <h1 className="text-xl md:text-3xl font-bold text-gray-900 mb-3 md:mb-4">
+            مدیر محترم، خوش آمدید
+          </h1>
+          {user?.name && (
+            <p className="text-base md:text-lg text-gray-600 mb-5 md:mb-6">
+              {user.name} عزیز، به بخش بررسی کوپن‌ها خوش آمدید.
+            </p>
+          )}
+          <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 mt-5 md:mt-6 pt-5 md:pt-6 border-t border-gray-100">
+            <div className="flex items-center gap-2 text-gray-700">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <span className="text-sm md:text-base font-medium tracking-wide">
+                {currentDate} | <span className="text-sm md:text-base font-medium tracking-wide">{currentTime}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* بخش اسکن با دوربین - طراحی جدید با انیمیشن ملایم */}
+        <button 
+          onClick={() => router.push('/scan/camera')}
+          className="group w-full animate-gentle-float focus:outline-none"
+        >
+          <div className="relative w-full flex items-center justify-between gap-4 rounded-2xl bg-gradient-to-l from-blue-600 to-indigo-600 p-1 shadow-lg shadow-blue-500/20 transition-all duration-300 group-hover:shadow-xl group-hover:shadow-blue-500/40">
+            
+            {/* لایه درونی دکمه */}
+            <div className="flex items-center justify-between w-full gap-4 rounded-[15px] bg-gradient-to-l from-blue-600 to-indigo-600 px-5 sm:px-8 py-5 sm:py-6">
+              
+              <div className="flex items-center gap-4 sm:gap-5 z-10">
+                {/* باکس آیکون */}
+                <div className="flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20 transition-colors duration-300 group-hover:bg-white/25">
+                  <Camera className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
+                </div>
+                
+                {/* متن‌ها */}
+                <div className="text-right text-white">
+                  <h3 className="text-lg sm:text-xl font-bold">اسکن با دوربین</h3>
+                  <p className="text-xs sm:text-sm text-blue-50 opacity-90 mt-1">
+                    برای بررسی سریع‌تر، QR Code را اسکن کنید
+                  </p>
+                </div>
+              </div>
+
+              {/* فلش راهنما */}
+              <div className="flex items-center text-white transition-all duration-300 group-hover:-translate-x-2 z-10">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-70 group-hover:opacity-100">
+                  <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+              </div>
+
+            </div>
+          </div>
+        </button>
+
         {/* بخش اسکن دستی */}
         <Card className="shadow-sm border">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-lg bg-blue-50 text-blue-600">
+              <div className="p-2.5 rounded-lg bg-green-50 text-green-600">
                 <Keyboard className="w-6 h-6" />
               </div>
               <div>
@@ -189,34 +273,6 @@ export default function ScanPage() {
           </CardContent>
         </Card>
 
-        {/* بخش اسکن با دوربین */}
-        <Card className="shadow-sm border opacity-70">
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-lg bg-gray-100 text-gray-500">
-                <Camera className="w-6 h-6" />
-              </div>
-              <div>
-                <CardTitle className="text-lg">اسکن با دوربین</CardTitle>
-                <CardDescription>برای اسکن سریع کد QR با دوربین دستگاه</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Button 
-              className="w-full h-12 text-base" 
-              disabled={true} 
-              variant="outline"
-            >
-              <Camera className="ml-2 h-5 w-5" />
-              فعال‌سازی دوربین
-            </Button>
-            <p className="text-xs text-center text-gray-400 mt-3">
-              این بخش به زودی در دسترس قرار خواهد گرفت
-            </p>
-          </CardContent>
-        </Card>
-
       </div>
 
       {/* مدال نمایش نتیجه */}
@@ -237,7 +293,6 @@ export default function ScanPage() {
           {isSuccess && voucherData ? (
             <div className="space-y-4 text-sm">
               
-              {/* بخش دکمه ابطال (فقط اگر کوپن فعال باشد) */}
               {voucherData.status === 'active' && (
                 <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 flex justify-between items-center">
                   <div>
@@ -262,7 +317,6 @@ export default function ScanPage() {
                 </div>
               )}
 
-              {/* اطلاعات کوپن */}
               <div className="border-t border-b border-gray-100 py-4 space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-500">نام محصول:</span>
@@ -284,7 +338,6 @@ export default function ScanPage() {
                 </div>
               </div>
 
-              {/* اطلاعات سفارش (در صورت وجود) */}
               {orderDetails && (
                 <div className="bg-gray-50 rounded-lg p-4 space-y-3">
                   <h4 className="font-bold text-gray-800 text-sm flex items-center gap-2 border-b pb-2 mb-2">

@@ -1,33 +1,51 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
-import { cn } from '@/lib/utils';
-import { useAuthStore } from '@/lib/store';
-import { wordpressService } from '@/services/wordpress';
-import { useRouter } from 'next/navigation';
-import { showToast } from '@/lib/toast';
-import { API_BASE_URL } from '@/config/api';
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import {
-    Home, ScanLine, ShoppingBag, Ticket, Users,
-    Package, Phone, Info, Menu, LogOut
-} from 'lucide-react';
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/lib/store";
+import { wordpressService } from "@/services/wordpress";
+import { useRouter } from "next/navigation";
+import { showToast } from "@/lib/toast";
+import { API_BASE_URL } from "@/config/api";
+import {
+  Home,
+  ScanLine,
+  ShoppingBag,
+  Ticket,
+  Users,
+  Package,
+  Phone,
+  Info,
+  Menu,
+  LogOut,
+} from "lucide-react";
+import { storageService } from "@/services/storage";
 
 const navItems = [
-  { href: '/dashboard', label: 'صفحه اصلی', icon: Home },
-  { href: '/scan', label: 'بررسی کوپن', icon: ScanLine },
-  { href: '/orders', label: 'سفارش ها', icon: ShoppingBag },
-  { href: '/coupons', label: 'کوپن ها', icon: Ticket },
-  { href: '/users', label: 'کاربران', icon: Users },
-  { href: '/products', label: 'محصولات خدمات', icon: Package },
-  { href: '/contact', label: 'تماس با ما', icon: Phone },
-  { href: '/about', label: 'درباره ما', icon: Info },
+  { href: "/dashboard", label: "صفحه اصلی", icon: Home },
+  { href: "/scan", label: "بررسی کوپن", icon: ScanLine },
+  { href: "/orders", label: "سفارش ها", icon: ShoppingBag },
+  { href: "/coupons", label: "کوپن ها", icon: Ticket },
+  { href: "/users", label: "کاربران", icon: Users },
+  { href: "/products", label: "محصولات خدمات", icon: Package },
+  { href: "/contact", label: "تماس با ما", icon: Phone },
+  { href: "/about", label: "درباره ما", icon: Info },
 ];
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const router = useRouter();
@@ -39,12 +57,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       try {
         await wordpressService.logout(currentWebsiteUrl, { token });
       } catch (error) {
-        console.error('خطای خروج:', error);
+        console.error("خطای خروج:", error);
       }
     }
+
+    // پاک کردن فقط اطلاعات کاربر از لوکال استوریج
+    storageService.clearUserData();
+
+    // پاک کردن استیت های Zustand
     logout();
-    showToast.success('با موفقیت خارج شدید');
-    router.push('/login/');
+
+    showToast.success("با موفقیت خارج شدید");
+    router.push("/login/");
   };
 
   const SidebarContent = () => (
@@ -54,12 +78,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           پنل مدیریت
         </span>
       </div>
-      
+
       <nav className="flex-1 overflow-y-auto p-4 space-y-1">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-          
+          const isActive =
+            pathname === item.href || pathname.startsWith(item.href + "/");
+
           return (
             <Link
               key={item.href}
@@ -67,9 +92,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               onClick={() => setOpen(false)}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                isActive 
-                  ? "bg-primary text-primary-foreground shadow-sm" 
-                  : "text-gray-700 hover:bg-gray-100"
+                isActive
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-gray-700 hover:bg-gray-100",
               )}
             >
               <Icon className="h-5 w-5" />
@@ -81,11 +106,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       <div className="border-t border-gray-200 p-4">
         <div className="mb-3 px-3">
-          <p className="text-sm font-medium text-gray-900">{user?.name || 'کاربر'}</p>
+          <p className="text-sm font-medium text-gray-900">
+            {user?.name || "کاربر"}
+          </p>
           <p className="text-xs text-gray-500 truncate">{user?.email}</p>
         </div>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 border-gray-200"
           onClick={handleLogout}
         >
@@ -108,7 +135,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <span className="text-lg font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
           پنل مدیریت
         </span>
-        
+
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon">

@@ -18,6 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { storageService } from '@/services/storage';
 
 export default function Profile() {
   const { user, isLoggedIn, logout, websiteUrl } = useAuthStore();
@@ -44,12 +45,17 @@ export default function Profile() {
       } catch (error) {
         console.error('خطای API خروج:', error);
         showToast.error('خطا در خروج از سیستم');
-        // Continue with local logout even if API call fails
       }
     } else {
       showToast.success('با موفقیت خارج شدید');
     }
+    
+    // پاک کردن فقط اطلاعات کاربر از لوکال استوریج
+    storageService.clearUserData();
+    
+    // پاک کردن استیت های Zustand
     logout();
+    
     router.push('/login/');
   };
 

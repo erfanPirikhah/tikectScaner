@@ -1,10 +1,10 @@
-const TOKEN_KEY = '@token';
-const WEBSITE_URL_KEY = '@websiteUrl';
-const ONBOARDING_KEY = '@showOnboarding';
-const VENDORS_KEY = '@vendors';
-const USER_KEY = '@user';
-const USERNAME_KEY = '@username';
-const PASSWORD_KEY = '@password';
+const TOKEN_KEY = "@token";
+const WEBSITE_URL_KEY = "@websiteUrl";
+const ONBOARDING_KEY = "@showOnboarding";
+const VENDORS_KEY = "@vendors";
+const USER_KEY = "@user";
+const USERNAME_KEY = "@username";
+const PASSWORD_KEY = "@password";
 
 interface StoredData {
   token: string | null;
@@ -72,6 +72,16 @@ export const storageService = {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(WEBSITE_URL_KEY);
     localStorage.removeItem(ONBOARDING_KEY);
+    localStorage.removeItem(VENDORS_KEY);
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(USERNAME_KEY);
+    localStorage.removeItem(PASSWORD_KEY);
+  },
+
+  // پاک کردن فقط اطلاعات کاربر (بدون پاک کردن showOnboarding)
+  clearUserData: (): void => {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(WEBSITE_URL_KEY);
     localStorage.removeItem(VENDORS_KEY);
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem(USERNAME_KEY);
