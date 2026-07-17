@@ -105,7 +105,6 @@ class WordPressService {
   }
 
   async login(credentials: LoginCredentials, websiteUrl?: string): Promise<LoginResponse> {
-    // تغییر مسیر به eventoapi/v1/login
     const url = buildApiUrl('login');
     
     const options: RequestInit = {
@@ -143,7 +142,6 @@ class WordPressService {
   async getEvents(websiteUrl?: string, token?: string, userId?: number): Promise<EventsResponse> {
     if (!token) throw new Error('هیچ توکن احراز هویتی در دسترس نیست');
     
-    // تغییر مسیر به eventoapi/v1/events
     const url = buildApiUrl('events');
     
     const options: RequestInit = {
@@ -158,11 +156,9 @@ class WordPressService {
     try {
       const data = await this.makeRequest(url, options);
 
-      // اصلاح شده: بررسی آرایه بودن یا وجود فیلد events در آبجکت
       if (Array.isArray(data)) {
         return { status: 'SUCCESS', events: data };
       } else if (data.events && Array.isArray(data.events)) {
-        // این بخش اضافه شد تا خروجی { "events": [...] } را پشتیبانی کند
         return { status: 'SUCCESS', events: data.events };
       } else if (data.status) {
         return data;
@@ -175,13 +171,15 @@ class WordPressService {
   }
 
   async validateTicket(websiteUrl?: string, request?: ValidateTicketRequest, userId?: number): Promise<ValidateTicketResponse> {
+    // رفع ارور: اطمینان از وجود آبجکت request
+    if (!request) throw new Error('درخواست اعتبارسنجی نامعتبر است');
+    
     let qrCodeHash = request.qr_code;
     if (request.qr_code.includes('itiket.ir')) {
       const urlParams = new URLSearchParams(request.qr_code.split('?')[1]);
       qrCodeHash = urlParams.get('check_qrcode') || request.qr_code;
     }
 
-    // تغییر مسیر به eventoapi/v1/tickets/check
     const url = buildApiUrl('tickets/check');
     
     const options: RequestInit = {
@@ -204,14 +202,12 @@ class WordPressService {
         msg: response.msg || response.message || 'Response received',
       };
 
-      // فیلدهای موجود
       result.name_customer = response.name_customer;
       result.seat = response.seat || response.ticket_id?.toString();
       result.checkin_time = response.checkin_time || response.check_in_time;
       result.ticket_id = response.ticket_id;
       result.e_cal = response.event_calendar;
 
-      // فیلدهای جدید اضافه شده
       result.ticket_status = response.ticket_status;
       result.name_event = response.name_event;
       result.ticket_type = response.ticket_type;
@@ -235,7 +231,9 @@ class WordPressService {
   }
 
   async validateToken(websiteUrl?: string, request?: ValidateTokenRequest): Promise<ValidateTokenResponse> {
-    // چون این اندپوینت هنوز در meup/v1 است، ما base_url را جایگزین می‌کنیم
+    // رفع ارور: اطمینان از وجود آبجکت request
+    if (!request) throw new Error('توکن نامعتبر است');
+
     const meupBaseUrl = API_BASE_URL.replace('eventoapi/v1', 'meup/v1');
     const url = `${meupBaseUrl.replace(/\/+$/, "")}/check_login`;
     
@@ -252,7 +250,9 @@ class WordPressService {
   }
 
   async logout(websiteUrl?: string, request?: LogoutRequest): Promise<LogoutResponse> {
-    // تغییر مسیر به eventoapi/v1/logout
+    // رفع ارور: اطمینان از وجود آبجکت request
+    if (!request) throw new Error('توکن نامعتبر است');
+
     const url = buildApiUrl('logout');
     
     const options: RequestInit = {
@@ -267,13 +267,6 @@ class WordPressService {
     return this.makeRequest(url, options);
   }
 
-
-    // ============================================
-  // 1. دریافت لیست بلیت‌های یک رویداد
-  // ============================================
-  // ============================================
-  // 1. دریافت لیست بلیت‌های یک رویداد
-  // ============================================
   async getTickets(websiteUrl?: string, token?: string, eventId?: number, page: number = 1, perPage: number = 20): Promise<any> {
     if (!token) throw new Error('هیچ توکن احراز هویتی در دسترس نیست');
     
@@ -295,7 +288,6 @@ class WordPressService {
     try {
       const data = await this.makeRequest(url, options);
       
-      // بررسی وجود کلید items در پاسخ API
       if (data.items && Array.isArray(data.items)) {
         return { 
           status: 'SUCCESS', 
@@ -317,9 +309,7 @@ class WordPressService {
       throw error;
     }
   }
-    // ============================================
-  // 2. جستجوی دستی بلیت
-  // ============================================
+
   async manualSearchTicket(websiteUrl?: string, token?: string, eventId?: number, searchTerm?: string): Promise<any> {
     if (!token) throw new Error('هیچ توکن احراز هویتی در دسترس نیست');
     
@@ -333,14 +323,13 @@ class WordPressService {
       },
       body: JSON.stringify({ 
         event_id: eventId,
-        search_value: searchTerm // اصلاح شد به search_value طبق داکیومنت
+        search_value: searchTerm 
       }),
     };
 
     try {
       const data = await this.makeRequest(url, options);
       
-      // بررسی وجود کلید items در پاسخ API
       if (data.items && Array.isArray(data.items)) {
         return { status: 'SUCCESS', tickets: data.items };
       } else if (Array.isArray(data)) {
@@ -355,9 +344,6 @@ class WordPressService {
     }
   }
 
-  // ============================================
-  // 3. دریافت جزئیات یک بلیت خاص
-  // ============================================
   async getTicketDetails(websiteUrl?: string, token?: string, ticketId?: number): Promise<any> {
     if (!token) throw new Error('هیچ توکن احراز هویتی در دسترس نیست');
     
@@ -386,9 +372,7 @@ class WordPressService {
       throw error;
     }
   }
-    // ============================================
-  // 4. دریافت لیست رزروها
-  // ============================================
+
   async getBookings(websiteUrl?: string, token?: string, eventId?: number, page: number = 1, perPage: number = 20): Promise<any> {
     if (!token) throw new Error('هیچ توکن احراز هویتی در دسترس نیست');
     
@@ -430,9 +414,6 @@ class WordPressService {
     }
   }
 
-  // ============================================
-  // 5. دریافت جزئیات یک رزرو خاص
-  // ============================================
   async getBookingDetails(websiteUrl?: string, token?: string, bookingId?: number): Promise<any> {
     if (!token) throw new Error('هیچ توکن احراز هویتی در دسترس نیست');
     

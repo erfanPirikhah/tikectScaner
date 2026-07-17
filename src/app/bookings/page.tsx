@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useAuthStore } from '@/lib/store';
 import { wordpressService } from '@/services/wordpress';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -27,7 +27,8 @@ interface Booking {
   };
 }
 
-export default function BookingsListPage() {
+// کامپوننت اصلی که از useSearchParams استفاده می‌کند
+function BookingsListContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const eventId = searchParams.get('eventId');
@@ -40,7 +41,6 @@ export default function BookingsListPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
-  // State for Modal
   const [selectedBookingId, setSelectedBookingId] = useState<number | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
@@ -54,7 +54,7 @@ export default function BookingsListPage() {
       setLoading(true);
       try {
         const currentWebsiteUrl = websiteUrl || window.location.origin;
-        const response = await wordpressService.getBookings(currentWebsiteUrl, token, parseInt(eventId), currentPage, 20);
+        const response = await wordpressService.getBookings(currentWebsiteUrl, token || undefined, parseInt(eventId), currentPage, 20);
         
         if (response.status === 'SUCCESS') {
           setBookings(response.bookings || []);
@@ -203,12 +203,20 @@ export default function BookingsListPage() {
         )}
       </main>
 
-      {/* Booking Details Modal */}
       <BookingDetailsModal 
         isOpen={isDetailsOpen} 
         onClose={() => setIsDetailsOpen(false)} 
         bookingId={selectedBookingId} 
       />
     </div>
+  );
+}
+
+// کامپوننت پیش‌فرض که در Suspense پیچیده شده است
+export default function BookingsListPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center">در حال بارگذاری...</div>}>
+      <BookingsListContent />
+    </Suspense>
   );
 }

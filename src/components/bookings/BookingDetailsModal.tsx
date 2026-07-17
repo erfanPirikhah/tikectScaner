@@ -33,7 +33,7 @@ export default function BookingDetailsModal({ isOpen, onClose, bookingId }: Book
         setBooking(null);
         try {
           const currentWebsiteUrl = websiteUrl || window.location.origin;
-          const response = await wordpressService.getBookingDetails(currentWebsiteUrl, token, bookingId);
+          const response = await wordpressService.getBookingDetails(currentWebsiteUrl, token || undefined, bookingId);
           
           if (response.status === 'SUCCESS') {
             setBooking(response.booking);

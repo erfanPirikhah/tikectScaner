@@ -58,7 +58,7 @@ export default function TicketDetailsModal({ isOpen, onClose, ticketId }: Ticket
         setTicketData(null);
         try {
           const currentWebsiteUrl = websiteUrl || window.location.origin;
-          const response = await wordpressService.getTicketDetails(currentWebsiteUrl, token, ticketId);
+          const response = await wordpressService.getTicketDetails(currentWebsiteUrl, token || undefined, ticketId);
           
           if (response.status === 'SUCCESS') {
             setTicketData(response.ticket);
@@ -149,7 +149,7 @@ export default function TicketDetailsModal({ isOpen, onClose, ticketId }: Ticket
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">شماره صندلی</p>
-                  <p className="font-medium">{meta.ova_mb_event_seat?.[0] || details.seat || 'بدون صندلی'}</p>
+                  <p className="font-medium">{meta.ova_mb_event_seat?.[0] || details.seat || 'ظرفیت آزاد'}</p>
                 </div>
               </div>
             </div>

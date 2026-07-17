@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useAuthStore } from '@/lib/store';
 import { wordpressService } from '@/services/wordpress';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -34,7 +34,6 @@ const formatCustomDate = (timestamp: string) => {
   
   try {
     const date = new Date(ts * 1000);
-    // افزودن 3.5 ساعت برای تنظیم با زمان ایران
     const adjustedDate = new Date(date.getTime() + (3.5 * 3600000));
     
     const jalaaliDate = toJalaali(adjustedDate);
@@ -53,7 +52,8 @@ const formatCustomDate = (timestamp: string) => {
   }
 };
 
-export default function TicketsListPage() {
+// کامپوننت اصلی که از useSearchParams استفاده می‌کند
+function TicketsListContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const eventId = searchParams.get('eventId');
@@ -80,7 +80,7 @@ export default function TicketsListPage() {
       setLoading(true);
       try {
         const currentWebsiteUrl = websiteUrl || window.location.origin;
-        const response = await wordpressService.getTickets(currentWebsiteUrl, token, parseInt(eventId), currentPage, 20);
+        const response = await wordpressService.getTickets(currentWebsiteUrl, token || undefined, parseInt(eventId), currentPage, 20);
         
         if (response.status === 'SUCCESS') {
           setTickets(response.tickets || []);
@@ -218,11 +218,10 @@ export default function TicketsListPage() {
         ) : filteredTickets.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredTickets.map((ticket) => {
-              // استخراج اطلاعات از متا برای نمایش در کارت
               const meta = ticket.meta || {};
               const ticketId = meta.ova_mb_event_ticket_id?.[0] || ticket.ticket_id;
               const bookingId = meta.ova_mb_event_booking_id?.[0] || '-';
-              const seat = meta.ova_mb_event_seat?.[0] || ticket.seat || 'بدون صندلی';
+              const seat = meta.ova_mb_event_seat?.[0] || ticket.seat || 'ظرفیت آزاد';
               const dateStart = meta.ova_mb_event_date_start?.[0] ? formatCustomDate(meta.ova_mb_event_date_start[0]) : '-';
               const dateEnd = meta.ova_mb_event_date_end?.[0] ? formatCustomDate(meta.ova_mb_event_date_end[0]) : '-';
               
@@ -330,5 +329,14 @@ export default function TicketsListPage() {
         ticketId={selectedTicketId} 
       />
     </div>
+  );
+}
+
+// کامپوننت پیش‌فرض که در Suspense پیچیده شده است
+export default function TicketsListPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center">در حال بارگذاری...</div>}>
+      <TicketsListContent />
+    </Suspense>
   );
 }
