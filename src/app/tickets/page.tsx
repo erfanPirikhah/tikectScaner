@@ -33,7 +33,6 @@ export default function TicketsListPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   
-  // State for stats and pagination
   const [stats, setStats] = useState({ total: 0, checked: 0, active: 0 });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -48,7 +47,6 @@ export default function TicketsListPage() {
       setLoading(true);
       try {
         const currentWebsiteUrl = websiteUrl || window.location.origin;
-        // درخواست صفحه اول و ۲۰ آیتم در هر صفحه
         const response = await wordpressService.getTickets(currentWebsiteUrl, token, parseInt(eventId), currentPage, 20);
         
         if (response.status === 'SUCCESS') {
@@ -73,7 +71,6 @@ export default function TicketsListPage() {
     fetchTickets();
   }, [isLoggedIn, token, eventId, websiteUrl, router, currentPage]);
 
-  // فیلتر کردن بلیت‌ها بر اساس جستجو (فقط در صفحه فعلی)
   const filteredTickets = tickets.filter(ticket => 
     ticket.name_customer?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     ticket.ticket_id?.toString().includes(searchTerm) ||
@@ -89,14 +86,19 @@ export default function TicketsListPage() {
     <div className="flex flex-col min-h-screen bg-muted/10">
       <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
         
-        {/* هدر صفحه */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-              <TicketIcon className="w-6 h-6 text-primary" />
-              لیست بلیت‌های رویداد
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">شناسه رویداد: {eventId}</p>
+        {/* هدر صفحه + دکمه بازگشت بالا */}
+        <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="icon" onClick={() => router.push('/events')}>
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
+                <TicketIcon className="w-6 h-6 text-primary" />
+                لیست بلیت‌های رویداد
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">شناسه رویداد: {eventId}</p>
+            </div>
           </div>
           
           <div className="flex gap-2 w-full sm:w-auto">
@@ -121,7 +123,6 @@ export default function TicketsListPage() {
         </div>
 
         {/* کارت‌های آماری */}
-          {/* کارت‌های آماری */}
         {!loading && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
             <Card className="border-r-4 border-r-blue-500 shadow-sm">
@@ -186,8 +187,9 @@ export default function TicketsListPage() {
                       <CardTitle className="text-lg">{ticket.name_customer || 'نامشخص'}</CardTitle>
                       <CardDescription>شناسه: #{ticket.ticket_id}</CardDescription>
                     </div>
+                    {/* اصلاح کلمه اشتباه به "بررسی نشده" */}
                     <Badge variant={ticket.ticket_status === 'checked' || ticket.times_checked ? 'destructive' : 'secondary'}>
-                      {ticket.ticket_status === 'checked' || ticket.times_checked ? 'چک‌شده' : 'برنشکسته'}
+                      {ticket.ticket_status === 'checked' || ticket.times_checked ? 'چک‌شده' : 'بررسی نشده'}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -226,7 +228,7 @@ export default function TicketsListPage() {
           </div>
         )}
 
-        {/* صفحه‌بندی (Pagination) */}
+        {/* صفحه‌بندی */}
         {totalPages > 1 && (
           <div className="mt-8 flex flex-col items-center">
             <div className="flex flex-wrap justify-center gap-2 max-w-full overflow-x-auto">
@@ -254,14 +256,6 @@ export default function TicketsListPage() {
             </div>
           </div>
         )}
-
-        {/* دکمه بازگشت */}
-        <div className="mt-8 flex justify-start">
-          <Button variant="outline" onClick={() => router.push('/events')}>
-            <ArrowRight className="ml-2 h-4 w-4" />
-            بازگشت به رویدادها
-          </Button>
-        </div>
       </main>
     </div>
   );

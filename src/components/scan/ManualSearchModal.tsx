@@ -7,12 +7,12 @@ import { showToast } from '@/lib/toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -79,16 +79,39 @@ export default function ManualSearchModal({ isOpen, onClose, eventId, onTicketVa
         token: token!,
       }, useAuthStore.getState().user?.id);
 
+      // متغیر برای پخش صدا
+      let audio: HTMLAudioElement;
+
       if (response.status === 'SUCCESS') {
+        audio = new Audio('/ring/ok.mp3');
         showToast.success('بلیت با موفقیت تایید شد');
+        
+        // به‌روزرسانی وضعیت بلیت در لیست جستجو (تا دکمه غیرفعال شود)
+        setTickets(prevTickets => prevTickets.map(t => 
+          t.ticket_id === ticket.ticket_id 
+            ? { ...t, ticket_status: 'checked', times_checked: (t.times_checked || 0) + 1 } 
+            : t
+        ));
+
         if (onTicketValidated) {
           onTicketValidated(ticket.qr_code);
         }
-        handleClose();
+        
+        // بستن مودال پس از ۱.۵ ثانیه تا صدا کامل پخش شود
+        setTimeout(() => handleClose(), 1500);
       } else {
+        audio = new Audio('/ring/bad.mp3');
         showToast.error(response.msg || 'اعتبارسنجی ناموفق بود');
       }
+
+      // پخش صدا
+      audio.play().catch(error => console.error('Error playing sound:', error));
+
     } catch (error) {
+      // پخش صدا در صورت خطای کلی
+      const audio = new Audio('/ring/bad.mp3');
+      audio.play().catch(e => console.error('Error playing sound:', e));
+      
       showToast.error('خطا در اعتبارسنجی');
     } finally {
       setLoading(false);

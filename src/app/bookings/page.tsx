@@ -1,22 +1,16 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useAuthStore } from "@/lib/store";
-import { wordpressService } from "@/services/wordpress";
-import { useRouter, useSearchParams } from "next/navigation";
-import { showToast } from "@/lib/toast";
-import { Button } from "@/components/ui/button";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowRight, BookOpen, Eye } from "lucide-react";
-import BookingDetailsModal from "@/components/bookings/BookingDetailsModal";
+import { useEffect, useState } from 'react';
+import { useAuthStore } from '@/lib/store';
+import { wordpressService } from '@/services/wordpress';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { showToast } from '@/lib/toast';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ArrowRight, BookOpen, Eye } from 'lucide-react';
+import BookingDetailsModal from '@/components/bookings/BookingDetailsModal';
 
 interface Booking {
   booking_id: number;
@@ -36,23 +30,23 @@ interface Booking {
 export default function BookingsListPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const eventId = searchParams.get("eventId");
+  const eventId = searchParams.get('eventId');
 
   const { token, websiteUrl, isLoggedIn } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState<Booking[]>([]);
-
+  
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const [selectedBookingId, setSelectedBookingId] = useState<number | null>(
-    null,
-  );
+
+  // State for Modal
+  const [selectedBookingId, setSelectedBookingId] = useState<number | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoggedIn || !token || !eventId) {
-      router.push("/login/");
+      router.push('/login/');
       return;
     }
 
@@ -60,24 +54,18 @@ export default function BookingsListPage() {
       setLoading(true);
       try {
         const currentWebsiteUrl = websiteUrl || window.location.origin;
-        const response = await wordpressService.getBookings(
-          currentWebsiteUrl,
-          token,
-          parseInt(eventId),
-          currentPage,
-          20,
-        );
-
-        if (response.status === "SUCCESS") {
+        const response = await wordpressService.getBookings(currentWebsiteUrl, token, parseInt(eventId), currentPage, 20);
+        
+        if (response.status === 'SUCCESS') {
           setBookings(response.bookings || []);
           setTotalPages(response.total_pages || 1);
           setTotalItems(response.total_items || 0);
         } else {
-          showToast.error(response.msg || "دریافت رزروها ناموفق بود");
+          showToast.error(response.msg || 'دریافت رزروها ناموفق بود');
         }
       } catch (error) {
-        console.error("Error fetching bookings:", error);
-        showToast.error("خطا در اتصال به سرور");
+        console.error('Error fetching bookings:', error);
+        showToast.error('خطا در اتصال به سرور');
       } finally {
         setLoading(false);
       }
@@ -88,7 +76,7 @@ export default function BookingsListPage() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleViewDetails = (bookingId: number) => {
@@ -99,16 +87,20 @@ export default function BookingsListPage() {
   return (
     <div className="flex flex-col min-h-screen bg-muted/10">
       <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
-        {/* هدر صفحه */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-              <BookOpen className="w-6 h-6 text-primary" />
-              لیست رزروهای رویداد
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              شناسه رویداد: {eventId} | مجموع رزروها: {totalItems}
-            </p>
+        
+        {/* هدر صفحه + دکمه بازگشت بالا */}
+        <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="icon" onClick={() => router.push('/events')}>
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
+                <BookOpen className="w-6 h-6 text-primary" />
+                لیست رزروهای رویداد
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">شناسه رویداد: {eventId} | مجموع رزروها: {totalItems}</p>
+            </div>
           </div>
         </div>
 
@@ -131,30 +123,17 @@ export default function BookingsListPage() {
         ) : bookings.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {bookings.map((booking) => (
-              <Card
-                key={booking.booking_id}
-                className="flex flex-col justify-between hover:shadow-lg transition-shadow duration-200 border-r-4 border-r-indigo-500/70"
-              >
+              <Card key={booking.booking_id} className="flex flex-col justify-between hover:shadow-lg transition-shadow duration-200 border-r-4 border-r-indigo-500/70">
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-start">
                     <div>
                       <CardTitle className="text-lg">
-                        {booking.meta?.ova_mb_event_name?.[0] || "نامشخص"}
+                        {booking.meta?.ova_mb_event_name?.[0] || 'نامشخص'}
                       </CardTitle>
-                      <CardDescription>
-                        شناسه رزرو: #{booking.booking_id}
-                      </CardDescription>
+                      <CardDescription>شناسه رزرو: #{booking.booking_id}</CardDescription>
                     </div>
-                    <Badge
-                      variant={
-                        booking.status === "Completed"
-                          ? "secondary"
-                          : "destructive"
-                      }
-                    >
-                      {booking.status === "Completed"
-                        ? "تکمیل شده"
-                        : booking.status || "نامشخص"}
+                    <Badge variant={booking.status === 'Completed' ? 'secondary' : 'destructive'}>
+                      {booking.status === 'Completed' ? 'تکمیل شده' : booking.status || 'نامشخص'}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -162,27 +141,20 @@ export default function BookingsListPage() {
                   {booking.phone && (
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">موبایل:</span>
-                      <span className="font-medium" dir="ltr">
-                        {booking.phone}
-                      </span>
+                      <span className="font-medium" dir="ltr">{booking.phone}</span>
                     </div>
                   )}
                   {booking.email && (
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">ایمیل:</span>
-                      <span
-                        className="font-medium truncate max-w-[150px]"
-                        dir="ltr"
-                      >
-                        {booking.email}
-                      </span>
+                      <span className="font-medium truncate max-w-[150px]" dir="ltr">{booking.email}</span>
                     </div>
                   )}
                 </CardContent>
                 <div className="p-4 pt-0 mt-auto">
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
                     className="w-full"
                     onClick={() => handleViewDetails(booking.booking_id)}
                   >
@@ -199,9 +171,7 @@ export default function BookingsListPage() {
               <BookOpen className="w-12 h-12 text-muted-foreground" />
             </div>
             <h3 className="text-xl font-semibold mb-2">رزروی یافت نشد</h3>
-            <p className="text-muted-foreground mb-6">
-              برای این رویداد رزروی ثبت نشده است.
-            </p>
+            <p className="text-muted-foreground mb-6">برای این رویداد رزروی ثبت نشده است.</p>
           </div>
         )}
 
@@ -210,9 +180,7 @@ export default function BookingsListPage() {
           <div className="mt-8 flex flex-col items-center gap-4">
             <div className="flex flex-wrap justify-center gap-2">
               <Button
-                onClick={() =>
-                  handlePageChange(currentPage > 1 ? currentPage - 1 : 1)
-                }
+                onClick={() => handlePageChange(currentPage > 1 ? currentPage - 1 : 1)}
                 disabled={currentPage === 1}
                 variant="outline"
                 className="min-w-[80px]"
@@ -223,11 +191,7 @@ export default function BookingsListPage() {
                 صفحه {currentPage} از {totalPages}
               </span>
               <Button
-                onClick={() =>
-                  handlePageChange(
-                    currentPage < totalPages ? currentPage + 1 : totalPages,
-                  )
-                }
+                onClick={() => handlePageChange(currentPage < totalPages ? currentPage + 1 : totalPages)}
                 disabled={currentPage === totalPages}
                 variant="outline"
                 className="min-w-[80px]"
@@ -237,19 +201,13 @@ export default function BookingsListPage() {
             </div>
           </div>
         )}
-
-        {/* دکمه بازگشت */}
-        <div className="mt-8 flex justify-start">
-          <Button variant="outline" onClick={() => router.push("/events")}>
-            <ArrowRight className="ml-2 h-4 w-4" />
-            بازگشت به رویدادها
-          </Button>
-        </div>
       </main>
-      <BookingDetailsModal
-        isOpen={isDetailsOpen}
-        onClose={() => setIsDetailsOpen(false)}
-        bookingId={selectedBookingId}
+
+      {/* Booking Details Modal */}
+      <BookingDetailsModal 
+        isOpen={isDetailsOpen} 
+        onClose={() => setIsDetailsOpen(false)} 
+        bookingId={selectedBookingId} 
       />
     </div>
   );
