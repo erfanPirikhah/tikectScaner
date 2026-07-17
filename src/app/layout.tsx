@@ -1,7 +1,9 @@
+// src/app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
 import ClientLayout from './ClientLayout';
 import { ThemeProvider } from '@/context/theme-provider';
+import Script from "next/script"; // <-- این خط اضافه شود
 
 export const metadata: Metadata = {
   title: "Evento | Ticket Check-In System",
@@ -32,10 +34,10 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="16x16" href="/ALogo.png" />
         <link rel="apple-touch-icon" href="/ALogo.png" />
         <link rel="manifest" href="/manifest.json" />
+        {/* لود کردن فایل کانفیگ قبل از اجرای اپلیکیشن */}
+        <Script src="/config.js" strategy="beforeInteractive" />
       </head>
-      <body
-        className="antialiased"
-      >
+      <body className="antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
