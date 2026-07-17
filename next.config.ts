@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+
+  basePath: '/pwa',
+
   // Enable output for static export
   output: "export",
   // serverExternalPackages moved to top level instead of experimental

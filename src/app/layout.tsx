@@ -25,18 +25,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fa" dir="rtl" suppressHydrationWarning>
-      <head>
+       <head>
         <meta name="theme-color" content="#f8fafc" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="iticket" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/ALogo.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/ALogo.png" />
-        <link rel="apple-touch-icon" href="/ALogo.png" />
-        <link rel="manifest" href="/manifest.json" />
+        {/* اضافه شدن /pwa به ابتدای مسیرها */}
+        <link rel="icon" type="image/png" sizes="32x32" href="/pwa/ALogo.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/pwa/ALogo.png" />
+        <link rel="apple-touch-icon" href="/pwa/ALogo.png" />
+        <link rel="manifest" href="/pwa/manifest.json" />
         {/* لود کردن فایل کانفیگ قبل از اجرای اپلیکیشن */}
-        <Script src="/config.js" strategy="beforeInteractive" />
+        <Script src="/pwa/config.js" strategy="beforeInteractive" />
       </head>
+
       <body className="antialiased">
         <ThemeProvider
           attribute="class"
@@ -50,3 +52,18 @@ export default function RootLayout({
     </html>
   );
 }
+
+
+
+      // {/* <head>
+      //   <meta name="theme-color" content="#f8fafc" />
+      //   <meta name="apple-mobile-web-app-capable" content="yes" />
+      //   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+      //   <meta name="apple-mobile-web-app-title" content="iticket" />
+      //   <link rel="icon" type="image/png" sizes="32x32" href="/ALogo.png" />
+      //   <link rel="icon" type="image/png" sizes="16x16" href="/ALogo.png" />
+      //   <link rel="apple-touch-icon" href="/ALogo.png" />
+      //   <link rel="manifest" href="/manifest.json" />
+      //   {/* لود کردن فایل کانفیگ قبل از اجرای اپلیکیشن */}
+      //   <Script src="/config.js" strategy="beforeInteractive" />
+      // </head> */}

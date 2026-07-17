@@ -43,7 +43,7 @@ export default function ManualSearchModal({ isOpen, onClose, eventId, onTicketVa
     
     try {
       const currentWebsiteUrl = websiteUrl || window.location.origin;
-      const response = await wordpressService.manualSearchTicket(currentWebsiteUrl, token, parseInt(eventId), searchTerm);
+      const response = await wordpressService.manualSearchTicket(currentWebsiteUrl, token ||undefined, parseInt(eventId), searchTerm);
       
       if (response.status === 'SUCCESS') {
         setTickets(response.tickets || []);
@@ -83,7 +83,7 @@ export default function ManualSearchModal({ isOpen, onClose, eventId, onTicketVa
       let audio: HTMLAudioElement;
 
       if (response.status === 'SUCCESS') {
-        audio = new Audio('/ring/ok.mp3');
+        audio = new Audio('/pwa/ring/ok.mp3');
         showToast.success('بلیت با موفقیت تایید شد');
         
         // به‌روزرسانی وضعیت بلیت در لیست جستجو (تا دکمه غیرفعال شود)
@@ -100,7 +100,7 @@ export default function ManualSearchModal({ isOpen, onClose, eventId, onTicketVa
         // بستن مودال پس از ۱.۵ ثانیه تا صدا کامل پخش شود
         setTimeout(() => handleClose(), 1500);
       } else {
-        audio = new Audio('/ring/bad.mp3');
+        audio = new Audio('/pwa/ring/bad.mp3');
         showToast.error(response.msg || 'اعتبارسنجی ناموفق بود');
       }
 
@@ -109,7 +109,7 @@ export default function ManualSearchModal({ isOpen, onClose, eventId, onTicketVa
 
     } catch (error) {
       // پخش صدا در صورت خطای کلی
-      const audio = new Audio('/ring/bad.mp3');
+      const audio = new Audio('/pwa/ring/bad.mp3');
       audio.play().catch(e => console.error('Error playing sound:', e));
       
       showToast.error('خطا در اعتبارسنجی');

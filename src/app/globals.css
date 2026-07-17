@@ -2,59 +2,61 @@
 
 @plugin "tailwindcss-animate";
 /* Remove Vazir fonts and load custom Dana font from public directory */
+/* src/app/globals.css */
+/* Find all @font-face and change the src url */
 @font-face {
   font-family: 'dana';
   font-style: normal;
   font-weight: 100;
-  src: url('/Webfonts/woff2/Dana-Thin.woff2') format('woff2');
+  src: url('/pwa/Webfonts/woff2/Dana-Thin.woff2') format('woff2');
 }
 @font-face {
   font-family: 'dana';
   font-style: normal;
   font-weight: 200;
-  src: url('/Webfonts/woff2/Dana-UltraLight.woff2') format('woff2');
+  src: url('/pwa/Webfonts/woff2/Dana-UltraLight.woff2') format('woff2');
 }
 @font-face {
   font-family: 'dana';
   font-style: normal;
   font-weight: 300;
-  src: url('/Webfonts/woff2/Dana-Light.woff2') format('woff2');
+  src: url('/pwa/Webfonts/woff2/Dana-Light.woff2') format('woff2');
 }
 @font-face {
   font-family: 'dana';
   font-style: normal;
   font-weight: 400;
-  src: url('/Webfonts/woff2/Dana-Regular.woff2') format('woff2');
+  src: url('/pwa/Webfonts/woff2/Dana-Regular.woff2') format('woff2');
 }
 @font-face {
   font-family: 'dana';
   font-style: normal;
   font-weight: 500;
-  src: url('/Webfonts/woff2/Dana-Medium.woff2') format('woff2');
+  src: url('/pwa/Webfonts/woff2/Dana-Medium.woff2') format('woff2');
 }
 @font-face {
   font-family: 'dana';
   font-style: normal;
   font-weight: 600;
-  src: url('/Webfonts/woff2/Dana-DemiBold.woff2') format('woff2');
+  src: url('/pwa/Webfonts/woff2/Dana-DemiBold.woff2') format('woff2');
 }
 @font-face {
   font-family: 'dana';
   font-style: normal;
   font-weight: 700;
-  src: url('/Webfonts/woff2/Dana-Bold.woff2') format('woff2');
+  src: url('/pwa/Webfonts/woff2/Dana-Bold.woff2') format('woff2');
 }
 @font-face {
   font-family: 'dana';
   font-style: normal;
   font-weight: 800;
-  src: url('/Webfonts/woff2/Dana-ExtraBold.woff2') format('woff2');
+  src: url('/pwa/Webfonts/woff2/Dana-ExtraBold.woff2') format('woff2');
 }
 @font-face {
   font-family: 'dana';
   font-style: normal;
   font-weight: 900;
-  src: url('/Webfonts/woff2/Dana-Black.woff2') format('woff2');
+  src: url('/pwa/Webfonts/woff2/Dana-Black.woff2') format('woff2');
 }
 
 :root {

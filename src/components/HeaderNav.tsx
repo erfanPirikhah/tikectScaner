@@ -27,7 +27,7 @@ const HeaderNav = () => {
         <div className="flex items-center gap-2">
           <Link href="/events" className="flex items-center gap-2">
             <img
-              src="/ALogo.png"
+              src="/pwa/ALogo.png"
               alt="Logo"
               width={32}
               height={32}

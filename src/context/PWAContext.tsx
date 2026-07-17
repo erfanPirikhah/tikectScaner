@@ -49,7 +49,7 @@ export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
     const registerServiceWorker = async () => {
       try {
         if ('serviceWorker' in navigator) {
-          const reg = await navigator.serviceWorker.register('/sw.js');
+          const reg = await navigator.serviceWorker.register('/pwa/sw.js');
           setRegistration(reg);
 
           // Check for updates immediately

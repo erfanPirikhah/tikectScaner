@@ -273,11 +273,11 @@ export default function ScannerClient() {
       // Play appropriate sound based on result
       let audio: HTMLAudioElement;
       if (response.status === 'SUCCESS') {
-        audio = new Audio('/ring/ok.mp3');
+        audio = new Audio('/pwa/ring/ok.mp3');
         console.log('[DEBUG] Ticket validation successful:', response);
         showToast.success( 'بلیت با موفقیت تأیید شد');
       } else {
-        audio = new Audio('/ring/bad.mp3');
+        audio = new Audio('/pwa/ring/bad.mp3');
         console.log('[DEBUG] Ticket validation failed:', response);
         showToast.error( 'خطا در تأیید بلیت');
       }
@@ -339,7 +339,7 @@ export default function ScannerClient() {
       setError('اعتبارسنجی بلیت ناموفق بود. لطفاً دوباره تلاش کنید.');
 
       // Play error sound
-      const audio = new Audio('/ring/bad.mp3');
+      const audio = new Audio('/pwa/ring/bad.mp3');
       audio.play().catch(error => {
         console.error('Error playing sound:', error);
       });

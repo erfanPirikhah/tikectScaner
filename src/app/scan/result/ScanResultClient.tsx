@@ -197,7 +197,7 @@ export default function ScanResultClient() {
             <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 ${status === 'SUCCESS' ? 'bg-green-600' : 'bg-red-600'}`}>
               {status === 'SUCCESS' ? (
                 <img
-                  src="/icons/scan/Ok.png"
+                  src="/pwa/icons/scan/Ok.png"
                   alt="تایید"
                   width={80}
                   height={80}
@@ -205,7 +205,7 @@ export default function ScanResultClient() {
                 />
               ) : (
                 <img
-                  src="/icons/scan/Not.png"
+                  src="/pwa/icons/scan/Not.png"
                   alt="رد"
                   width={80}
                   height={80}
