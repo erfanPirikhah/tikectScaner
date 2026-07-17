@@ -386,6 +386,81 @@ class WordPressService {
       throw error;
     }
   }
+    // ============================================
+  // 4. دریافت لیست رزروها
+  // ============================================
+  async getBookings(websiteUrl?: string, token?: string, eventId?: number, page: number = 1, perPage: number = 20): Promise<any> {
+    if (!token) throw new Error('هیچ توکن احراز هویتی در دسترس نیست');
+    
+    const url = buildApiUrl('bookings');
+    
+    const options: RequestInit = {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        event_id: eventId,
+        page: page,
+        per_page: perPage 
+      }),
+    };
+
+    try {
+      const data = await this.makeRequest(url, options);
+      
+      if (data.items && Array.isArray(data.items)) {
+        return { 
+          status: 'SUCCESS', 
+          bookings: data.items,
+          total_items: data.total_items || 0,
+          total_pages: data.total_pages || 1,
+          current_page: data.page || 1
+        };
+      } else if (Array.isArray(data)) {
+        return { status: 'SUCCESS', bookings: data, total_items: data.length, total_pages: 1 };
+      } else if (data.status) {
+        return data;
+      }
+      
+      return { status: 'FAIL', bookings: [], msg: data.msg || 'خطا در دریافت رزروها' };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // ============================================
+  // 5. دریافت جزئیات یک رزرو خاص
+  // ============================================
+  async getBookingDetails(websiteUrl?: string, token?: string, bookingId?: number): Promise<any> {
+    if (!token) throw new Error('هیچ توکن احراز هویتی در دسترس نیست');
+    
+    const url = buildApiUrl('booking/details');
+    
+    const options: RequestInit = {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ booking_id: bookingId }),
+    };
+
+    try {
+      const data = await this.makeRequest(url, options);
+      
+      if (data.booking_id || (data.items && data.items.length > 0)) {
+        return { status: 'SUCCESS', booking: data.items ? data.items[0] : data };
+      } else if (data.status) {
+        return data;
+      }
+      
+      return { status: 'FAIL', msg: data.msg || 'خطا در دریافت جزئیات رزرو' };
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 export const wordpressService = new WordPressService();

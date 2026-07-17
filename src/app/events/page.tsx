@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { CalendarIcon, TicketIcon, QrCode, Keyboard, Loader2, Search } from 'lucide-react';
+import { CalendarIcon, TicketIcon, QrCode, Keyboard, Loader2, Search, BookOpen } from 'lucide-react';
 import ManualSearchModal from '@/components/scan/ManualSearchModal';
 
 // Define types for events
@@ -184,22 +184,30 @@ export default function Events() {
                         <><QrCode className="ml-2 h-4 w-4" /> اسکن بلیت</>
                       )}
                     </Button>
-                    <div className="flex w-full gap-2">
+                    <div className="grid grid-cols-3 w-full gap-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex-1"
+                        className="flex-1 px-2"
                         onClick={() => router.push(`/tickets?eventId=${event.event_id}`)}
                       >
-                        <TicketIcon className="ml-2 h-4 w-4" /> لیست بلیت‌ها
+                        <TicketIcon className="ml-1 h-4 w-4" /> بلیت‌ها
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 px-2"
+                        onClick={() => router.push(`/bookings?eventId=${event.event_id}`)}
+                      >
+                        <BookOpen className="ml-1 h-4 w-4" /> رزروها
                       </Button>
                       <Button
                         variant="secondary"
                         size="sm"
-                        className="flex-1"
+                        className="flex-1 px-2"
                         onClick={() => handleManualSearchOpen(event)}
                       >
-                        <Keyboard className="ml-2 h-4 w-4" /> جستجوی دستی
+                        <Keyboard className="ml-1 h-4 w-4" /> جستجو
                       </Button>
                     </div>
                   </CardFooter>
