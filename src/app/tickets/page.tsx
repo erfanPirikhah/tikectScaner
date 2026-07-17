@@ -10,7 +10,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
-import { ArrowRight, Search, TicketIcon, QrCode, CheckCircle2, Clock, Users } from 'lucide-react';
+import { ArrowRight, Search, TicketIcon, QrCode, CheckCircle2, Clock, Users, Eye, MapPin, Hash, BookOpen, Armchair, Calendar } from 'lucide-react';
+import { toJalaali } from 'jalaali-js';
+import TicketDetailsModal from '@/components/tickets/TicketDetailsModal';
 
 interface Ticket {
   ticket_id: number;
@@ -21,7 +23,35 @@ interface Ticket {
   ticket_status?: string;
   checkin_time?: string;
   times_checked?: number;
+  meta?: any;
 }
+
+// تابع تبدیل تایم‌استمپ به تاریخ و زمان شمسی
+const formatCustomDate = (timestamp: string) => {
+  if (!timestamp) return '-';
+  const ts = parseInt(timestamp);
+  if (isNaN(ts)) return '-';
+  
+  try {
+    const date = new Date(ts * 1000);
+    // افزودن 3.5 ساعت برای تنظیم با زمان ایران
+    const adjustedDate = new Date(date.getTime() + (3.5 * 3600000));
+    
+    const jalaaliDate = toJalaali(adjustedDate);
+    const hours = String(adjustedDate.getUTCHours()).padStart(2, '0');
+    const minutes = String(adjustedDate.getUTCMinutes()).padStart(2, '0');
+    
+    const persianMonths = [
+      'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+      'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
+    ];
+    const monthName = persianMonths[jalaaliDate.jm - 1];
+    
+    return `${jalaaliDate.jd} ${monthName} ${jalaaliDate.jy} - ${hours}:${minutes}`;
+  } catch (e) {
+    return '-';
+  }
+};
 
 export default function TicketsListPage() {
   const router = useRouter();
@@ -36,6 +66,9 @@ export default function TicketsListPage() {
   const [stats, setStats] = useState({ total: 0, checked: 0, active: 0 });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoggedIn || !token || !eventId) {
@@ -82,11 +115,16 @@ export default function TicketsListPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleViewDetails = (ticketId: number) => {
+    setSelectedTicketId(ticketId);
+    setIsDetailsOpen(true);
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-muted/10">
       <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
         
-        {/* هدر صفحه + دکمه بازگشت بالا */}
+        {/* هدر صفحه */}
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex items-center gap-3">
             <Button variant="outline" size="icon" onClick={() => router.push('/events')}>
@@ -179,44 +217,72 @@ export default function TicketsListPage() {
           </div>
         ) : filteredTickets.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredTickets.map((ticket) => (
-              <Card key={ticket.ticket_id} className="hover:shadow-lg transition-shadow duration-200 border-r-4 border-r-primary/50">
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg">{ticket.name_customer || 'نامشخص'}</CardTitle>
-                      <CardDescription>شناسه: #{ticket.ticket_id}</CardDescription>
+            {filteredTickets.map((ticket) => {
+              // استخراج اطلاعات از متا برای نمایش در کارت
+              const meta = ticket.meta || {};
+              const ticketId = meta.ova_mb_event_ticket_id?.[0] || ticket.ticket_id;
+              const bookingId = meta.ova_mb_event_booking_id?.[0] || '-';
+              const seat = meta.ova_mb_event_seat?.[0] || ticket.seat || 'بدون صندلی';
+              const dateStart = meta.ova_mb_event_date_start?.[0] ? formatCustomDate(meta.ova_mb_event_date_start[0]) : '-';
+              const dateEnd = meta.ova_mb_event_date_end?.[0] ? formatCustomDate(meta.ova_mb_event_date_end[0]) : '-';
+              
+              const venueRaw = meta.ova_mb_event_venue?.[0];
+              const addressRaw = meta.ova_mb_event_address?.[0];
+              const venue = venueRaw && !venueRaw.startsWith('a:') ? venueRaw : (addressRaw || '-');
+
+              return (
+                <Card key={ticket.ticket_id} className="flex flex-col justify-between hover:shadow-lg transition-shadow duration-200 border-r-4 border-r-primary/50">
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg">{ticket.name_customer || 'نامشخص'}</CardTitle>
+                        <CardDescription>شناسه: #{ticket.ticket_id}</CardDescription>
+                      </div>
+                      <Badge variant={ticket.ticket_status === 'checked' || ticket.times_checked ? 'destructive' : 'secondary'}>
+                        {ticket.ticket_status === 'checked' || ticket.times_checked ? 'چک‌شده' : 'بررسی نشده'}
+                      </Badge>
                     </div>
-                    {/* اصلاح کلمه اشتباه به "بررسی نشده" */}
-                    <Badge variant={ticket.ticket_status === 'checked' || ticket.times_checked ? 'destructive' : 'secondary'}>
-                      {ticket.ticket_status === 'checked' || ticket.times_checked ? 'چک‌شده' : 'بررسی نشده'}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                  {ticket.phone_customer && (
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm flex-grow">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">موبایل:</span>
-                      <span className="font-medium" dir="ltr">{ticket.phone_customer}</span>
+                      <span className="text-muted-foreground flex items-center gap-1"><Hash className="w-3 h-3" /> شماره بلیت:</span>
+                      <span className="font-medium">{ticketId}</span>
                     </div>
-                  )}
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">نوع بلیت:</span>
-                    <span className="font-medium">{ticket.ticket_type || '-'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">صندلی:</span>
-                    <span className="font-medium">{ticket.seat || '-'}</span>
-                  </div>
-                  {ticket.checkin_time && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">زمان چک‌این:</span>
-                      <span className="font-medium">{ticket.checkin_time}</span>
+                      <span className="text-muted-foreground flex items-center gap-1"><BookOpen className="w-3 h-3" /> شماره رزرو:</span>
+                      <span className="font-medium">{bookingId}</span>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground flex items-center gap-1"><Armchair className="w-3 h-3" /> صندلی:</span>
+                      <span className="font-medium">{seat}</span>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <span className="text-muted-foreground flex items-center gap-1 flex-shrink-0"><Calendar className="w-3 h-3" /> شروع:</span>
+                      <span className="font-medium text-left text-xs">{dateStart}</span>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <span className="text-muted-foreground flex items-center gap-1 flex-shrink-0"><Calendar className="w-3 h-3" /> پایان:</span>
+                      <span className="font-medium text-left text-xs">{dateEnd}</span>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <span className="text-muted-foreground flex items-center gap-1 flex-shrink-0"><MapPin className="w-3 h-3" /> مکان:</span>
+                      <span className="font-medium text-left text-xs truncate">{venue}</span>
+                    </div>
+                  </CardContent>
+                  <div className="p-4 pt-2 mt-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full"
+                      onClick={() => handleViewDetails(ticket.ticket_id)}
+                    >
+                      <Eye className="ml-2 h-4 w-4" />
+                      مشاهده جزئیات
+                    </Button>
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -257,6 +323,12 @@ export default function TicketsListPage() {
           </div>
         )}
       </main>
+
+      <TicketDetailsModal 
+        isOpen={isDetailsOpen} 
+        onClose={() => setIsDetailsOpen(false)} 
+        ticketId={selectedTicketId} 
+      />
     </div>
   );
 }
