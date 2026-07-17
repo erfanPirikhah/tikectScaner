@@ -1,0 +1,268 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useAuthStore } from '@/lib/store';
+import { wordpressService } from '@/services/wordpress';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { showToast } from '@/lib/toast';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Input } from '@/components/ui/input';
+import { ArrowRight, Search, TicketIcon, QrCode, CheckCircle2, Clock, Users } from 'lucide-react';
+
+interface Ticket {
+  ticket_id: number;
+  name_customer?: string;
+  phone_customer?: string;
+  seat?: string;
+  ticket_type?: string;
+  ticket_status?: string;
+  checkin_time?: string;
+  times_checked?: number;
+}
+
+export default function TicketsListPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const eventId = searchParams.get('eventId');
+
+  const { token, websiteUrl, isLoggedIn } = useAuthStore();
+  const [loading, setLoading] = useState(true);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // State for stats and pagination
+  const [stats, setStats] = useState({ total: 0, checked: 0, active: 0 });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    if (!isLoggedIn || !token || !eventId) {
+      router.push('/login/');
+      return;
+    }
+
+    const fetchTickets = async () => {
+      setLoading(true);
+      try {
+        const currentWebsiteUrl = websiteUrl || window.location.origin;
+        // درخواست صفحه اول و ۲۰ آیتم در هر صفحه
+        const response = await wordpressService.getTickets(currentWebsiteUrl, token, parseInt(eventId), currentPage, 20);
+        
+        if (response.status === 'SUCCESS') {
+          setTickets(response.tickets || []);
+          setStats({
+            total: response.total_items || 0,
+            checked: response.total_checked || 0,
+            active: response.total_active || 0
+          });
+          setTotalPages(response.total_pages || 1);
+        } else {
+          showToast.error(response.msg || 'دریافت بلیت‌ها ناموفق بود');
+        }
+      } catch (error) {
+        console.error('Error fetching tickets:', error);
+        showToast.error('خطا در اتصال به سرور');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTickets();
+  }, [isLoggedIn, token, eventId, websiteUrl, router, currentPage]);
+
+  // فیلتر کردن بلیت‌ها بر اساس جستجو (فقط در صفحه فعلی)
+  const filteredTickets = tickets.filter(ticket => 
+    ticket.name_customer?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    ticket.ticket_id?.toString().includes(searchTerm) ||
+    ticket.phone_customer?.includes(searchTerm)
+  );
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  return (
+    <div className="flex flex-col min-h-screen bg-muted/10">
+      <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
+        
+        {/* هدر صفحه */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
+              <TicketIcon className="w-6 h-6 text-primary" />
+              لیست بلیت‌های رویداد
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">شناسه رویداد: {eventId}</p>
+          </div>
+          
+          <div className="flex gap-2 w-full sm:w-auto">
+            <div className="relative flex-1 sm:w-64">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="جستجو در این صفحه..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pr-9"
+              />
+            </div>
+            <Button 
+              variant="default" 
+              onClick={() => router.push(`/scan?eventId=${eventId}`)}
+              className="flex-shrink-0"
+            >
+              <QrCode className="ml-2 h-4 w-4" />
+              اسکن QR
+            </Button>
+          </div>
+        </div>
+
+        {/* کارت‌های آماری */}
+          {/* کارت‌های آماری */}
+        {!loading && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <Card className="border-r-4 border-r-blue-500 shadow-sm">
+              <CardContent className="p-4 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs sm:text-sm text-muted-foreground">کل بلیت‌ها</p>
+                  <p className="text-xl sm:text-2xl font-bold">{stats.total}</p>
+                </div>
+                <div className="p-2 sm:p-3 bg-blue-500/10 rounded-full">
+                  <Users className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" />
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="border-r-4 border-r-green-500 shadow-sm">
+              <CardContent className="p-4 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs sm:text-sm text-muted-foreground">چک‌شده</p>
+                  <p className="text-xl sm:text-2xl font-bold">{stats.checked}</p>
+                </div>
+                <div className="p-2 sm:p-3 bg-green-500/10 rounded-full">
+                  <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="border-r-4 border-r-orange-500 shadow-sm">
+              <CardContent className="p-4 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs sm:text-sm text-muted-foreground">فعال (باقی‌مانده)</p>
+                  <p className="text-xl sm:text-2xl font-bold">{stats.active}</p>
+                </div>
+                <div className="p-2 sm:p-3 bg-orange-500/10 rounded-full">
+                  <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* لیست بلیت‌ها */}
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-1/2 mt-2" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3 mt-2" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : filteredTickets.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredTickets.map((ticket) => (
+              <Card key={ticket.ticket_id} className="hover:shadow-lg transition-shadow duration-200 border-r-4 border-r-primary/50">
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg">{ticket.name_customer || 'نامشخص'}</CardTitle>
+                      <CardDescription>شناسه: #{ticket.ticket_id}</CardDescription>
+                    </div>
+                    <Badge variant={ticket.ticket_status === 'checked' || ticket.times_checked ? 'destructive' : 'secondary'}>
+                      {ticket.ticket_status === 'checked' || ticket.times_checked ? 'چک‌شده' : 'برنشکسته'}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                  {ticket.phone_customer && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">موبایل:</span>
+                      <span className="font-medium" dir="ltr">{ticket.phone_customer}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">نوع بلیت:</span>
+                    <span className="font-medium">{ticket.ticket_type || '-'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">صندلی:</span>
+                    <span className="font-medium">{ticket.seat || '-'}</span>
+                  </div>
+                  {ticket.checkin_time && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">زمان چک‌این:</span>
+                      <span className="font-medium">{ticket.checkin_time}</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="bg-muted/30 p-6 rounded-full mb-4">
+              <TicketIcon className="w-12 h-12 text-muted-foreground" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2">بلیتی یافت نشد</h3>
+            <p className="text-muted-foreground mb-6">برای این رویداد بلیتی ثبت نشده یا نتیجه جستجوی شما خالی است.</p>
+          </div>
+        )}
+
+        {/* صفحه‌بندی (Pagination) */}
+        {totalPages > 1 && (
+          <div className="mt-8 flex flex-col items-center">
+            <div className="flex flex-wrap justify-center gap-2 max-w-full overflow-x-auto">
+              <Button
+                onClick={() => handlePageChange(currentPage > 1 ? currentPage - 1 : 1)}
+                disabled={currentPage === 1}
+                variant="outline"
+                className="min-w-[80px]"
+              >
+                قبلی
+              </Button>
+
+              <span className="flex items-center px-4 text-sm font-medium">
+                صفحه {currentPage} از {totalPages}
+              </span>
+
+              <Button
+                onClick={() => handlePageChange(currentPage < totalPages ? currentPage + 1 : totalPages)}
+                disabled={currentPage === totalPages}
+                variant="outline"
+                className="min-w-[80px]"
+              >
+                بعدی
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* دکمه بازگشت */}
+        <div className="mt-8 flex justify-start">
+          <Button variant="outline" onClick={() => router.push('/events')}>
+            <ArrowRight className="ml-2 h-4 w-4" />
+            بازگشت به رویدادها
+          </Button>
+        </div>
+      </main>
+    </div>
+  );
+}

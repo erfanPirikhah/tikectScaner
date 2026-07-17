@@ -39,6 +39,14 @@ interface ValidateTicketResponse {
   checkin_time?: string;
   e_cal?: string;
   ticket_id?: number;
+  ticket_status?: string;
+  name_event?: string;
+  ticket_type?: string;
+  extra_service?: string;
+  times_checked?: string;
+  checks_remaining?: string;
+  between_date?: string;
+  msg_show?: string;
 }
 
 interface ValidateTokenRequest {
@@ -150,8 +158,12 @@ class WordPressService {
     try {
       const data = await this.makeRequest(url, options);
 
+      // اصلاح شده: بررسی آرایه بودن یا وجود فیلد events در آبجکت
       if (Array.isArray(data)) {
         return { status: 'SUCCESS', events: data };
+      } else if (data.events && Array.isArray(data.events)) {
+        // این بخش اضافه شد تا خروجی { "events": [...] } را پشتیبانی کند
+        return { status: 'SUCCESS', events: data.events };
       } else if (data.status) {
         return data;
       } else {
@@ -179,7 +191,7 @@ class WordPressService {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        qr_code: qrCodeHash, // حذف user_id و count_check طبق داکیومنت جدید
+        qr_code: qrCodeHash,
       }),
     };
 
@@ -192,11 +204,22 @@ class WordPressService {
         msg: response.msg || response.message || 'Response received',
       };
 
+      // فیلدهای موجود
       result.name_customer = response.name_customer;
       result.seat = response.seat || response.ticket_id?.toString();
       result.checkin_time = response.checkin_time || response.check_in_time;
       result.ticket_id = response.ticket_id;
       result.e_cal = response.event_calendar;
+
+      // فیلدهای جدید اضافه شده
+      result.ticket_status = response.ticket_status;
+      result.name_event = response.name_event;
+      result.ticket_type = response.ticket_type;
+      result.extra_service = response.extra_service;
+      result.times_checked = response.times_checked?.toString();
+      result.checks_remaining = response.checks_remaining?.toString();
+      result.between_date = response.between_date;
+      result.msg_show = response.msg_show;
 
       if (response.status.toLowerCase() === 'warning') {
         result.msg = response.msg || response.message || 'This ticket has already been checked.';
@@ -242,6 +265,57 @@ class WordPressService {
     };
 
     return this.makeRequest(url, options);
+  }
+
+
+    // ============================================
+  // 1. دریافت لیست بلیت‌های یک رویداد
+  // ============================================
+  // ============================================
+  // 1. دریافت لیست بلیت‌های یک رویداد
+  // ============================================
+  async getTickets(websiteUrl?: string, token?: string, eventId?: number, page: number = 1, perPage: number = 20): Promise<any> {
+    if (!token) throw new Error('هیچ توکن احراز هویتی در دسترس نیست');
+    
+    const url = buildApiUrl('tickets');
+    
+    const options: RequestInit = {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        event_id: eventId,
+        page: page,
+        per_page: perPage 
+      }),
+    };
+
+    try {
+      const data = await this.makeRequest(url, options);
+      
+      // بررسی وجود کلید items در پاسخ API
+      if (data.items && Array.isArray(data.items)) {
+        return { 
+          status: 'SUCCESS', 
+          tickets: data.items,
+          total_items: data.total_items || 0,
+          total_checked: data.total_checked || 0,
+          total_active: data.total_active || 0,
+          total_pages: data.total_pages || 1,
+          current_page: data.page || 1
+        };
+      } else if (Array.isArray(data)) {
+        return { status: 'SUCCESS', tickets: data, total_items: data.length, total_pages: 1 };
+      } else if (data.status) {
+        return data;
+      }
+      
+      return { status: 'FAIL', tickets: [], msg: data.msg || 'خطا در دریافت بلیت‌ها' };
+    } catch (error) {
+      throw error;
+    }
   }
 }
 

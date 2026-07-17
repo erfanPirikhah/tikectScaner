@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, TicketIcon, QrCode } from 'lucide-react';
 import Image from 'next/image';
 
 // Define types for events
@@ -173,9 +173,21 @@ export default function Events() {
                       </Badge>
                     </div>
                   </CardContent>
-                  <CardFooter className="flex justify-between">
+                  <CardFooter className="flex justify-between gap-2">
                     <Button
                       variant="outline"
+                      size="sm"
+                      disabled={loadingEventId === event.event_id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/tickets?eventId=${event.event_id}`);
+                      }}
+                    >
+                      <TicketIcon className="ml-2 h-4 w-4" />
+                      لیست بلیت‌ها
+                    </Button>
+
+                    <Button
                       size="sm"
                       disabled={loadingEventId === event.event_id}
                       onClick={(e) => {
@@ -191,7 +203,12 @@ export default function Events() {
                           </svg>
                           در حال بارگذاری...
                         </>
-                      ) : 'بررسی بلیت'}
+                      ) : (
+                        <>
+                          <QrCode className="ml-2 h-4 w-4" />
+                          اسکن بلیت
+                        </>
+                      )}
                     </Button>
                   </CardFooter>
                 </Card>

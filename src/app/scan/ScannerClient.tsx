@@ -288,6 +288,7 @@ export default function ScannerClient() {
       });
 
       // Always navigate to results after a short delay, regardless of validity status
+      // Always navigate to results after a short delay, regardless of validity status
       setTimeout(() => {
         console.log('[DEBUG] Navigating to scan result page:', {
           status: response.status,
@@ -308,6 +309,15 @@ export default function ScannerClient() {
           time: response.checkin_time || '',
           ticket_id: response.ticket_id?.toString() || '',
           e_cal: response.e_cal || '',
+          // فیلدهای جدید:
+          ticket_status: response.ticket_status || '',
+          name_event: response.name_event || '',
+          ticket_type: response.ticket_type || '',
+          extra_service: response.extra_service || '',
+          times_checked: response.times_checked || '',
+          checks_remaining: response.checks_remaining || '',
+          between_date: response.between_date || '',
+          msg_show: response.msg_show || '',
         });
 
         // Add eventId if available

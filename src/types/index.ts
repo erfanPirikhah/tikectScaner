@@ -1,3 +1,5 @@
+// src/types/index.ts
+
 // انواع کاربر
 export interface User {
   id: number;
@@ -28,7 +30,7 @@ export interface EventState {
   error: string | null;
 }
 
-// وضعیت اسکنر
+// وضعیت اسکنر (تغییرات در این بخش انجام شد)
 export interface ScanResult {
   status: 'SUCCESS' | 'FAIL';
   msg: string;
@@ -37,6 +39,14 @@ export interface ScanResult {
   checkin_time?: string;
   e_cal?: string;
   ticket_id?: number;
+  ticket_status?: string;
+  name_event?: string;
+  ticket_type?: string;
+  extra_service?: string;
+  times_checked?: string;
+  checks_remaining?: string;
+  between_date?: string;
+  msg_show?: string;
 }
 
 export interface ScannerState {
