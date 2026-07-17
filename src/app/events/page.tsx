@@ -9,8 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { CalendarIcon, TicketIcon, QrCode } from 'lucide-react';
-import Image from 'next/image';
+import { CalendarIcon, TicketIcon, QrCode, Keyboard, Loader2, Search } from 'lucide-react';
+import ManualSearchModal from '@/components/scan/ManualSearchModal';
 
 // Define types for events
 interface Event {
@@ -27,17 +27,19 @@ export default function Events() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const eventsPerPage = 15; // Updated to show 15 events per page
+  const eventsPerPage = 12; // نمایش ۱۲ رویداد در هر صفحه برای گرید بهتر
+
+  // Manual Search Modal State
+  const [isManualSearchOpen, setIsManualSearchOpen] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState<string>('');
 
   // Calculate pagination
   const indexOfLastEvent = currentPage * eventsPerPage;
   const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
   let currentEvents = allEvents.slice(indexOfFirstEvent, indexOfLastEvent);
-
   const totalPages = Math.ceil(allEvents.length / eventsPerPage);
 
   useEffect(() => {
-    // Use current domain if websiteUrl is not available in store
     const currentWebsiteUrl = websiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
 
     if (!isLoggedIn || !token || !currentWebsiteUrl) {
@@ -48,22 +50,12 @@ export default function Events() {
     const fetchEvents = async () => {
       try {
         setStoreLoading(true);
-
-        // Use real service for normal operation
-        // Get user_id from auth store
         const userId = useAuthStore.getState().user?.id || 0;
-
-        // Debug logging
-        console.log('Debug - Website URL:', currentWebsiteUrl);
-        console.log('Debug - Token:', token ? 'Exists' : 'Missing');
-        console.log('Debug - User ID:', userId);
 
         try {
           const response = await wordpressService.getEvents(currentWebsiteUrl, token, userId);
-          console.log('Debug - API Response:', response);
 
           if (response.status === 'SUCCESS') {
-            console.log('Debug - Setting events:', response.events);
             setEvents(response.events || []);
             if (response.events && response.events.length === 0) {
               showToast.info('هیچ رویدادی یافت نشد');
@@ -95,40 +87,44 @@ export default function Events() {
   const [loadingEventId, setLoadingEventId] = useState<number | null>(null);
 
   const handleEventSelect = (event: Event) => {
-    // Set loading state
     setLoadingEventId(event.event_id);
-
-    // In a real app, you might want to set the selected event in the store
-    // For now, we'll just pass the event ID to the scanner
     router.push(`/scan?eventId=${event.event_id}`);
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // Scroll to top when changing pages
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleManualSearchOpen = (event: Event) => {
+    setSelectedEventId(event.event_id.toString());
+    setIsManualSearchOpen(true);
   };
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen">
-        <main className="flex-1 p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {Array.from({ length: 15 }).map((_, index) => (
+      <div className="flex flex-col min-h-screen bg-muted/10">
+        <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
+          <div className="mb-8">
+            <Skeleton className="h-10 w-48 mb-2" />
+            <Skeleton className="h-5 w-72" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, index) => (
               <Card key={index} className="overflow-hidden">
                 <CardHeader className="pb-3">
-                  <div className="flex justify-between items-start">
-                    <Skeleton className="h-6 w-3/4" />
-                    <Skeleton className="w-5 h-5 rounded-sm" />
-                  </div>
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-1/3 mt-2" />
                 </CardHeader>
                 <CardContent className="pb-3">
                   <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-2/3 mt-2" />
                 </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Skeleton className="h-4 w-16" />
-                  <Skeleton className="h-8 w-24" />
+                <CardFooter className="flex flex-col gap-2">
+                  <Skeleton className="h-10 w-full" />
+                  <div className="flex gap-2 w-full">
+                    <Skeleton className="h-10 w-1/2" />
+                    <Skeleton className="h-10 w-1/2" />
+                  </div>
                 </CardFooter>
               </Card>
             ))}
@@ -139,77 +135,73 @@ export default function Events() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-muted/10">
+      <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
+        
+        {/* Page Header */}
+        <div className="mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2">
+            <CalendarIcon className="w-7 h-7 text-primary" />
+            رویدادهای من
+          </h1>
+          <p className="text-muted-foreground mt-1">رویداد مورد نظر را برای اسکن، مدیریت بلیت‌ها یا جستجوی دستی انتخاب کنید.</p>
+        </div>
 
-      {/* Content */}
-      <main className="flex-1 p-4 max-w-7xl mx-auto w-full">
         {currentEvents.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {/* Events Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {currentEvents.map((event: Event) => (
-                <Card
-                  key={event.event_id}
-                  className={`overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg ${loadingEventId === event.event_id ? 'opacity-70' : ''}`}
-                  onClick={() => handleEventSelect(event)}
+                <Card 
+                  key={event.event_id} 
+                  className="group flex flex-col justify-between overflow-hidden hover:shadow-xl transition-all duration-300 border-border/50 hover:border-primary/50"
                 >
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-xl line-clamp-2">{event.event_name}</CardTitle>
-                      <div className="w-5 h-5 relative">
-                        <Image
-                          src="/ALogo.png"
-                          alt="Event Logo"
-                          fill
-                          style={{ objectFit: 'contain' }}
-                          className="rounded-sm"
-                        />
-                      </div>
+                  <CardHeader className="pb-4 relative">
+                    <div className="absolute top-4 left-4 w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center transition-transform group-hover:scale-110">
+                      <TicketIcon className="w-5 h-5 text-primary" />
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="secondary">
+                    <div className="pr-14">
+                      <CardTitle className="text-lg leading-tight h-12 overflow-hidden">
+                        {event.event_name}
+                      </CardTitle>
+                      <Badge variant="outline" className="mt-2 w-fit font-normal">
                         شناسه: {event.event_id}
                       </Badge>
                     </div>
-                  </CardContent>
-                  <CardFooter className="flex justify-between gap-2">
+                  </CardHeader>
+                  
+                  <CardContent className="flex-grow" />
+                  
+                  <CardFooter className="flex flex-col gap-2 bg-muted/30 p-4">
                     <Button
-                      variant="outline"
-                      size="sm"
+                      className="w-full"
                       disabled={loadingEventId === event.event_id}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(`/tickets?eventId=${event.event_id}`);
-                      }}
-                    >
-                      <TicketIcon className="ml-2 h-4 w-4" />
-                      لیست بلیت‌ها
-                    </Button>
-
-                    <Button
-                      size="sm"
-                      disabled={loadingEventId === event.event_id}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEventSelect(event);
-                      }}
+                      onClick={() => handleEventSelect(event)}
                     >
                       {loadingEventId === event.event_id ? (
-                        <>
-                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          در حال بارگذاری...
-                        </>
+                        <><Loader2 className="ml-2 h-4 w-4 animate-spin" /> در حال بارگذاری...</>
                       ) : (
-                        <>
-                          <QrCode className="ml-2 h-4 w-4" />
-                          اسکن بلیت
-                        </>
+                        <><QrCode className="ml-2 h-4 w-4" /> اسکن بلیت</>
                       )}
                     </Button>
+                    <div className="flex w-full gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => router.push(`/tickets?eventId=${event.event_id}`)}
+                      >
+                        <TicketIcon className="ml-2 h-4 w-4" /> لیست بلیت‌ها
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => handleManualSearchOpen(event)}
+                      >
+                        <Keyboard className="ml-2 h-4 w-4" /> جستجوی دستی
+                      </Button>
+                    </div>
                   </CardFooter>
                 </Card>
               ))}
@@ -217,56 +209,48 @@ export default function Events() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="mt-8 flex flex-col items-center">
+              <div className="mt-12 flex flex-col items-center gap-4">
                 <div className="flex flex-wrap justify-center gap-2 max-w-full overflow-x-auto">
-                  {/* Previous button */}
                   <Button
                     onClick={() => handlePageChange(currentPage > 1 ? currentPage - 1 : 1)}
                     disabled={currentPage === 1}
                     variant="outline"
-                    className={`min-w-[80px] ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    aria-label="صفحه قبلی"
+                    className="min-w-[80px]"
                   >
                     قبلی
                   </Button>
 
-                  {/* Page numbers with ellipsis for large number of pages */}
                   {totalPages <= 7 ? (
-                    // Show all pages if there are 7 or fewer
                     Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                       <Button
                         key={page}
                         onClick={() => handlePageChange(page)}
                         variant={currentPage === page ? "default" : "outline"}
-                        size="sm"
-                        className="w-10 h-10 rounded-full"
-                        aria-label={`صفحه ${page}`}
+                        size="icon"
+                        className="w-10 h-10 rounded-lg"
                       >
                         {page}
                       </Button>
                     ))
                   ) : (
-                    // Show ellipsis for large number of pages
                     <>
                       <Button
                         onClick={() => handlePageChange(1)}
                         variant={currentPage === 1 ? "default" : "outline"}
-                        size="sm"
-                        className="w-10 h-10 rounded-full"
-                        aria-label="صفحه 1"
+                        size="icon"
+                        className="w-10 h-10 rounded-lg"
                       >
                         1
                       </Button>
 
-                      {currentPage > 3 && <span className="flex items-center px-2 text-foreground">...</span>}
+                      {currentPage > 3 && <span className="flex items-center px-2 text-muted-foreground">...</span>}
 
                       {currentPage > 2 && currentPage < totalPages - 1 && (
                         <Button
                           onClick={() => handlePageChange(currentPage - 1)}
                           variant="outline"
-                          size="sm"
-                          className="w-10 h-10 rounded-full"
-                          aria-label={`صفحه ${currentPage - 1}`}
+                          size="icon"
+                          className="w-10 h-10 rounded-lg"
                         >
                           {currentPage - 1}
                         </Button>
@@ -277,9 +261,8 @@ export default function Events() {
                           key={currentPage}
                           onClick={() => handlePageChange(currentPage)}
                           variant="default"
-                          size="sm"
-                          className="w-10 h-10 rounded-full"
-                          aria-label={`صفحه ${currentPage}`}
+                          size="icon"
+                          className="w-10 h-10 rounded-lg"
                         >
                           {currentPage}
                         </Button>
@@ -289,72 +272,75 @@ export default function Events() {
                         <Button
                           onClick={() => handlePageChange(currentPage + 1)}
                           variant="outline"
-                          size="sm"
-                          className="w-10 h-10 rounded-full"
-                          aria-label={`صفحه ${currentPage + 1}`}
+                          size="icon"
+                          className="w-10 h-10 rounded-lg"
                         >
                           {currentPage + 1}
                         </Button>
                       )}
 
-                      {currentPage < totalPages - 2 && <span className="flex items-center px-2 text-foreground">...</span>}
+                      {currentPage < totalPages - 2 && <span className="flex items-center px-2 text-muted-foreground">...</span>}
 
                       <Button
                         onClick={() => handlePageChange(totalPages)}
                         variant={currentPage === totalPages ? "default" : "outline"}
-                        size="sm"
-                        className="w-10 h-10 rounded-full"
-                        aria-label={`صفحه ${totalPages}`}
+                        size="icon"
+                        className="w-10 h-10 rounded-lg"
                       >
                         {totalPages}
                       </Button>
                     </>
                   )}
 
-                  {/* Next button */}
                   <Button
                     onClick={() => handlePageChange(currentPage < totalPages ? currentPage + 1 : totalPages)}
                     disabled={currentPage === totalPages}
                     variant="outline"
-                    className={`min-w-[80px] ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    aria-label="صفحه بعدی"
+                    className="min-w-[80px]"
                   >
                     بعدی
                   </Button>
                 </div>
 
-                {/* Page info */}
-                <div className="mt-4 text-sm text-muted-foreground">
+                <div className="text-sm text-muted-foreground">
                   صفحه {currentPage} از {totalPages}
                 </div>
               </div>
             )}
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center py-12">
-            <Card className="max-w-md w-full text-center">
+          <div className="flex flex-col items-center justify-center py-24">
+            <Card className="max-w-md w-full text-center border-dashed">
               <CardHeader>
-                <div className="mx-auto bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                  <CalendarIcon className="w-8 h-8 text-primary" />
+                <div className="mx-auto bg-primary/10 w-20 h-20 rounded-full flex items-center justify-center mb-4">
+                  <Search className="w-10 h-10 text-primary" />
                 </div>
-                <CardTitle className="text-lg">هیچ رویدادی یافت نشد</CardTitle>
+                <CardTitle className="text-xl">رویدادی یافت نشد</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription>
-                  در حال حاضر هیچ رویدادی در دسترس نیست. لطفاً بعداً دوباره بررسی کنید یا با مدیر سیستم تماس بگیرید.
+                <CardDescription className="text-base">
+                  در حال حاضر هیچ رویدادی به شما اختصاص داده نشده است. لطفاً بعداً دوباره بررسی کنید.
                 </CardDescription>
               </CardContent>
-              <CardFooter className="flex justify-center">
+              <CardFooter className="flex justify-center pb-6">
                 <Button
+                  variant="outline"
                   onClick={() => typeof window !== 'undefined' && window.location.reload()}
                 >
-                  تازه‌سازی
+                  تازه‌سازی صفحه
                 </Button>
               </CardFooter>
             </Card>
           </div>
         )}
       </main>
+
+      {/* Manual Search Modal */}
+      <ManualSearchModal 
+        isOpen={isManualSearchOpen} 
+        onClose={() => setIsManualSearchOpen(false)} 
+        eventId={selectedEventId} 
+      />
     </div>
   );
 }

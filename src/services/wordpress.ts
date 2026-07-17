@@ -317,6 +317,75 @@ class WordPressService {
       throw error;
     }
   }
+    // ============================================
+  // 2. جستجوی دستی بلیت
+  // ============================================
+  async manualSearchTicket(websiteUrl?: string, token?: string, eventId?: number, searchTerm?: string): Promise<any> {
+    if (!token) throw new Error('هیچ توکن احراز هویتی در دسترس نیست');
+    
+    const url = buildApiUrl('tickets/manual-search');
+    
+    const options: RequestInit = {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        event_id: eventId,
+        search_value: searchTerm // اصلاح شد به search_value طبق داکیومنت
+      }),
+    };
+
+    try {
+      const data = await this.makeRequest(url, options);
+      
+      // بررسی وجود کلید items در پاسخ API
+      if (data.items && Array.isArray(data.items)) {
+        return { status: 'SUCCESS', tickets: data.items };
+      } else if (Array.isArray(data)) {
+        return { status: 'SUCCESS', tickets: data };
+      } else if (data.status) {
+        return data;
+      }
+      
+      return { status: 'FAIL', tickets: [], msg: data.msg || 'بلیتی یافت نشد' };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // ============================================
+  // 3. دریافت جزئیات یک بلیت خاص
+  // ============================================
+  async getTicketDetails(websiteUrl?: string, token?: string, ticketId?: number): Promise<any> {
+    if (!token) throw new Error('هیچ توکن احراز هویتی در دسترس نیست');
+    
+    const url = buildApiUrl('ticket/details');
+    
+    const options: RequestInit = {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ticket_id: ticketId }),
+    };
+
+    try {
+      const data = await this.makeRequest(url, options);
+      
+      if (data.ticket_id || (data.items && data.items.length > 0)) {
+        return { status: 'SUCCESS', ticket: data.items ? data.items[0] : data };
+      } else if (data.status) {
+        return data;
+      }
+      
+      return { status: 'FAIL', msg: data.msg || 'خطا در دریافت جزئیات بلیت' };
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 export const wordpressService = new WordPressService();
